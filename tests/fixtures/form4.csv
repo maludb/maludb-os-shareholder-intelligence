@@ -1,0 +1,5 @@
+accession,form,reporting_owner_cik,reporting_owner_name,relationship,officer_title,transaction_date,transaction_code,shares,price,acquired_disposed,shares_owned_after,ownership,is_derivative,row_no
+0000099990-24-000011,4,0000099990,SMITH ROBERT A,officer,Chief Executive Officer,2024-03-20,S,20000,4.15,D,480000,D,0,1
+0000099990-24-000012,4,0000099990,SMITH ROBERT A,officer,Chief Executive Officer,2024-03-27,S,15000,4.02,D,465000,D,0,1
+0000099991-24-000004,4,0000099991,JONES LAURA,director,,2024-03-28,S,5000,3.98,D,120000,D,0,1
+0000099991-24-000004,4,0000099991,JONES LAURA,director,,2024-03-28,A,10000,0,A,130000,D,1,1

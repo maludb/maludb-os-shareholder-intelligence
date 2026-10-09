@@ -1,0 +1,6 @@
+settlementDate,publishedDate,currentShortPositionQuantity,previousShortPositionQuantity,changePositionQuantity,averageDailyVolumeQuantity,daysToCoverQuantity,revisionFlag
+2024-01-31,2024-02-12,120000,,120000,40000,3.0,N
+2024-02-15,2024-02-27,150000,120000,30000,42000,3.57,N
+2024-02-29,2024-03-12,260000,150000,110000,45000,5.78,N
+2024-03-15,2024-03-27,410000,260000,150000,44000,9.32,N
+2024-03-28,2024-04-09,520000,410000,110000,47000,11.06,N

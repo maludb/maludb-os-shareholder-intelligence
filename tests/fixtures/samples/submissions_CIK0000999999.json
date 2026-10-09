@@ -1,0 +1,97 @@
+{
+ "cik": "999999",
+ "entityType": "operating",
+ "sic": "3990",
+ "sicDescription": "MISCELLANEOUS MANUFACTURING INDUSTRIES",
+ "name": "SMOKE ISSUER INC",
+ "tickers": [
+  "SMOK"
+ ],
+ "exchanges": [
+  "OTC"
+ ],
+ "ein": "000000000",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "NV",
+ "addresses": {
+  "mailing": {
+   "street1": "1 SMOKE WAY",
+   "city": "RENO",
+   "stateOrCountry": "NV",
+   "zipCode": "89501"
+  },
+  "business": {
+   "street1": "1 SMOKE WAY",
+   "city": "RENO",
+   "stateOrCountry": "NV",
+   "zipCode": "89501"
+  }
+ },
+ "formerNames": [
+  {
+   "name": "SMOKE ACQUISITION CORP",
+   "from": "2019-01-01T00:00:00.000Z",
+   "to": "2022-06-30T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000999999-24-000006",
+    "0000999999-24-000005"
+   ],
+   "filingDate": [
+    "2024-03-29",
+    "2024-03-15"
+   ],
+   "reportDate": [
+    "2023-12-31",
+    "2024-03-14"
+   ],
+   "acceptanceDateTime": [
+    "2024-03-29T16:05:11.000Z",
+    "2024-03-15T08:30:00.000Z"
+   ],
+   "act": [
+    "34",
+    "34"
+   ],
+   "form": [
+    "10-K",
+    "8-K"
+   ],
+   "fileNumber": [
+    "000-56000",
+    "000-56000"
+   ],
+   "filmNumber": [
+    "24001",
+    "24002"
+   ],
+   "items": [
+    "",
+    "1.01,3.02,9.01"
+   ],
+   "size": [
+    1200000,
+    80000
+   ],
+   "isXBRL": [
+    1,
+    0
+   ],
+   "isInlineXBRL": [
+    1,
+    0
+   ],
+   "primaryDocument": [
+    "smok-10k_20231231.htm",
+    "smok-8k_20240314.htm"
+   ],
+   "primaryDocDescription": [
+    "10-K",
+    "8-K"
+   ]
+  }
+ }
+}

@@ -1,0 +1,62 @@
+[
+ {
+  "settlementDate": "2024-01-31",
+  "symbolCode": "SMOK",
+  "issueName": "SMOKE ISSUER INC",
+  "marketClassCode": "OTC",
+  "currentShortPositionQuantity": 120000,
+  "previousShortPositionQuantity": null,
+  "changePreviousNumber": 120000,
+  "averageDailyVolumeQuantity": 40000,
+  "daysToCoverQuantity": 3.0,
+  "revisionFlag": "N"
+ },
+ {
+  "settlementDate": "2024-02-15",
+  "symbolCode": "SMOK",
+  "issueName": "SMOKE ISSUER INC",
+  "marketClassCode": "OTC",
+  "currentShortPositionQuantity": 150000,
+  "previousShortPositionQuantity": 120000,
+  "changePreviousNumber": 30000,
+  "averageDailyVolumeQuantity": 42000,
+  "daysToCoverQuantity": 3.57,
+  "revisionFlag": "N"
+ },
+ {
+  "settlementDate": "2024-02-29",
+  "symbolCode": "SMOK",
+  "issueName": "SMOKE ISSUER INC",
+  "marketClassCode": "OTC",
+  "currentShortPositionQuantity": 260000,
+  "previousShortPositionQuantity": 150000,
+  "changePreviousNumber": 110000,
+  "averageDailyVolumeQuantity": 45000,
+  "daysToCoverQuantity": 5.78,
+  "revisionFlag": "N"
+ },
+ {
+  "settlementDate": "2024-03-15",
+  "symbolCode": "SMOK",
+  "issueName": "SMOKE ISSUER INC",
+  "marketClassCode": "OTC",
+  "currentShortPositionQuantity": 410000,
+  "previousShortPositionQuantity": 260000,
+  "changePreviousNumber": 150000,
+  "averageDailyVolumeQuantity": 44000,
+  "daysToCoverQuantity": 9.32,
+  "revisionFlag": "N"
+ },
+ {
+  "settlementDate": "2024-03-28",
+  "symbolCode": "SMOK",
+  "issueName": "SMOKE ISSUER INC",
+  "marketClassCode": "OTC",
+  "currentShortPositionQuantity": 520000,
+  "previousShortPositionQuantity": 410000,
+  "changePreviousNumber": 110000,
+  "averageDailyVolumeQuantity": 47000,
+  "daysToCoverQuantity": 11.06,
+  "revisionFlag": "N"
+ }
+]

@@ -1,0 +1,3 @@
+Symbol|Security Name|Market Category|Reg SHO Threshold Flag|Rule 3210
+SMOK|SMOKE ISSUER INC - Common Stock|S|Y|N
+OTHR|OTHER CO - Common Stock|Q|Y|N

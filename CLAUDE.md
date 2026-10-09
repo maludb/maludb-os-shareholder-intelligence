@@ -61,5 +61,9 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — planned and **APPROVED** (design §15: D1–D16 and (a)–(d), every recommendation). K34 BUILT (kernel db/178, 2026-10-09). Next: Phase 0 against the
-anonymised KineticIntel2 fixtures (the owner provides one real SPR week) → Phase 1 → Phase 2 → slice 1 → the exemplars (slices 2, 3, 7). Nothing is built.
+2026-10-09 — planned and **APPROVED** (design §15), K34 built in the kernel (db/178), **PHASE 0 COMPLETE** the same day (design §16): the kit
+(73 checks without a kernel), the schema db/001–016 and its proof against the anonymised fixtures (142 checks), `maludb-os.json`, the two
+agents, ten skills, `deploy/`; the installer's `plan` clean. Proofs: `bash tests/phase0/run.sh` (both). The fixtures:
+`mcp/venv/bin/python -I tests/fixtures/build_fixtures.py <KineticIntel2 clone>`. The owner's real SPR week is awaited (the weekly-grid
+connector is confirmed on it). **Next: Phase 1** (the tool surface, the action manifest, the four build specs, the slice specs) for the
+owner's approval together; no feature PHP before that.

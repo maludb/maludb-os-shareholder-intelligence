@@ -1,0 +1,41 @@
+{
+ "cik": 999999,
+ "entityName": "SMOKE ISSUER INC",
+ "facts": {
+  "dei": {
+   "EntityCommonStockSharesOutstanding": {
+    "label": "Entity Common Stock, Shares Outstanding",
+    "units": {
+     "shares": [
+      {
+       "end": "2024-03-25",
+       "val": 17053900,
+       "accn": "0000999999-24-000006",
+       "fy": 2023,
+       "fp": "FY",
+       "form": "10-K",
+       "filed": "2024-03-29",
+       "frame": "CY2024Q1I"
+      }
+     ]
+    }
+   },
+   "EntityPublicFloat": {
+    "units": {
+     "USD": [
+      {
+       "end": "2023-06-30",
+       "val": 41000000,
+       "accn": "0000999999-24-000006",
+       "fy": 2023,
+       "fp": "FY",
+       "form": "10-K",
+       "filed": "2024-03-29",
+       "frame": "CY2023Q2I"
+      }
+     ]
+    }
+   }
+  }
+ }
+}

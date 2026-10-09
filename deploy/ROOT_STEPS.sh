@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Shareholder Intelligence — what root or the owner does to install it beside the kernel, in order. Written at the end of Phase 0 (2026-10-09);
-# later phases ADD steps and mark them. NOTHING HERE HAS BEEN RUN: the proofs use a scratch database, php -S and fixtures, and
-# never touch an installed application, Apache, systemd or the MaluDB API.
+# Shareholder Intelligence — what root or the owner does to install it beside the kernel, in order. Written at the end of Phase 0
+# (2026-10-09); later phases ADD steps and mark them. NOTHING HERE HAS BEEN RUN: the proofs use a scratch database, php -S and
+# fixtures, and never touch an installed application, Apache, systemd, EDGAR or FINRA.
 #   bash deploy/ROOT_STEPS.sh              prints this plan (the default)
 #   sudo bash deploy/ROOT_STEPS.sh apply   runs the steps with no decision in them: 0 and 2b (the ports, the storage directory)
 # Steps 1, 2, 3 and 4 are printed and never run: they are the installer's, the owner's, or put a secret somewhere.
@@ -9,14 +9,13 @@ set -euo pipefail
 APP=/srv/apps/shareholder_intelligence
 KERNEL=/var/www
 MODE=${1:-plan}
-STORAGE=${SI_STORAGE_DIR:-$APP/storage}   # attachments, imports, exports: under the install by default, a mount when the owner names one
+STORAGE=${SI_STORAGE_DIR:-$APP/storage}   # the uploaded files kept whole, import work, exports, the rendered packs: under the install by default
 run() { echo "+ $*"; if [ "$MODE" = apply ]; then "$@"; fi; }
-env_has() { [ -f "$APP/config/.env" ] && grep -q "^$1=." "$APP/config/.env"; }
 
 # ------------------------------------------------------------------------------------------------------------------
 # 0. PIN THE PORTS before the installer's first apply (Help Desk's lesson of 2026-10-02). A config/.env holding ONLY the three
 #    ports: the installer reads them, fills every other required key itself, and sets fresh role passwords because DB_PASSWORD
-#    is absent. Never put anything else in this file by hand before apply — except SI_STORAGE_DIR when the bytes go on a mount.
+#    is absent. Never put anything else in this file by hand before apply — except SI_STORAGE_DIR when the files go on a mount.
 echo "== 0. Pin the ports (ROOT) — only if $APP/config/.env does not exist yet"
 if [ ! -f "$APP/config/.env" ]; then
   run bash -c "mkdir -p '$APP/config' && printf 'APP_INTERNAL_PORT=8192\nMCP_RECORDS_PORT=8845\nMCP_ACTIVITY_PORT=8846\n' > '$APP/config/.env' && chgrp www-data '$APP/config/.env' && chmod 640 '$APP/config/.env'"
@@ -32,40 +31,40 @@ echo "== 1. The installer's plan (read-only)"
 echo "   php $KERNEL/bin/app_install.php plan $APP --by <super-admin email> --domain subello.com"
 
 # ------------------------------------------------------------------------------------------------------------------
-# 2. The installer's apply (ROOT) — PHASE 2 onward, not before the shell exists: database and roles, config/.env, the vhost,
-#    the units, the registration (catalog kind ours — the row K32 seeded, db/177 —, /sso and /sso/logout, scope_kind none),
-#    the application token, skills imported, approval policies, the installing super-admin's admin grant.
-#    --grant-standing-departments gives every standing department the Sales Rep role (key user) — usually NOT wanted for a CRM: grant the
-#    sales department instead. --hire-agents hires the expert and the Sales Assistant. Run it twice: the roles are read from app_roles only once the records MCP answers (Phase 4).
+# 2. The installer's apply (ROOT) — PHASE 2 onward, not before the shell exists: database and roles, config/.env (SI_SECRETS_KEY
+#    generated once: the box key for the sources' credentials), the vhost, the units, the registration (catalog kind ours — the
+#    row K34 seeded, db/178 —, /sso and /sso/logout, scope_kind none), the application token, skills imported, approval policies,
+#    the installing super-admin's admin grant. --grant-standing-departments gives every standing department the Analyst role (key
+#    user) — usually NOT wanted: grant Finance (or the IR department) instead and the board as Viewers. --hire-agents hires the
+#    expert and the Surveillance Analyst. Run it twice: the roles are read from app_roles only once the records MCP answers (Phase 4).
 echo "== 2. apply (ROOT) — from Phase 2"
-echo "   sudo php $KERNEL/bin/app_install.php apply $APP --by <super-admin email> --domain subello.com --grant-standing-departments --hire-agents"
+echo "   sudo php $KERNEL/bin/app_install.php apply $APP --by <super-admin email> --domain subello.com --hire-agents"
 
 # ------------------------------------------------------------------------------------------------------------------
-# 2b. THE STORAGE DIRECTORY (ROOT; idempotent; before the first attachment or import). Attachments, import files and exports live
-#     under the install ($APP/storage) or on the mount SI_STORAGE_DIR names. Owned by www-data, mode 750 — never under html/.
+# 2b. THE STORAGE DIRECTORY (ROOT; idempotent; before the first upload). The uploaded files kept whole (uploads/), import work
+#     (imports/), exports (exports/) and the rendered packs (reports/) live under the install ($APP/storage) or on the mount
+#     SI_STORAGE_DIR names. Owned by www-data, mode 750 — never under html/.
 echo "== 2b. The storage directory $STORAGE (ROOT)"
-for d in attachments imports exports; do run install -d -o www-data -g www-data -m 750 "$STORAGE/$d"; done
+for d in uploads imports exports reports; do run install -d -o www-data -g www-data -m 750 "$STORAGE/$d"; done
 run install -d -o www-data -g www-data -m 750 "$STORAGE"
 
 # ------------------------------------------------------------------------------------------------------------------
-# 3. MANUAL — THE LOGGING MAILBOX (design §4, D10; the one manual step, as Help Desk's queues have). At MaluMail, on the
-#    business's sending domain, create the mailbox crm-<token>@<mail domain> (a token nobody guesses: openssl rand -hex 8) with an
-#    inbound webhook to https://shareholders.<domain>/channels/malumail/mail and a webhook secret. Then:
-echo "== 3. MANUAL — the logging mailbox at MaluMail"
-echo "   - create crm-\$(openssl rand -hex 8)@<mail domain> at MaluMail; webhook https://shareholders.<domain>/channels/malumail/mail; note its secret"
-echo "   - MAILBOX_SI_WEBHOOK_SECRET=<secret> into $APP/config/.env (root; never printed, never committed)"
-echo "   - the mailbox row: the admin's /admin/mailbox screen (slice 5) or, until then, INSERT INTO mailboxes (address, display_name, provider, webhook_secret_ref) VALUES ('<address>', 'Shareholder Intelligence', 'malumail', 'MAILBOX_SI_WEBHOOK_SECRET'); UPDATE si_settings SET mailbox_id = (SELECT id FROM mailboxes WHERE address = '<address>')"
-echo "   - sellers BCC that address; Reply-To of every CRM-sent email is that address"
+# 3. THE EDGAR USER-AGENT (the admin, right after apply; the owner's answer (b)). The SEC requires "Company Name contact@domain" on
+#    every request and answers 403 "Undeclared Automated Tool" without it. It is a SETTING, not an env key: /admin/settings
+#    (slice 10) — or, until then, the two columns by hand. No EDGAR pull runs while either is empty (K35 asks the installer to warn).
+echo "== 3. The EDGAR user-agent (the admin)"
+echo "   sudo -u postgres psql -d subello_shareholder_intelligence -c \"UPDATE si_settings SET business_name = '<the business>', edgar_contact_email = '<ir@domain>'\""
+echo "   …and the exchange's holidays for the year: UPDATE si_settings SET market_holidays = '{2026-11-26,2026-12-25}'"
 
 # ------------------------------------------------------------------------------------------------------------------
 # 4. The owner's keys and decisions (any time after 2):
 echo "== 4. The owner's"
-echo "   - DNS and TLS for crm.subello.com (until then /etc/hosts maps it to this host)"
-echo "   - MaluMail: MALUMAIL_API_KEY, MAIL_FROM, MAIL_FROM_NAME into $APP/config/.env (reminders, the morning note, CRM-sent email) — the installer's mail step writes them from ~/.malumail when present"
-echo "   - the Sales Assistant's duty (30 6 * * 1-5) in Agent HR if the hire gave none (the kernel reads agents[].duty since 2026-10-08)"
-echo "   - a lead-capture key for the website's form: /admin/tokens (slice 9) → POST https://shareholders.<domain>/api/v1/leads"
-echo "   - the connections a super-admin approves (bin/app_connection.php): the General Ledger, Help Desk, Inventory, Consultant Tracking and Spaces"
-echo "     reading accounts_index, contacts_index, deals_won, deals_open_by_account, account_timeline_summary; Shareholder Intelligence reading gl.customer_by_si_account,"
-echo "     gl.items_index, inventory.availability_index, helpdesk.tickets_by_organization (each degrades on no_connection)"
+echo "   - DNS and TLS for shareholders.subello.com (until then /etc/hosts maps it to this host)"
+echo "   - MaluMail: MALUMAIL_API_KEY, MAIL_FROM, MAIL_FROM_NAME into $APP/config/.env (the morning note and the notifications to MEMBERS — nothing leaves the business) — the installer's mail step writes them from ~/.malumail when present"
+echo "   - the Surveillance Analyst's duty (0 7 * * 1-5, America/New_York) in Agent HR if the hire gave none (the kernel reads agents[].duty since 2026-10-08)"
+echo "   - the first issuer: /issuers/new (slice 1) — the ticker, the CIK lookup, the securities with their CUSIPs, the transfer agent; the restriction list for an advisory firm's client"
+echo "   - the three files: this week's SPR, the latest NOBO job and the register export at /uploads/new (slices 2 and 3); the SPR parser was built from the reference grid and is CONFIRMED on the first real file"
+echo "   - a price source key (Alpha Vantage, Polygon) at /admin/sources if stooq is not enough; a licensed short-data key (Ortex, S3) is Extended"
+echo "   - the connections a super-admin approves (bin/app_connection.php): Knowledge reading filings_index and filing_text (a base over the filings), Spaces reading signals_open, events_index and ownership_summary"
 echo "   - the worker, the directory sync and the ingest timers are rendered and enabled by apply; by hand:"
 echo "       sudo systemctl enable --now shareholder_intelligence-worker.timer shareholder_intelligence-directory-sync.timer shareholder_intelligence-activity-ingest.timer"

@@ -97,16 +97,18 @@ CREATE TABLE threshold_listings (
     loaded_at    timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (security_id, list_date, list)
 );
--- The current run: on a list now (as of the latest list date loaded), since when, how many consecutive list days.
+-- The current run: on a list now (as of the latest list date loaded), since when, how many consecutive LIST DAYS (consecutive among
+-- the list dates loaded, so a weekend or a holiday with no list does not break the run).
 CREATE OR REPLACE FUNCTION si_threshold_status(p_security bigint)
     RETURNS TABLE (on_list boolean, list text, since date, consecutive_days integer, latest_list_date date)
     LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-    WITH latest AS (SELECT max(list_date) AS d FROM threshold_listings),
-         mine AS (SELECT t.list, t.list_date FROM threshold_listings t WHERE t.security_id = p_security),
-         run AS (SELECT m.list, m.list_date, m.list_date - (row_number() OVER (PARTITION BY m.list ORDER BY m.list_date))::integer AS grp FROM mine m),
+    WITH cal AS (SELECT DISTINCT list_date FROM threshold_listings),
+         calr AS (SELECT list_date, row_number() OVER (ORDER BY list_date) AS rn FROM cal),
+         latest AS (SELECT max(list_date) AS d FROM cal),
+         mine AS (SELECT t.list, t.list_date, c.rn FROM threshold_listings t JOIN calr c ON c.list_date = t.list_date WHERE t.security_id = p_security),
+         run AS (SELECT m.list, m.list_date, m.rn - row_number() OVER (PARTITION BY m.list ORDER BY m.list_date) AS grp FROM mine m),
          cur AS (SELECT r.list, min(r.list_date) AS since, count(*)::integer AS n, max(r.list_date) AS last FROM run r GROUP BY r.list, r.grp)
-    SELECT EXISTS (SELECT 1 FROM cur, latest WHERE cur.last = latest.d), c.list, c.since, c.n, (SELECT d FROM latest)
-      FROM cur c, latest WHERE c.last = latest.d
+    SELECT true, c.list, c.since, c.n, (SELECT d FROM latest) FROM cur c, latest WHERE c.last = latest.d
     UNION ALL
     SELECT false, NULL, NULL, 0, (SELECT d FROM latest) WHERE NOT EXISTS (SELECT 1 FROM cur, latest WHERE cur.last = latest.d)
     LIMIT 1;

@@ -113,7 +113,7 @@ BEGIN
             VALUES (r.participant_number, upper(btrim(COALESCE(r.pname, 'PARTICIPANT ' || r.participant_number))), si_participant_class_from_name(r.pname), 'directory_name', 'participant')
             RETURNING id INTO pid;
             n_new := n_new + 1;
-        ELSIF r.pname IS NOT NULL AND upper(btrim(r.pname)) <> (SELECT name FROM participants WHERE id = pid) AND NOT (upper(btrim(r.pname)) = ANY ((SELECT aliases FROM participants WHERE id = pid))) THEN
+        ELSIF r.pname IS NOT NULL AND upper(btrim(r.pname)) <> (SELECT name FROM participants WHERE id = pid) AND NOT (upper(btrim(r.pname)) = ANY ((SELECT aliases FROM participants WHERE id = pid)::text[])) THEN
             UPDATE participants SET aliases = aliases || ARRAY[upper(btrim(r.pname))] WHERE id = pid;   -- the file's name, kept as an alias
         END IF;
     END LOOP;

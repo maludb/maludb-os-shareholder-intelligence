@@ -1,0 +1,142 @@
+{
+  "schema": "maludb-os.application/1",
+  "catalog_key": "shareholder_intelligence",
+  "name": "Shareholder Intelligence",
+  "description": "Shareholder surveillance for a publicly traded company (or an advisory firm serving several): the weekly DTC Security Position Report, Broadridge's NOBO list and the transfer agent's register uploaded, tied to their own totals and reconciled with the share count; holders matched across lists; SEC EDGAR filings and ownership forms (13F, 13D/13G, Forms 3/4/5, 144), FINRA short interest and daily short volume, the SEC's fails-to-deliver and the Reg SHO threshold lists fetched under a declared policy; every series charted against the price with the company's events; nineteen rules that raise signals with their evidence and whether that evidence is established, contested or lore, for a person to judge. Nothing leaves the business. The Expert works the command bar; the Surveillance Analyst writes the market-day morning note and drafts the weekly pack.",
+  "business_area": "Finance",
+  "category": "investor_relations",
+  "icon": "feather-trending-down",
+  "version": "0.1.0",
+  "criticality": "medium",
+  "vhost": {
+    "label": "shareholders",
+    "document_root": "html",
+    "internal_port_env": "APP_INTERNAL_PORT"
+  },
+  "database": {
+    "suffix": "shareholder_intelligence",
+    "migrations": "db",
+    "roles": {
+      "rw": "shareholder_intelligence_rw",
+      "records_ro": "shareholder_intelligence_records_ro",
+      "activity_ro": "shareholder_intelligence_activity_ro"
+    }
+  },
+  "runtime": {
+    "python": {
+      "dir": "mcp",
+      "venv": "mcp/venv",
+      "requirements": "mcp/requirements.txt"
+    }
+  },
+  "env": {
+    "required": [
+      "APP_NAME", "APP_URL", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
+      "MCP_RECORDS_DB_USER", "MCP_RECORDS_DB_PASSWORD", "MCP_ACTIVITY_DB_USER", "MCP_ACTIVITY_DB_PASSWORD",
+      "APP_INTERNAL_PORT", "MCP_RECORDS_PORT", "MCP_ACTIVITY_PORT",
+      "ACTION_TOKEN_KEY", "ACTIONS_RELAY_KEY", "OS_APPLICATION_TOKEN", "OS_INTERNAL_URL", "OS_LAUNCHER_URL", "APP_KEY",
+      "MALUDB_API_URL", "MALUDB_API_TOKEN", "SI_SECRETS_KEY"
+    ],
+    "optional": [
+      "MALUMAIL_API_KEY", "MAIL_FROM", "MAIL_FROM_NAME", "SI_STORAGE_DIR", "SI_MAX_UPLOAD_BYTES", "SI_WKHTMLTOPDF", "API_CORS_ORIGINS"
+    ]
+  },
+  "settings_required_at_install": [
+    {"table": "si_settings", "column": "business_name", "why": "the first half of the EDGAR user-agent the SEC requires (K35: the installer warns while empty)"},
+    {"table": "si_settings", "column": "edgar_contact_email", "why": "the second half — a contact the SEC may write to; without it no EDGAR pull runs"}
+  ],
+  "services": [
+    "deploy/shareholder_intelligence-records-mcp.service",
+    "deploy/shareholder_intelligence-activity-mcp.service",
+    "deploy/shareholder_intelligence-activity-ingest.service",
+    "deploy/shareholder_intelligence-activity-ingest.timer",
+    "deploy/shareholder_intelligence-directory-sync.service",
+    "deploy/shareholder_intelligence-directory-sync.timer",
+    "deploy/shareholder_intelligence-worker.service",
+    "deploy/shareholder_intelligence-worker.timer"
+  ],
+  "endpoints": [
+    {"name": "Web UI", "kind": "ui", "path": "/", "auth_kind": "none", "agent_reachable": false},
+    {"name": "Health", "kind": "http_api", "path": "/api/v1/health", "auth_kind": "none", "agent_reachable": false},
+    {"name": "Shareholder Intelligence API", "kind": "http_api", "path": "/api/v1/", "auth_kind": "bearer", "agent_reachable": false},
+    {"name": "Records MCP", "kind": "mcp", "path": "/mcp/records", "auth_kind": "bearer", "agent_reachable": true, "mcp_surface_version": 1},
+    {"name": "Activity MCP", "kind": "mcp", "path": "/mcp/activity", "auth_kind": "bearer", "agent_reachable": true, "mcp_surface_version": 1}
+  ],
+  "actions": {
+    "manifest": "docs/shareholder-intelligence-action-manifest.md",
+    "registry": "mcp/action_registry.json",
+    "base_url_env": "APP_INTERNAL_PORT"
+  },
+  "approvals": {
+    "external_send": ["report_send", "notification_external"],
+    "deletion": ["upload_delete", "holder_delete", "holders_merge", "event_delete", "signal_delete", "issuer_delete", "security_delete", "records_purge"],
+    "other": ["issuer_save", "security_save", "share_count_save", "rule_save", "rule_threshold_set", "restriction_save", "source_save", "source_schedule_set", "credential_set", "settings_save", "agents_settings_save", "report_approve"]
+  },
+  "skills": [
+    "skills/shareholder-intelligence-basics",
+    "skills/reading-the-spr",
+    "skills/reading-the-short-side",
+    "skills/reading-ownership-filings",
+    "skills/holder-identity",
+    "skills/morning-note",
+    "skills/work-the-signals",
+    "skills/propose-holder-matches",
+    "skills/draft-the-weekly-pack",
+    "skills/set-up-an-issuer"
+  ],
+  "sso": {"path": "/sso", "logout_path": "/sso/logout"},
+  "directory": {"reads": true, "writes": false},
+  "assistant": {"command_bar": true, "agent": "expert"},
+  "roles": [
+    {"key": "viewer", "name": "Viewer", "description": "The board, the CFO's staff, an outside advisor, an advisory firm's client: dashboards, charts, filings, signals and packs of the issuers they may reach; holders in aggregate and entities by name — never a natural person's name or address.", "capability": "read", "is_admin": false,
+     "rights": ["issuers.read", "positions.read", "institutions.read", "filings.read", "short.read", "signals.read", "events.read", "reports.read", "holders.read_aggregate"]},
+    {"key": "user", "name": "Analyst", "description": "The IR officer or the advisory firm's analyst: uploads the files, decides holder matches, records events and borrow observations, works the signals, runs the reports, sees every holder.", "capability": "write", "is_admin": false,
+     "rights": ["issuers.read", "positions.read", "institutions.read", "filings.read", "short.read", "signals.read", "events.read", "reports.read", "holders.read_aggregate", "holders.read", "uploads.write", "matches.decide", "events.write", "borrow.write", "signals.work", "notes.write", "tags.apply", "reports.run", "export.own", "tokens.own"]},
+    {"key": "manager", "name": "IR Manager", "description": "Owns the issuers and securities, the share counts, the signal rules, the restrictions, merges, upload deletions and the pack's approval.", "capability": "write", "is_admin": false,
+     "rights": ["issuers.read", "positions.read", "institutions.read", "filings.read", "short.read", "signals.read", "events.read", "reports.read", "holders.read_aggregate", "holders.read", "uploads.write", "matches.decide", "events.write", "borrow.write", "signals.work", "notes.write", "tags.apply", "reports.run", "export.own", "tokens.own", "issuers.manage", "rules.manage", "restrictions.manage", "holders.merge", "uploads.delete", "reports.approve", "agents.settings", "export.shared"]},
+    {"key": "admin", "name": "SI admin", "description": "Every right: the settings, the sources and their credentials, the EDGAR user-agent, keys and the API, the agents' settings, purge, costs. A super-admin holds this role.", "capability": "admin", "is_admin": true,
+     "rights": ["issuers.read", "positions.read", "institutions.read", "filings.read", "short.read", "signals.read", "events.read", "reports.read", "holders.read_aggregate", "holders.read", "uploads.write", "matches.decide", "events.write", "borrow.write", "signals.work", "notes.write", "tags.apply", "reports.run", "export.own", "tokens.own", "issuers.manage", "rules.manage", "restrictions.manage", "holders.merge", "uploads.delete", "reports.approve", "agents.settings", "export.shared", "settings.manage", "sources.manage", "credentials.manage", "tokens.manage", "api.manage", "records.purge", "costs.read"]}
+  ],
+  "shares": [
+    {"tool": "filings_index", "description": "An issuer's filings: id, form, filed_on, title, url, about_us (os.si-filings/1)", "scoped": false},
+    {"tool": "filing_text", "description": "The extracted text of one filing — Knowledge's feed over the issuer's filings (os.si-filing-text/1)", "scoped": false, "timeout_seconds": 60},
+    {"tool": "ownership_summary", "description": "The ownership picture in aggregate: outstanding, float, short, the 13F total, the 13D/13G holders, retail vs institutional vs insider shares, the concentration — never a holder's name (os.si-ownership/1)", "scoped": false},
+    {"tool": "signals_open", "description": "The open signals with severity, evidence class and summary (os.si-signals/1)", "scoped": false},
+    {"tool": "events_index", "description": "The events of a window: date, kind, title, severity, url (os.si-events/1)", "scoped": false}
+  ],
+  "reads": [],
+  "reads_extended": [
+    {"provider": "sales_crm", "tool": "contacts_index", "why": "an institution's people in the IR relationship (Extended)"},
+    {"provider": "doccloud", "tool": "document_link", "why": "a pack filed to the document cloud (Extended)"}
+  ],
+  "agents": [
+    {
+      "key": "expert",
+      "job_description": "os/expert.md",
+      "access_capability": "write",
+      "hired_on_install": true,
+      "roles": ["user"],
+      "tool_grants": {
+        "Records MCP": ["find_issuers", "get_issuer", "find_securities", "share_counts", "reconciliation_latest", "reconciliation_history", "positions_on", "position_changes", "participants_new_lost", "participant_flow", "concentration", "get_participant", "participant_series", "participant_nobo_summary", "spr_total", "find_holders", "get_holder", "holder_history", "holders_changes", "holders_by_range", "holders_by_geography", "holders_by_custodian", "holders_by_type", "holders_unmatched", "match_proposals", "obo_remainder", "insider_holdings", "institutional_holders", "13f_changes", "13f_put_call", "beneficial_owners", "get_beneficial_filing", "insider_transactions", "form144_notices", "get_institution", "institution_history", "find_filings", "get_filing", "filing_read", "filings_search", "dilution_instruments", "watch_hits", "dilution_proposals", "short_interest_series", "short_vs_float", "daily_short_volume_series", "fails_series", "threshold_status", "threshold_history", "borrow_series", "short_side_overlay", "signals_open", "get_signal", "signals_history", "signal_proposals", "rules_catalogue", "events_on", "find_events", "events_upcoming", "find_reports", "get_report", "find_imports", "get_import", "import_rows", "source_health", "find_tags", "find_notes", "find_members", "find_departments", "search"],
+        "Activity MCP": ["record_history", "actor_timeline", "recent_activity", "activity_search"],
+        "Actions MCP": ["event_create", "note_add", "tag_apply", "tag_remove", "holder_match_propose", "holder_kind_propose", "signal_note", "report_draft", "fetch_now", "reconciliation_run", "rules_run", "borrow_observation_create", "report_send"]
+      },
+      "skills": ["skills/shareholder-intelligence-basics", "skills/reading-the-spr", "skills/reading-the-short-side", "skills/reading-ownership-filings", "skills/holder-identity", "skills/set-up-an-issuer", "skills/work-the-signals"]
+    },
+    {
+      "key": "analyst",
+      "job_description": "os/analyst.md",
+      "access_capability": "write",
+      "hired_on_install": true,
+      "roles": ["user"],
+      "duty": {"name": "The market-day morning note", "schedule_cron": "0 7 * * 1-5", "timezone": "America/New_York"},
+      "tool_grants": {
+        "Records MCP": ["find_issuers", "get_issuer", "find_securities", "share_counts", "reconciliation_latest", "positions_on", "position_changes", "participants_new_lost", "participant_flow", "concentration", "holders_unmatched", "match_proposals", "holders_changes", "obo_remainder", "13f_changes", "beneficial_owners", "insider_transactions", "form144_notices", "find_filings", "filing_read", "watch_hits", "dilution_instruments", "short_vs_float", "daily_short_volume_series", "fails_series", "threshold_status", "borrow_series", "signals_open", "get_signal", "signal_proposals", "rules_catalogue", "events_on", "events_upcoming", "find_reports", "find_members", "search"],
+        "Activity MCP": ["record_history", "recent_activity", "activity_search"],
+        "Actions MCP": ["signal_propose", "holder_match_propose", "holder_kind_propose", "event_create", "report_draft", "notification", "message_send"]
+      },
+      "skills": ["skills/shareholder-intelligence-basics", "skills/reading-the-spr", "skills/reading-the-short-side", "skills/reading-ownership-filings", "skills/holder-identity", "skills/morning-note", "skills/work-the-signals", "skills/propose-holder-matches", "skills/draft-the-weekly-pack"]
+    }
+  ],
+  "health": "/api/v1/health"
+}

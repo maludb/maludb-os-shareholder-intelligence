@@ -426,9 +426,11 @@ lost, up, down — the reference implementation's buyers/sellers/new/lost over r
 `si_holders_by_custodian(security, date)`, `si_insider_holdings(issuer)`.
 
 **The matcher** (`app/si/match.php`, run after every NOBO or register parse and nightly): for every raw row without a holder it
-scores candidates — `name_key` exact (1.0), `name_key` trigram ≥ 0.85 with `address_key` exact (0.95), `name_key` trigram ≥ 0.9
-with the same zip (0.8), `name_key` exact with a different address (0.6 — a move, or a namesake), an entity name against
-`institutions.name` (0.7) — and writes **`holder_match_proposals`** (row kind and id, `holder_id` candidate, `score`, `evidence
+scores candidates — `name_key` exact with `address_key` exact (1.0), `name_key` exact with one side lacking an address (0.9),
+`name_key` trigram ≥ 0.6 with `address_key` exact (0.95 — a short name's one-letter typo scores about 0.65 on trigrams; the same
+street and zip is the anchor; Phase 0 found 0.85 never matches a real typo), `name_key` trigram ≥ 0.7 with the same zip (0.8),
+`name_key` exact with a different address (0.6 — a move, or a namesake); an entity name against `institutions.name` is slice 5's — and
+writes **`holder_match_proposals`** (row kind and id, `holder_id` candidate, `score`, `evidence
 jsonb` (which keys matched), `proposed_by` (the matcher or an agent), `status proposed|accepted|rejected|auto`, decided_by/at);
 **≥ 0.95 is accepted automatically and logged as `auto`** (the setting `auto_match_threshold`, a manager's), below it an
 Analyst decides on the *Unmatched* screen with the two registrations side by side; a rejected pair is remembered (never
@@ -541,7 +543,7 @@ signal**), `basis` (the paragraph), `severity_default info|watch|high`, `params 
 | `register_untied` | outstanding − the register's components differs by more than the tolerance | data defect |
 | `new_13d` | a new 13D or 13D/A with purpose text, or a 13G converting to 13D | established (activism) |
 | `holder_5pct` | any filer's 13D/G percent ≥ 5% new, or ≥ 10% | info |
-| `13f_exit` | a top-20 13F holder closed or cut ≥ 50% in the quarter | established (as information) |
+| `top_holder_exit` | a top-20 13F holder closed or cut ≥ 50% in the quarter | established (as information) |
 | `insider_sales` | insider sales (code S) ≥ 3 in 30 days, or ≥ 1% of outstanding, or a Form 144 ≥ 0.5% | established |
 | `dilution_overlap` | an active `dilution_instrument` with `floating_price` **and** `si_over_float` or `ftd_spike` open in the same window | established (the death-spiral literature) + the overlap |
 | `activist_short_report` | an event of kind `activist_short_report` recorded (high for 10 days) | established |
@@ -886,10 +888,46 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-09 — PHASE 0 COMPLETE** (the same day as the plan and its approval). Built and proven on the scratch database `si_dev0`:
+- **The kit** (db/001–005, copied from Sales CRM's and refitted: the audit keys `issuer_id`/`security_id`/`import_id`/`signal_id`,
+  the four roles and thirty-five rights with the PII wall `si_sees_holder_pii()`, the settings with the EDGAR user-agent
+  `si_edgar_user_agent()` and the market-day rule) — `tests/phase0/run.sh`: **73 checks** without a kernel (the directory fixture,
+  the hand-off and every refusal, CSRF, the funnel, keys and the rate rule, the sign-out notice, the revoked grant, the worker's
+  thirteen stub passes, the ingest bridge, mail).
+- **The schema** (db/006–016): issuers with the restriction list and `si_my_issuers()`; participants with seeded classes and the
+  directory upsert; uploads (`imports` reused) with the SPR unpivoted into `participant_positions` and the series; the NOBO rows,
+  the broker listing and the register rows; holders with accounts, positions and the scoring matcher (auto at 0.95, proposals,
+  decisions, the forced new holder, the merge; an account's position is the SUM of its rows); Inventory's `sources` model with
+  fifteen v1 sources seeded and the back-off ladder; filings with text and search, events from watched forms, dilution
+  instruments and the watch; institutions, 13F with quarter-over-quarter changes, 13D/13G, Forms 3/4/5, 144; the short side with
+  revisions as rows, FINRA's caveat as a column, consecutive list days, the overlay; the reconciliation; **nineteen rules** as SQL
+  functions with an evidence class, the runner (one open per rule per security), dispositions, proposals, outcomes; the reused
+  tables, reports with a frozen narrative, import templates seeded from the fixtures' layouts, the tombstone; the search index with
+  both walls; the mcp_* views — `db/proof/phase0_proof.sql`: **142 checks**, every one of §10's list, against the fixtures.
+- **The fixtures** (`tests/fixtures/`, built by `build_fixtures.py` from the reference files, the owner's answer (a)): the NOBO list
+  (841 rows, 1,450,101 shares; the header's 855 is a difference the tie names) and the STC register (842 rows, 17,053,900 shares;
+  Cede & Co 1,581,000) **anonymised** — every natural person's name, street and zip replaced deterministically so a person's three
+  registrations stay one person, the custodian lines, legends, entity names of brokers and Cede kept; a synthetic SPR fortnight
+  over seventeen seeded participants whose total ties to Cede, with a crafted retail→prime migration and a participant jump; the
+  public-record samples in the fetchers' shapes (a FINRA short-interest page, a `CNMSshvol` day file, a `cnsfails` half-month, a
+  Nasdaq threshold file, a stooq CSV, a 13F `INFOTABLE` slice, 13D/G rows, Form 4 and 144 rows, a filing index) and the XML/JSON/HTML
+  samples the Phase 3 parsers are tested against. Nothing of a real person. **The owner's real SPR week is still awaited: the
+  weekly-grid connector is built from the reference implementation's shape and is confirmed on the first real file.**
+- `maludb-os.json` (the manifest: five shares, the approvals, the two agents with their grants and the Analyst's duty
+  `0 7 * * 1-5` in `America/New_York`, `settings_required_at_install` for K35), `os/expert.md`, `os/analyst.md`, ten skills (five
+  knowledge, five runbooks), `deploy/` (the vhost with the API allow-list, the units, the registry's resolve block, `ROOT_STEPS.sh`
+  with the EDGAR user-agent step), `config/.env.example` (`SI_SECRETS_KEY` for the sources' credentials); the installer's `plan`
+  reads clean (34 steps, 8 notes; the catalog row found; two agents proposed with 87 and 46 tools).
+- **Found in Phase 0**: a trigram threshold of 0.85 never matches a real one-letter typo on a short name (0.6 with the address
+  exact does); an account's position must be the sum of its rows (several certificates of one registration); a subquery beside a
+  function call in one statement is planned before the call runs (every proof check calls, then reads); a rule key may not start
+  with a digit (`13f_exit` → `top_holder_exit`); the dilution-overlap rule fires in the same run as the short-side rules (the rules
+  run in order); the plugin's catalogue gains this application's canonical tables.
+**Next:** Phase 1 — `docs/shareholder-intelligence-mcp-tool-surface.md`, `docs/shareholder-intelligence-action-manifest.md`,
+`mcp/action_registry.json`, the four build specs and the eleven slice specs, for the owner's approval together; then Phase 2.
+
 **2026-10-09 — APPROVED the same day (§15: D1–D16 and (a)–(d), every recommendation), walked through one by one with the owner.**
-**K34 built the same day** (kernel db/178, applied). **Next:** Phase 0 (the
-schema and proofs against the anonymised fixtures; the SPR parser from the Angular grid until the owner's real week arrives) →
-Phase 1 for approval → Phase 2 → slice 1 → the exemplars (slices 2, 3 and 7) → the handoff to Sonnet 5.5.
+K34 built in the kernel (db/178, applied).
 
 **2026-10-09 — planned; awaiting the owner's decisions (§13).** The research of §0 done: the field (Q4, Nasdaq IR Intelligence,
 Broadridge, Georgeson, Alliance, Morrow Sodali, Okapi, Irwin, S&P, Sequire; Ortex, S3, Fintel, Breakout Point, Insightia,

@@ -185,7 +185,7 @@ DECLARE pr jsonb := si_rule_params('short_volume_ratio', (SELECT issuer_id FROM 
 BEGIN
     SELECT * INTO cur FROM si_daily_short_volume_series(p_security, 'CNMS', p_as_of - 30, p_as_of) ORDER BY trade_date DESC LIMIT 1;
     IF cur.trade_date IS NULL OR cur.trade_date < p_as_of - 5 THEN RETURN NULL; END IF;
-    SELECT * INTO past FROM si_daily_short_volume_series(p_security, 'CNMS', p_as_of - 60, p_as_of - 20) ORDER BY trade_date DESC LIMIT 1;
+    SELECT * INTO past FROM si_daily_short_volume_series(p_security, 'CNMS', p_as_of - 60, p_as_of) ORDER BY trade_date DESC OFFSET 20 LIMIT 1;   -- twenty trading days before
     IF cur.mean_5 * 100 >= (pr ->> 'ratio_pct')::numeric AND past.mean_5 IS NOT NULL AND (cur.mean_5 - past.mean_5) * 100 >= (pr ->> 'rise_points')::numeric THEN
         RETURN ('watch', round(cur.mean_5 * 100, 1), (pr ->> 'ratio_pct')::numeric, round(past.mean_5 * 100, 1), past.trade_date, cur.trade_date,
                 jsonb_build_object('trade_date', cur.trade_date, 'mean_5_pct', round(cur.mean_5 * 100, 1), 'mean_5_pct_20_days_ago', round(past.mean_5 * 100, 1), 'caveat', cur.caveat),
@@ -200,7 +200,7 @@ DECLARE pr jsonb := si_rule_params('prime_migration', (SELECT issuer_id FROM sec
 BEGIN
     SELECT max(position_date) INTO d_to FROM participant_positions WHERE security_id = p_security AND position_date <= p_as_of;
     IF d_to IS NULL OR d_to < p_as_of - 14 THEN RETURN NULL; END IF;
-    SELECT position_date INTO d_from FROM (SELECT DISTINCT position_date FROM participant_positions WHERE security_id = p_security AND position_date <= d_to ORDER BY position_date DESC OFFSET nd LIMIT 1) x;
+    SELECT position_date INTO d_from FROM (SELECT DISTINCT position_date FROM participant_positions WHERE security_id = p_security AND position_date <= d_to ORDER BY position_date DESC OFFSET GREATEST(nd - 1, 1) LIMIT 1) x;   -- a window of nd position days
     IF d_from IS NULL THEN RETURN NULL; END IF;
     SELECT sum(net) FILTER (WHERE side = 'retail'), sum(net) FILTER (WHERE side IN ('institutional', 'intermediary')), sum(close_shares) INTO retail, other, tot FROM si_participant_flow(p_security, d_from, d_to);
     IF tot IS NULL OR tot = 0 THEN RETURN NULL; END IF;
@@ -241,7 +241,7 @@ DECLARE pr jsonb := si_rule_params('concentration_shift', (SELECT issuer_id FROM
 BEGIN
     SELECT max(position_date) INTO d_to FROM participant_positions WHERE security_id = p_security AND position_date <= p_as_of;
     IF d_to IS NULL OR d_to < p_as_of - 14 THEN RETURN NULL; END IF;
-    SELECT position_date INTO d_from FROM (SELECT DISTINCT position_date FROM participant_positions WHERE security_id = p_security AND position_date <= d_to ORDER BY position_date DESC OFFSET COALESCE((pr ->> 'position_days')::integer, 20) LIMIT 1) x;
+    SELECT position_date INTO d_from FROM (SELECT DISTINCT position_date FROM participant_positions WHERE security_id = p_security AND position_date <= d_to ORDER BY position_date DESC OFFSET GREATEST(COALESCE((pr ->> 'position_days')::integer, 20) - 1, 1) LIMIT 1) x;
     IF d_from IS NULL THEN RETURN NULL; END IF;
     SELECT * INTO a FROM si_concentration(p_security, d_from); SELECT * INTO b FROM si_concentration(p_security, d_to);
     IF a.top5_pct IS NULL OR b.top5_pct IS NULL THEN RETURN NULL; END IF;
@@ -429,7 +429,7 @@ BEGIN
     IF iss IS NULL THEN RETURN; END IF;
     FOR rl IN SELECT * FROM signal_rules WHERE cls = ANY (applies_to) ORDER BY sort_order LOOP
         CONTINUE WHEN NOT si_rule_enabled(rl.key, iss);
-        EXECUTE format('SELECT si_rule_%I($1, $2)', rl.key) INTO res USING p_security, p_as_of;
+        EXECUTE format('SELECT * FROM si_rule_%I($1, $2)', rl.key) INTO res USING p_security, p_as_of;
         IF res IS NULL OR res.summary IS NULL THEN CONTINUE; END IF;
         SELECT id INTO existing FROM signals WHERE rule_id = rl.id AND security_id = p_security AND status = 'open';
         IF existing IS NOT NULL THEN

@@ -2,7 +2,9 @@
 --
 -- A HOLDER is a normalised person or entity; an ACCOUNT is one registration of theirs on a list (a TOD account and a Schwab IRA are
 -- two accounts of one holder); a POSITION is an account's shares at a record date in a channel. The MATCHER scores a raw row's
--- registration against the holders (name key exact; trigram with the address; trigram with the zip; name exact at another address;
+-- registration against the holders (name key exact + address exact 1.0; name exact, one side without an address 0.9; trigram >= 0.6 with
+-- the address exact 0.95 — a short name's one-letter typo scores about 0.65 on trigrams, the same street and zip is the anchor; trigram >= 0.7
+-- with the zip 0.8; name exact at another address 0.6 — a namesake, or a move;
 -- an entity against the institutions) and writes a PROPOSAL; at or above the threshold (0.95) it is accepted and logged `auto`;
 -- below, an Analyst decides; a rejected pair is remembered; a MERGE is a manager's. A person is never matched to an institution.
 -- THE PII WALL (D4): holders.kind = person is a natural person — the name, address and lines are seen by si_sees_holder_pii() alone
@@ -183,8 +185,8 @@ CREATE OR REPLACE FUNCTION si_match_candidates(p_issuer bigint, p_name_key text,
            CASE
              WHEN h.name_key = p_name_key AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 1.000
              WHEN h.name_key = p_name_key AND (p_address_key IS NULL OR h.address_key IS NULL) THEN 0.900
-             WHEN similarity(h.name_key, p_name_key) >= 0.85 AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 0.950
-             WHEN similarity(h.name_key, p_name_key) >= 0.90 AND p_zip IS NOT NULL AND h.zip = p_zip THEN 0.800
+             WHEN similarity(h.name_key, p_name_key) >= 0.60 AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 0.950
+             WHEN similarity(h.name_key, p_name_key) >= 0.70 AND p_zip IS NOT NULL AND h.zip = p_zip THEN 0.800
              WHEN h.name_key = p_name_key THEN 0.600
              ELSE 0
            END AS score,
@@ -197,8 +199,8 @@ CREATE OR REPLACE FUNCTION si_match_candidates(p_issuer bigint, p_name_key text,
        AND CASE
              WHEN h.name_key = p_name_key AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 1.000
              WHEN h.name_key = p_name_key AND (p_address_key IS NULL OR h.address_key IS NULL) THEN 0.900
-             WHEN similarity(h.name_key, p_name_key) >= 0.85 AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 0.950
-             WHEN similarity(h.name_key, p_name_key) >= 0.90 AND p_zip IS NOT NULL AND h.zip = p_zip THEN 0.800
+             WHEN similarity(h.name_key, p_name_key) >= 0.60 AND p_address_key IS NOT NULL AND h.address_key = p_address_key THEN 0.950
+             WHEN similarity(h.name_key, p_name_key) >= 0.70 AND p_zip IS NOT NULL AND h.zip = p_zip THEN 0.800
              WHEN h.name_key = p_name_key THEN 0.600
              ELSE 0 END > 0
      ORDER BY 2 DESC, h.last_seen_on DESC NULLS LAST
@@ -241,19 +243,25 @@ BEGIN
     ELSE
         UPDATE holder_accounts SET last_seen_on = GREATEST(last_seen_on, rd), first_seen_on = LEAST(first_seen_on, rd) WHERE id = acc;
     END IF;
+    IF p_row_kind = 'nobo' THEN UPDATE nobo_rows SET holder_id = p_holder, holder_account_id = acc WHERE id = p_row_id;
+    ELSE UPDATE register_rows SET holder_id = p_holder, holder_account_id = acc WHERE id = p_row_id; END IF;
+    -- the account's position on the date is the SUM of its rows on that list (several certificates, one registration)
+    IF p_row_kind = 'nobo' THEN
+        SELECT sum(n.shares) INTO sh FROM nobo_rows n JOIN nobo_jobs j ON j.id = n.job_id WHERE n.holder_account_id = acc AND j.security_id = sec AND j.record_date = rd AND n.shares IS NOT NULL;
+    ELSE
+        SELECT sum(g.shares) INTO sh FROM register_rows g WHERE g.holder_account_id = acc AND g.security_id = sec AND g.record_date = rd AND g.shares IS NOT NULL;
+    END IF;
     IF sh IS NOT NULL THEN
         INSERT INTO holder_positions (holder_id, holder_account_id, security_id, record_date, shares, channel, import_id)
         VALUES (p_holder, acc, sec, rd, sh, p_row_kind, imp)
         ON CONFLICT (holder_account_id, security_id, record_date, channel) DO UPDATE SET shares = EXCLUDED.shares, import_id = EXCLUDED.import_id, holder_id = EXCLUDED.holder_id;
     END IF;
-    IF p_row_kind = 'nobo' THEN UPDATE nobo_rows SET holder_id = p_holder, holder_account_id = acc WHERE id = p_row_id;
-    ELSE UPDATE register_rows SET holder_id = p_holder, holder_account_id = acc WHERE id = p_row_id; END IF;
     UPDATE holders SET first_seen_on = LEAST(COALESCE(first_seen_on, rd), rd), last_seen_on = GREATEST(COALESCE(last_seen_on, rd), rd) WHERE id = p_holder;
     RETURN acc;
 END$$;
 
 -- The matcher over one raw row: parse → kind, custodian → candidates → auto / proposal / new holder. Returns what it did.
-CREATE OR REPLACE FUNCTION si_match_row(p_row_kind text, p_row_id bigint) RETURNS text
+CREATE OR REPLACE FUNCTION si_match_row(p_row_kind text, p_row_id bigint, p_force_new boolean DEFAULT false) RETURNS text
     LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE r record; p record; iss bigint; nk text; ak text; zp text; kind text; disp text; c record; thr numeric := (SELECT auto_match_threshold FROM si_settings WHERE id = 1);
         street text; cty text; st text; ctry text; hid bigint; n_prop integer := 0; rd date;
@@ -280,7 +288,7 @@ BEGIN
     ELSE RAISE EXCEPTION 'si_match_row: %', p_row_kind; END IF;
     IF nk IS NULL THEN RETURN 'failed'; END IF;
     ak := si_address_key(street, zp);
-    FOR c IN SELECT * FROM si_match_candidates(iss, nk, ak, zp, kind) LOOP
+    FOR c IN SELECT * FROM si_match_candidates(iss, nk, ak, zp, kind) WHERE NOT p_force_new LOOP
         IF EXISTS (SELECT 1 FROM holder_match_proposals WHERE row_kind = p_row_kind AND row_id = p_row_id AND holder_id = c.holder_id AND status = 'rejected') THEN CONTINUE; END IF;
         IF c.score >= thr AND n_prop = 0 THEN
             INSERT INTO holder_match_proposals (row_kind, row_id, issuer_id, holder_id, score, evidence, status, decided_at) VALUES (p_row_kind, p_row_id, iss, c.holder_id, c.score, c.evidence, 'auto', now())
@@ -315,14 +323,17 @@ BEGIN
     END IF;
 END$$;
 
--- "New holder" for a row with only rejected or no proposals (the Analyst's third button).
+-- "New holder" for a row (the Analyst's third button): every open proposal of the row is rejected and remembered; a holder is made
+-- whatever the candidates. Sequential statements on purpose: a subquery beside the call would be planned before the call ran.
 CREATE OR REPLACE FUNCTION si_match_new_holder(p_row_kind text, p_row_id bigint) RETURNS bigint
     LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE hid bigint;
+DECLARE res text; hid bigint;
 BEGIN
     UPDATE holder_match_proposals SET status = 'rejected', decided_by = app_current_member_id(), decided_at = now() WHERE row_kind = p_row_kind AND row_id = p_row_id AND status = 'proposed';
-    -- a row with every candidate rejected falls through si_match_row to a new holder (rejected pairs are skipped)
-    RETURN CASE si_match_row(p_row_kind, p_row_id) WHEN 'new' THEN (SELECT holder_id FROM nobo_rows WHERE p_row_kind = 'nobo' AND id = p_row_id UNION ALL SELECT holder_id FROM register_rows WHERE p_row_kind = 'register' AND id = p_row_id LIMIT 1) END;
+    res := si_match_row(p_row_kind, p_row_id, true);
+    IF res <> 'new' THEN RETURN NULL; END IF;
+    IF p_row_kind = 'nobo' THEN SELECT holder_id INTO hid FROM nobo_rows WHERE id = p_row_id; ELSE SELECT holder_id INTO hid FROM register_rows WHERE id = p_row_id; END IF;
+    RETURN hid;
 END$$;
 
 -- The matcher over an upload (the worker; the proof): every unmatched row.
@@ -431,9 +442,9 @@ GRANT EXECUTE ON FUNCTION si_account_kind_from_lines(text), si_custodian_from_li
     si_match_candidates(bigint, text, text, text, text), si_holder_history(bigint), si_holders_changes(bigint, text, date, date), si_holders_by_range(bigint, text, date),
     si_holders_by_geography(bigint, text, date), si_holders_by_custodian(bigint, date), si_holders_by_type(bigint, date)
     TO shareholder_intelligence_rw, shareholder_intelligence_records_ro, shareholder_intelligence_activity_ro;
-REVOKE ALL ON FUNCTION si_holder_make(bigint, text, text, text, text, text, text, text, text, date), si_row_attach(text, bigint, bigint), si_match_row(text, bigint), si_match_decide(bigint, boolean),
+REVOKE ALL ON FUNCTION si_holder_make(bigint, text, text, text, text, text, text, text, text, date), si_row_attach(text, bigint, bigint), si_match_row(text, bigint, boolean), si_match_decide(bigint, boolean),
     si_match_new_holder(text, bigint), si_match_import(bigint), si_holders_merge(bigint, bigint) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION si_holder_make(bigint, text, text, text, text, text, text, text, text, date), si_row_attach(text, bigint, bigint), si_match_row(text, bigint), si_match_decide(bigint, boolean),
+GRANT EXECUTE ON FUNCTION si_holder_make(bigint, text, text, text, text, text, text, text, text, date), si_row_attach(text, bigint, bigint), si_match_row(text, bigint, boolean), si_match_decide(bigint, boolean),
     si_match_new_holder(text, bigint), si_match_import(bigint), si_holders_merge(bigint, bigint) TO shareholder_intelligence_rw;
 
 COMMIT;

@@ -1,5 +1,5 @@
 [Unit]
-Description=Shareholder Intelligence worker: reminders due, the outbox, the mail poll and the matcher, rotting and next-step flags, smart-list counts, the search index catch-up, imports and exports, recurring tasks, tombstone purge, dispatches, key-usage pruning (one pass)
+Description=Shareholder Intelligence worker: the fetch schedule (EDGAR, FINRA, the SEC's fails, the threshold lists, DTCC's directory, prices), the upload queue, the matcher, the reconciliation, the rules, the search index catch-up, packs and exports, the outbox, dispatches, tombstone purge, key-usage pruning (one pass)
 After=network.target postgresql.service
 
 [Service]
