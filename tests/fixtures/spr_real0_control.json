@@ -1,0 +1,10 @@
+{
+ "layout": "one_time",
+ "cusip": "09175A107",
+ "as_of": "2023-05-19",
+ "shares_by_date": {
+  "2023-05-19": 1934800
+ },
+ "participants": 51,
+ "note": "a one-time report carries no Total row: the control is the sum of the rows"
+}

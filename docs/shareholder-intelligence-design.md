@@ -113,6 +113,46 @@ Read in full (2026-10-09). What it established, and what this plan takes from it
   short-side data is new; and the **signals** are new. Nothing of the Angular UI is kept — the OS's React is the kernel's,
   the application's UI is HTMX + PHP + Bootstrap 5.3 as every sibling's.
 
+### 0.2b The owner's real files (2026-10-09, after Phase 0's proof on the reference files — 186 files in `tests/fixtures/real/`)
+
+The owner added every sample they hold: two years of one issuer's files and a second issuer's NOBO job. What they settled, each
+confirmed by `db/proof/phase0_proof.sql` on the files themselves where no person is named (an SPR names brokers; a share-range
+report counts):
+
+- **DTC's weekly SPR is a CSV** with thirteen blank lines, a title block (*The Depository Trust Company / Weekly Subscription
+  Security Position Report / Daily Closing Balances / For Week Ending MM/DD/YYYY*), the security's description and CUSIP, then a
+  **two-row header** — `Participant, Participant, Opening, Monday … Friday, Share, Percent` over `Number, Name, <the previous
+  Friday>, <five dates>, Change, Change` — one row per participant (`0756,AEIS INC.,1065,…,0,0.0`) and a **`Total` row per date:
+  the control total the file carries itself.** The **Opening** column is the previous Friday (the bridge is the file's own; the
+  next week's Opening replaces the previous Friday in place with the same figure). **A day with no balance is DTC's
+  `-9999999999999` on the Total row and the word `Holiday` on a participant's row** — absent, not zero (Juneteenth 2024, Christmas
+  2023). Connector `dtc_spr_csv`. The reference implementation's grid was this file with the Opening dropped.
+- **The first weeks were DTC's One Time Security Position Report** (*Position as of: MM/DD/YYYY*; `Number, Name, Quantity`;
+  participant numbers without leading zeros — `756` is 0756; no Total row, the control is the sum of the rows). Connector
+  `dtc_spr_onetime_csv`.
+- **The NOBO job file comes as a CSV too**, the reference layout exactly, shares as zero-padded decimals (`000461260.00000`), the
+  CLIENTS section's counts and shares zero-padded (`0000114,000000114651.00000`); and as Broadridge's newer **names export**
+  (xlsx: first, middle and last name, last active date, shares, a parsed address whose columns shift on some rows). Connectors
+  `broadridge_nobo_csv`, `broadridge_nobo_names_xlsx`. A second issuer's job (Nocera, CUSIP 655186500) has the same shape.
+- **Broadridge's Share Range Analysis** (xls, 31 files): two sheets — *Share Range - Holder Count* (every account,
+  pre-suppression, by twenty-three share ranges: accounts and shares) and ***OBO Count*** (the objecting owners alone, by range)
+  — with the job number, the CUSIP and the record date in a footer. **This is the one place an issuer sees the distribution of
+  the owners who refuse to be known**: on 2023-12-15, 274 of 962 accounts (28%) were OBO with 1,095,203 of 2,645,039 shares. New
+  tables `share_range_reports` / `share_range_rows` (db/017), `si_share_ranges()` (NOBO derived as all − OBO), `si_obo_totals()`;
+  connector `broadridge_share_range_xls`. The PDF of the same page from Broadridge's site is Extended.
+- **The transfer agent's register is a "Shareholder Extract" CSV**: one row per holder, fifty-one columns — the registration in
+  six `HOLDER REG` lines, the address, `OWNERSHIP TYPE` (INDIVIDUAL, JOINT TENANTS, TRUSTEE - INDIVIDUAL, CORPORATION, PARTNERSHIP,
+  NOMINEE/DEPOSITORY), and **the shares by position type in columns — `CERT`, `BOOK`, `DRS`, `BOOKR` (restricted book: the
+  insiders' shares, the bulk of a small cap's outstanding), `PLAN1`–`4`, `TOTAL SHARES`** (the sum of the types on every row of
+  every file) — and columns the application **never stores**: `TAX-ID`, `TAX-ID 2`, `DATE OF BIRTH`, `PHONE NUMBER`, `EMAIL
+  ADDRESS`, the withholding and NRA columns. Connector `ta_extract_csv` emits one register row per non-zero type column, drops
+  those columns before anything is written, and flags `CEDE & CO (FAST)` as the nominee line.
+- **The reconciliation's central fact holds on the real data, to the share, at four quarter-ends**: the extract's Cede & Co line
+  equals the SPR's total on the nearest Friday — 2,927,800 (2023-09-30 / 09-29), 2,493,431 (12-31 / 12-29), 3,197,800 (2024-03-31
+  / 03-29), 3,397,800 (06-30 / 06-28). The proof ties the last of these.
+- Still in the owner's files and not yet connected: the owner's own analysis workbooks (not inputs), and the `OBO Share Range`
+  PDF (the xls carries the same numbers).
+
 ### 0.3 The data an issuer can obtain — the inventory, with what it costs and what we could not verify
 
 | Source | What it is | How it arrives | Cadence | Cost | Verified |
@@ -372,8 +412,9 @@ fetch (monthly) upserts by number, records renames into `aliases`, proposes a cl
 ### 6.2 Uploads: the SPR, the NOBO list, the register (`app/features/uploads/`, the parsers in `app/si/parse/`)
 
 **`imports`** (Spaces' table, reused; `kind` widened `spr|nobo|register|prices_csv|holders_csv|voted_unvoted`; **appended**
-`issuer_id`, `security_id`, `connector` (the vendor's layout: `dtc_spr_xlsx`, `dtc_spr_ccf`, `broadridge_nobo_xlsx`,
-`broadridge_nobo_csv`, `stc_position_detail`, `computershare_holder_list`, `generic_mapped`), `mapping jsonb` (a generic upload's
+`issuer_id`, `security_id`, `connector` (the vendor's layout: `dtc_spr_csv` (the real weekly file), `dtc_spr_onetime_csv`, `dtc_spr_xlsx`,
+`dtc_spr_ccf`, `broadridge_nobo_csv`, `broadridge_nobo_xlsx`, `broadridge_nobo_names_xlsx`, `broadridge_share_range_xls`,
+`ta_extract_csv` (the real register), `stc_position_detail`, `computershare_holder_list`, `generic_mapped` — §0.2b), `mapping jsonb` (a generic upload's
 column mapping, saved as `import_templates`), `record_date`, `period_from`, `period_to`, `attachment_id` (the file, kept
 whole under `attachments`, sha256), `control_totals jsonb` (what the file says of itself: the NOBO header's count, the SPR's
 total line, the register's control block), `derived_totals jsonb` (what the rows sum to), `tied` boolean, `superseded_by`,
@@ -888,6 +929,15 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-09, later — THE OWNER'S REAL FILES CONFIRMED THE CONNECTORS (§0.2b; db/017).** 186 files arrived in `tests/fixtures/real/`;
+`tests/fixtures/load_real_spr.py` reads DTC's two layouts; the proof grew to **154 checks**: the real weekly SPR (52 participants × 6
+dates) ties to its own Total row on every date and its Share Change is Friday − Opening; the holiday week loads five dates with
+Juneteenth absent; the next week's Opening replaces the previous Friday in place; the one-time report of 2023-05-19 loads with its
+numbers zero-padded; Broadridge's Share Range Analysis loads with the OBO population and the NOBO derived; **the real reconciliation
+ties — Cede & Co on the agent's extract of 2024-06-30 equals the SPR total of 2024-06-28.** Found: DTC's `-9999999999999` and `Holiday`;
+the SPR's own abbreviations (`BANK OF NY`, `BOFA/SFKPG`) widen the class words; the extract's `BOOKR` is restricted book; the share-range
+sheet's footer carries the job and the record date; the extract's tax ids, dates of birth, phones and emails are dropped before storage.
+
 **2026-10-09 — PHASE 0 COMPLETE** (the same day as the plan and its approval). Built and proven on the scratch database `si_dev0`:
 - **The kit** (db/001–005, copied from Sales CRM's and refitted: the audit keys `issuer_id`/`security_id`/`import_id`/`signal_id`,
   the four roles and thirty-five rights with the PII wall `si_sees_holder_pii()`, the settings with the EDGAR user-agent
@@ -911,8 +961,7 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
   over seventeen seeded participants whose total ties to Cede, with a crafted retail→prime migration and a participant jump; the
   public-record samples in the fetchers' shapes (a FINRA short-interest page, a `CNMSshvol` day file, a `cnsfails` half-month, a
   Nasdaq threshold file, a stooq CSV, a 13F `INFOTABLE` slice, 13D/G rows, Form 4 and 144 rows, a filing index) and the XML/JSON/HTML
-  samples the Phase 3 parsers are tested against. Nothing of a real person. **The owner's real SPR week is still awaited: the
-  weekly-grid connector is built from the reference implementation's shape and is confirmed on the first real file.**
+  samples the Phase 3 parsers are tested against. Nothing of a real person. **(Superseded the same day: the owner's real files arrived — §0.2b.)**
 - `maludb-os.json` (the manifest: five shares, the approvals, the two agents with their grants and the Analyst's duty
   `0 7 * * 1-5` in `America/New_York`, `settings_required_at_install` for K35), `os/expert.md`, `os/analyst.md`, ten skills (five
   knowledge, five runbooks), `deploy/` (the vhost with the API allow-list, the units, the registry's resolve block, `ROOT_STEPS.sh`

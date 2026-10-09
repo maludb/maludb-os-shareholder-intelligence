@@ -34,6 +34,8 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
   writes to the directory, no writes to another application** (K7 is reads only).
 - **Nothing leaves the business.** No email to a holder or an institution, no post, no filing, no public page. A pack goes to
   members; an agent's send pauses. Reg FD is a wall, not a feature.
+- **The owner's real files** (`tests/fixtures/real/`) carry natural persons' names, addresses, masked tax ids, dates of birth, phones and emails: read them to
+  confirm a layout; never echo a row, never commit a derived file with a person in it, never store the extract's dropped columns (design §0.2b).
 - **The three files are uploaded, never fetched.** No automation against DTC's SPR web, Broadridge's portal or a transfer
   agent's site. The public hosts (EDGAR, FINRA, the SEC's data pages, the exchanges' threshold pages, DTCC's directory, a price
   host) are fetched through `sources` under the policy: the declared user-agent from settings, the rate the host asks for (EDGAR
@@ -64,6 +66,7 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
 2026-10-09 — planned and **APPROVED** (design §15), K34 built in the kernel (db/178), **PHASE 0 COMPLETE** the same day (design §16): the kit
 (73 checks without a kernel), the schema db/001–016 and its proof against the anonymised fixtures (142 checks), `maludb-os.json`, the two
 agents, ten skills, `deploy/`; the installer's `plan` clean. Proofs: `bash tests/phase0/run.sh` (both). The fixtures:
-`mcp/venv/bin/python -I tests/fixtures/build_fixtures.py <KineticIntel2 clone>`. The owner's real SPR week is awaited (the weekly-grid
-connector is confirmed on it). **Next: Phase 1** (the tool surface, the action manifest, the four build specs, the slice specs) for the
+`mcp/venv/bin/python -I tests/fixtures/build_fixtures.py <KineticIntel2 clone>`. The owner's 186 real files are in `tests/fixtures/real/` (PRIVATE: NOBO lists and the agent's extract name real people — never copy a
+row of them into a committed fixture or a proof; `build_fixtures.py` anonymises, `load_real_spr.py` reads the SPR which names only brokers); db/017 and the
+proof's real-files section (154 checks) confirmed the connectors: design §0.2b. **Next: Phase 1** (the tool surface, the action manifest, the four build specs, the slice specs) for the
 owner's approval together; no feature PHP before that.

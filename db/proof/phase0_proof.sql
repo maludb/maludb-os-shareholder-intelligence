@@ -403,10 +403,75 @@ SELECT pg_temp.keep('pg', si_tombstones_purge());
 SELECT pg_temp.check(pg_temp.i('pg') >= 1 AND NOT EXISTS (SELECT 1 FROM imports WHERE id = pg_temp.i('spr2')), 'the purge removes what waited past the tombstone window');
 SELECT pg_temp.check((SELECT count(*) FROM mcp_imports WHERE deleted) = 0, 'a manager''s view lists no tombstoned upload once purged');
 
+-- ---------------------------------------------------------------- THE OWNER'S REAL FILES (2026-10-09; design §0.2, §16): DTC's SPR in both layouts,
+-- the holiday sentinel, Broadridge's Share Range Analysis, and the real reconciliation — an SPR names only brokers, a share-range report
+-- only counts; nothing of a person is here.
+SELECT pg_temp.as_member(27);
+INSERT INTO issuers (name, cik, ticker, exchange, transfer_agent, transfer_agent_connector, created_by) VALUES ('SMOKE REAL ISSUER (the owner''s files)', '0000777777', 'SMKR', 'nyse_american', 'the owner''s agent', 'generic', 27) RETURNING pg_temp.keep('iss3', id);
+INSERT INTO securities (issuer_id, class, name, cusip, ticker, is_primary) VALUES (pg_temp.i('iss3'), 'common', 'Common Stock', '09175A107', 'SMKR', true) RETURNING pg_temp.keep('sec3', id);
+SELECT pg_temp.as_member(26);
+CREATE TEMP TABLE t_real (row_no integer, participant_number text, participant_name text, position_date date, shares numeric, col text);
+-- the weekly file of 2023-07-28: Opening (the previous Friday) + Monday..Friday, the Total row per date, a Share Change of 80,000
+INSERT INTO imports (kind, file_name, status, issuer_id, security_id, connector, control_totals, created_by) VALUES ('spr', 'Bitmine Immersion SPR 07282023.csv', 'running', pg_temp.i('iss3'), pg_temp.i('sec3'), 'dtc_spr_csv',
+  '{"shares_by_date": {"2023-07-21": 2439800, "2023-07-24": 2519800, "2023-07-25": 2519800, "2023-07-26": 2519800, "2023-07-27": 2519800, "2023-07-28": 2519800}, "participants": 52}', 26) RETURNING pg_temp.keep('r1', id);
+\copy t_real FROM 'tests/fixtures/spr_real_rows.csv' WITH (FORMAT csv, HEADER true)
+INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares, raw) SELECT pg_temp.i('r1'), row_no, participant_number, participant_name, position_date, shares, jsonb_build_object('column', col) FROM t_real;
+SELECT * INTO TEMP t_lr1 FROM si_spr_load(pg_temp.i('r1'));
+SELECT pg_temp.check((SELECT positions = 312 AND tied AND rows_failed = 0 FROM t_lr1) AND si_spr_total(pg_temp.i('sec3'), '2023-07-28') = 2519800 AND si_spr_total(pg_temp.i('sec3'), '2023-07-21') = 2439800,
+    'THE REAL WEEKLY SPR (2023-07-28): 52 participants × 6 dates (the Opening column is the previous Friday) load and TIE to the file''s own Total row on every date');
+SELECT pg_temp.check(si_spr_total(pg_temp.i('sec3'), '2023-07-28') - si_spr_total(pg_temp.i('sec3'), '2023-07-21') = 80000, '…and the file''s Share Change (80,000) is the Friday-minus-Opening the series computes');
+SELECT pg_temp.check((SELECT count(*) FROM participants WHERE number IN ('0756', '8072', '0901')) = 3 AND (SELECT class_key FROM participants WHERE number = '0901') = 'bank_custodian', 'participants the file named and the directory had not (AEIS 0756, Alpine 8072, Bank of NY 0901 → bank custodian) were made from the file');
+SELECT pg_temp.check((SELECT net FROM si_position_changes(pg_temp.i('sec3'), '2023-07-21', '2023-07-28') ORDER BY abs(net) DESC LIMIT 1) <> 0 AND (SELECT count(*) FROM si_participant_flow(pg_temp.i('sec3'), '2023-07-21', '2023-07-28')) >= 3, 'the series read the real week: the largest mover and the flow by class');
+-- the week of 2024-06-21: Juneteenth (Wednesday 06-19) is DTC's -9999999999999 — absent, not zero
+DELETE FROM t_real;
+INSERT INTO imports (kind, file_name, status, issuer_id, security_id, connector, control_totals, created_by) VALUES ('spr', 'auto-import_SPR_06-21-2024_09175A107.csv', 'running', pg_temp.i('iss3'), pg_temp.i('sec3'), 'dtc_spr_csv',
+  '{"shares_by_date": {"2024-06-14": 3397800, "2024-06-17": 3397800, "2024-06-18": 3397800, "2024-06-20": 3397800, "2024-06-21": 3397800}, "participants": 45}', 26) RETURNING pg_temp.keep('r2', id);
+\copy t_real FROM 'tests/fixtures/spr_real2_rows.csv' WITH (FORMAT csv, HEADER true)
+INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares) SELECT pg_temp.i('r2'), row_no, participant_number, participant_name, position_date, shares FROM t_real;
+SELECT * INTO TEMP t_lr2 FROM si_spr_load(pg_temp.i('r2'));
+SELECT pg_temp.check((SELECT positions = 225 AND tied FROM t_lr2) AND si_spr_total(pg_temp.i('sec3'), '2024-06-19') IS NULL AND (SELECT count(*) FROM si_position_dates(pg_temp.i('sec3'), '2024-06-14', '2024-06-21')) = 5,
+    'the week with a holiday: DTC''s -9999999999999 on Juneteenth is ABSENT — five dates load and tie, the Wednesday is no row, not zero');
+-- the next week's Opening overlaps the previous Friday: the same figure, replaced in place
+DELETE FROM t_real;
+INSERT INTO imports (kind, file_name, status, issuer_id, security_id, connector, control_totals, created_by) VALUES ('spr', 'auto-import_SPR_06-28-2024_09175A107.csv', 'running', pg_temp.i('iss3'), pg_temp.i('sec3'), 'dtc_spr_csv', '{"shares_by_date": {"2024-06-28": 3397800}}', 26) RETURNING pg_temp.keep('r3', id);
+\copy t_real FROM 'tests/fixtures/spr_real3_rows.csv' WITH (FORMAT csv, HEADER true)
+INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares) SELECT pg_temp.i('r3'), row_no, participant_number, participant_name, position_date, shares FROM t_real;
+SELECT * INTO TEMP t_lr3 FROM si_spr_load(pg_temp.i('r3'));
+SELECT pg_temp.check((SELECT tied FROM t_lr3) AND si_spr_total(pg_temp.i('sec3'), '2024-06-21') = 3397800 AND (SELECT count(*) FROM participant_positions WHERE security_id = pg_temp.i('sec3') AND position_date = '2024-06-21') = 45 AND (SELECT superseded_by FROM imports WHERE id = pg_temp.i('r2')) = pg_temp.i('r3'),
+    'the next week''s Opening (06-21) overlaps the previous Friday: the date is replaced in place with the same figure and the earlier file is marked superseded for it');
+-- the first weeks were DTC's ONE-TIME report ("Position as of"): one date, no Total row, participant numbers without leading zeros
+DELETE FROM t_real;
+INSERT INTO imports (kind, file_name, status, issuer_id, security_id, connector, control_totals, created_by) VALUES ('spr', 'Bitmine Immersion SPR 05192023 - First SPR.csv', 'running', pg_temp.i('iss3'), pg_temp.i('sec3'), 'dtc_spr_onetime_csv', '{"shares_by_date": {"2023-05-19": 1934800}, "participants": 51}', 26) RETURNING pg_temp.keep('r0', id);
+\copy t_real FROM 'tests/fixtures/spr_real0_rows.csv' WITH (FORMAT csv, HEADER true)
+INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares) SELECT pg_temp.i('r0'), row_no, participant_number, participant_name, position_date, shares FROM t_real;
+SELECT * INTO TEMP t_lr0 FROM si_spr_load(pg_temp.i('r0'));
+SELECT pg_temp.check((SELECT positions = 51 AND tied FROM t_lr0) AND si_spr_total(pg_temp.i('sec3'), '2023-05-19') = 1934800 AND (SELECT count(*) FROM participant_positions WHERE security_id = pg_temp.i('sec3') AND participant_id = si_participant_find('0756') AND position_date = '2023-05-19') = 1,
+    'DTC''s one-time report (the first SPR, 2023-05-19): 51 participants, the numbers zero-padded ("756" is 0756), the control the sum of the rows');
+-- Broadridge's Share Range Analysis: every holder (pre-suppression) and the OBOs by range; the record date and job in the footer
+INSERT INTO imports (kind, file_name, status, issuer_id, security_id, connector, record_date, control_totals, derived_totals, tied, created_by) VALUES ('share_range', 'Share Range Analysis_BITMINE IMMERSION TE_12152023.xls', 'done', pg_temp.i('iss3'), pg_temp.i('sec3'), 'broadridge_share_range_xls', '2023-12-15',
+  '{"all_accounts": 962, "all_shares": 2645039, "obo_accounts": 274, "obo_shares": 1095203}', '{}', true, 26) RETURNING pg_temp.keep('sr', id);
+INSERT INTO share_range_reports (import_id, security_id, record_date, job_number) VALUES (pg_temp.i('sr'), pg_temp.i('sec3'), '2023-12-15', 'N96192') RETURNING pg_temp.keep('srr', id);
+CREATE TEMP TABLE t_sr (population text, range_label text, range_from numeric, range_to numeric, accounts integer, shares numeric);
+\copy t_sr FROM 'tests/fixtures/share_range_rows.csv' WITH (FORMAT csv, HEADER true)
+INSERT INTO share_range_rows (report_id, population, range_label, range_from, range_to, accounts, shares) SELECT pg_temp.i('srr'), population, range_label, range_from, range_to, accounts, shares FROM t_sr;
+SELECT pg_temp.check((SELECT count(*) FROM share_range_rows WHERE report_id = pg_temp.i('srr') AND population = 'all') = 23 AND (SELECT sum(accounts) FROM share_range_rows WHERE report_id = pg_temp.i('srr') AND population = 'all') = 962 AND (SELECT sum(shares) FROM share_range_rows WHERE report_id = pg_temp.i('srr') AND population = 'obo') = 1095203,
+    'Broadridge''s Share Range Analysis (2023-12-15): twenty-three ranges, 962 accounts and 2,645,039 shares in all, 274 OBO accounts with 1,095,203 shares — the rows sum to the sheet''s TOTALS');
+SELECT pg_temp.check((SELECT sum(nobo_accounts) = 688 AND sum(nobo_shares) = 1549836 FROM si_share_ranges(pg_temp.i('sec3'))) AND (SELECT obo_pct_of_accounts FROM si_obo_totals(pg_temp.i('sec3'))) = 28.48,
+    'si_share_ranges derives the NOBO population (all − OBO: 688 accounts, 1,549,836 shares); 28.48% of the accounts object to being known');
+SELECT pg_temp.check((SELECT nobo_accounts FROM si_share_ranges(pg_temp.i('sec3')) WHERE range_from = 100) = 743 - 212, 'the 100–249 range: 743 accounts in all, 212 of them OBO, 531 NOBO');
+-- THE REAL RECONCILIATION: the transfer agent's extract of 2024-06-30 carries Cede & Co (FAST) 3,397,800; the SPR of 2024-06-28 totals 3,397,800
+INSERT INTO share_counts (security_id, as_of, kind, value, source, recorded_by, note) VALUES (pg_temp.i('sec3'), '2024-06-30', 'cede', 3397800, 'transfer_agent', 27, 'the Shareholder Extract of 06-30-24: CEDE & CO (FAST), the one nominee/depository row');
+INSERT INTO share_counts (security_id, as_of, kind, value, source, recorded_by, note) VALUES (pg_temp.i('sec3'), '2024-06-30', 'outstanding', 49912607, 'transfer_agent', 27, 'the extract''s TOTAL SHARES over 158 rows (CERT + BOOK + DRS + BOOKR + PLAN1–4 = TOTAL on every row)');
+SELECT pg_temp.keep('rec_real', si_reconcile(pg_temp.i('sec3'), '2024-06-30'));
+SELECT pg_temp.check((SELECT tied_spr AND difference_spr = 0 AND spr_date = '2024-06-28' AND cede_source = 'share_count' FROM share_reconciliations WHERE id = pg_temp.i('rec_real')),
+    'THE REAL RECONCILIATION TIES: Cede & Co on the transfer agent''s extract (2024-06-30) equals the SPR total of 2024-06-28 to the share — the design''s central fact, on the owner''s files');
+SELECT pg_temp.as_member(29);
+SELECT pg_temp.check((SELECT count(*) FROM mcp_share_range_rows) = (SELECT count(*) FROM share_range_rows) AND (SELECT count(*) FROM mcp_participant_positions WHERE security_id = pg_temp.i('sec3')) = 51 + 312 + 225 + 270 - 45, 'a Viewer reads the ranges and the positions of the real files (no person in either)');
+
 -- ---------------------------------------------------------------- the read roles see only the views
 RESET ROLE; SET ROLE shareholder_intelligence_records_ro;
 SELECT pg_temp.as_member(26);
-SELECT pg_temp.check((SELECT count(*) FROM mcp_issuers) = 1 AND (SELECT count(*) FROM mcp_signals) > 10 AND (SELECT count(*) FROM si_search('FRANK')) >= 1, 'the records role reads the views and the search as the member');
+SELECT pg_temp.check((SELECT count(*) FROM mcp_issuers) = 2 AND (SELECT count(*) FROM mcp_signals) > 10 AND (SELECT count(*) FROM si_search('FRANK')) >= 1, 'the records role reads the views and the search as the member (the two open issuers, not the restricted one)');
 SELECT pg_temp.refused($$SELECT count(*) FROM holders$$, 'permission denied', 'the records role has no table');
 SELECT pg_temp.refused($$SELECT count(*) FROM mcp_access_tokens$$, 'permission denied', 'the records role never sees a token');
 SELECT pg_temp.refused($$SELECT si_rules_run(1, CURRENT_DATE)$$, 'permission denied', 'the records role runs no rule');
