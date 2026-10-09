@@ -468,6 +468,46 @@ SELECT pg_temp.check((SELECT tied_spr AND difference_spr = 0 AND spr_date = '202
 SELECT pg_temp.as_member(29);
 SELECT pg_temp.check((SELECT count(*) FROM mcp_share_range_rows) = (SELECT count(*) FROM share_range_rows) AND (SELECT count(*) FROM mcp_participant_positions WHERE security_id = pg_temp.i('sec3')) = 51 + 312 + 225 + 270 - 45, 'a Viewer reads the ranges and the positions of the real files (no person in either)');
 
+-- ---------------------------------------------------------------- PHASE 1's additions (db/018): the shares, the ownership summary, the proposals, the admin's reads
+SELECT pg_temp.as_member(27);
+SELECT pg_temp.check((si_ownership_summary(pg_temp.i('sec'), '2024-04-04') ->> 'outstanding')::numeric = 17053900 AND (si_ownership_summary(pg_temp.i('sec'), '2024-04-04') -> 'dtc' ->> 'total')::numeric = 1581000
+    AND (si_ownership_summary(pg_temp.i('sec'), '2024-04-04') -> 'short' ->> 'pct_of_float')::numeric = 4.42 AND jsonb_array_length(si_ownership_summary(pg_temp.i('sec'), '2024-04-04') -> 'beneficial_owners') = 2
+    AND (si_ownership_summary(pg_temp.i('sec'), '2024-04-04') -> 'thirteen_f' ->> 'holders')::integer = 2 AND (si_ownership_summary(pg_temp.i('sec'), '2024-04-04') ->> 'insider_shares')::numeric = 585000,
+    'si_ownership_summary: outstanding, the DTC total, short as a share of float, the 5% filers, the 13F holders and the insiders'' shares in one read');
+SELECT pg_temp.check(si_ownership_summary(pg_temp.i('sec'), '2024-04-04')::text NOT ILIKE '%FOSTER%' AND si_ownership_summary(pg_temp.i('sec'), '2024-04-04')::text NOT ILIKE '%FRANK%', '…and no natural person in it');
+SELECT pg_temp.check((si_ownership_summary(pg_temp.i('sec3'), '2024-06-30') -> 'obo' ->> 'accounts')::integer = 274, '…and the OBO population from the share-range report where one is loaded');
+-- the shares, as the application
+SELECT pg_temp.check((si_share_filings_index('helpdesk', 'SMOK') ->> 'total')::integer = 5 AND (si_share_filings_index('helpdesk', '0000999999') ->> 'total')::integer = 5 AND (si_share_filings_index('helpdesk', 'SMOK', NULL, '{8-K}') ->> 'total')::integer = 1,
+    'filings_index: by ticker or CIK, filtered by form');
+SELECT pg_temp.check(si_share_filings_index('helpdesk', 'SMOK2') ->> 'error' = 'not_found' AND si_share_ownership_summary('spaces', 'SMOK2') ->> 'error' = 'not_found' AND si_share_signals_open('spaces', 'SMOK2') ->> 'error' = 'not_found',
+    'a RESTRICTED issuer is never shared (the advisory firm''s client stays inside its list)');
+SELECT pg_temp.check(si_share_filings_index('', 'SMOK') ->> 'error' = 'consumer_unknown', 'no consumer header: nothing shared');
+SELECT pg_temp.check(si_share_filing_text('knowledge', (SELECT id FROM filings WHERE form = '8-K' AND issuer_id = pg_temp.i('iss'))) ->> 'text' ILIKE '%equity purchase agreement%'
+    AND si_share_filing_text('knowledge', (SELECT id FROM filings WHERE form = '10-K' AND issuer_id = pg_temp.i('iss'))) ->> 'error' = 'no_text', 'filing_text: the 8-K''s words for Knowledge; a filing whose text is not fetched says so');
+SELECT pg_temp.check(si_share_ownership_summary('spaces', 'SMOK', '2024-04-04') ->> 'schema' = 'os.si-ownership/1' AND si_share_ownership_summary('spaces', 'SMOK', '2024-04-04')::text NOT ILIKE '%FRANK%', 'ownership_summary: the document, no person');
+SELECT pg_temp.check(jsonb_array_length(si_share_signals_open('spaces', 'SMOK') -> 'signals') = (SELECT count(*) FROM signals WHERE issuer_id = pg_temp.i('iss') AND status = 'open')
+    AND jsonb_array_length(si_share_events_index('spaces', 'SMOK') -> 'events') = (SELECT count(*) FROM events WHERE issuer_id = pg_temp.i('iss') AND deleted_at IS NULL), 'signals_open and events_index carry every open signal and every live event');
+-- an agent's proposal of a holder's kind; the Analyst's queue; the Viewer sees none of it
+SELECT pg_temp.as_member(42);
+SELECT pg_temp.keep('kp', si_holder_kind_propose((SELECT id FROM holders WHERE name_key = 'ZETA HOLDINGS LLC'), 'entity', 'corporation', 'An LLC on line 1, no FBO legend'));
+SELECT pg_temp.as_member(26);
+SELECT pg_temp.check((SELECT count(*) FROM si_analyst_proposals(pg_temp.i('iss')) WHERE kind = 'holder_kind') = 1, 'the Analyst''s queue shows the agent''s kind proposal');
+SELECT si_holder_kind_decide(pg_temp.i('kp'), true);
+SELECT pg_temp.check((SELECT entity_type FROM holders WHERE name_key = 'ZETA HOLDINGS LLC') = 'corporation' AND (SELECT status FROM holder_kind_proposals WHERE id = pg_temp.i('kp')) = 'accepted', 'accepting it sets the holder''s entity type');
+SELECT pg_temp.as_member(29);
+SELECT pg_temp.refused($$SELECT si_holder_kind_propose((SELECT id FROM holders WHERE name_key = 'ZETA HOLDINGS LLC'), 'person', NULL, 'x')$$, 'Analyst', 'a Viewer proposes no kind');
+SELECT pg_temp.check((SELECT count(*) FROM si_analyst_proposals(NULL, 'holder_match')) = 0 AND (SELECT count(*) FROM mcp_holder_kind_proposals) = 0, 'a Viewer sees no holder proposal');
+SELECT pg_temp.check((SELECT holders FROM si_holders_changes_summary(pg_temp.i('sec'), 'nobo', '2024-03-01', '2024-04-04') WHERE state = 'new') > 500, 'the Viewer''s changes are counts by state, never a holder');
+SELECT pg_temp.check((SELECT count(*) FROM si_tombstones()) = 0, 'a Viewer reads no tombstone');
+SELECT pg_temp.as_member(27);
+UPDATE events SET deleted_at = now(), deleted_by = 27 WHERE id = pg_temp.i('ev_short');
+SELECT pg_temp.check((SELECT count(*) FROM si_tombstones() WHERE kind = 'event' AND record_id = pg_temp.i('ev_short')) = 1, 'a manager reads the tombstones with their purge date');
+UPDATE events SET deleted_at = NULL, deleted_by = NULL WHERE id = pg_temp.i('ev_short');
+SELECT pg_temp.check((SELECT count(*) FROM si_source_health()) = 15 AND (SELECT bool_and(user_agent_set) FROM si_source_health() WHERE needs_user_agent) AND (SELECT consecutive_failures FROM si_source_health() WHERE connector = 'edgar_submissions') = 2,
+    'si_source_health: fifteen sources, the EDGAR user-agent set, the submissions source''s two failures');
+UPDATE agent_dispatches SET status = 'cancelled' WHERE id = (SELECT min(id) FROM agent_dispatches);
+SELECT pg_temp.check((SELECT count(*) FROM agent_dispatches WHERE status = 'cancelled') = 1, 'a dispatch may be cancelled');
+
 -- ---------------------------------------------------------------- the read roles see only the views
 RESET ROLE; SET ROLE shareholder_intelligence_records_ro;
 SELECT pg_temp.as_member(26);

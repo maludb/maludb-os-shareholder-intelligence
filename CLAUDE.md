@@ -68,5 +68,7 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
 agents, ten skills, `deploy/`; the installer's `plan` clean. Proofs: `bash tests/phase0/run.sh` (both). The fixtures:
 `mcp/venv/bin/python -I tests/fixtures/build_fixtures.py <KineticIntel2 clone>`. The owner's 186 real files are in `tests/fixtures/real/` (PRIVATE: NOBO lists and the agent's extract name real people — never copy a
 row of them into a committed fixture or a proof; `build_fixtures.py` anonymises, `load_real_spr.py` reads the SPR which names only brokers); db/017 and the
-proof's real-files section (154 checks) confirmed the connectors: design §0.2b. **Next: Phase 1** (the tool surface, the action manifest, the four build specs, the slice specs) for the
-owner's approval together; no feature PHP before that.
+proof's real-files section (154 checks) confirmed the connectors: design §0.2b. **PHASE 1 WRITTEN 2026-10-09** (design §16, `docs/phase1-consistency.md`): `docs/shareholder-intelligence-mcp-tool-surface.md` (95 + 7 tools),
+`docs/shareholder-intelligence-action-manifest.md` (84 screens, 83 actions) → `mcp/action_registry.json` (`php bin/build_action_registry.php --approvals`),
+`docs/build-specs/` (four build specs, eleven slice specs), db/018 (the shares and the reads the tools need; the schema proof 172 checks); the checks:
+`bash tests/phase1/check_specs.sh` (60). **Next: the owner's approval of Phase 1**; no feature PHP before that.

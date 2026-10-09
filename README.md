@@ -17,6 +17,6 @@ Installed by the kernel's installer at `/srv/apps/shareholder_intelligence`, ser
 [KineticIntel2](https://github.com/KineticGuides/KineticIntel2) (Angular 18, 2025).
 
 **State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15); K34 built in the kernel; **Phase 0 complete**
-(§16): the kit, the schema db/001–016 proven against the anonymised fixtures (142 checks) and without a kernel (73), the manifest, the
-agents, the skills, the deploy templates; the installer's plan clean; the owner's real files confirmed the connectors (design §0.2b, db/017; 154 checks). Next: Phase 1 for
-the owner's approval. No feature PHP yet.
+(§16): the kit, the schema proven against the anonymised fixtures and the owner's real files (172 checks with db/018) and without a kernel (73);
+**Phase 1 written** — the tool surface (95 + 7 tools), the action manifest (84 screens, 83 actions) and its registry, four build specs and eleven
+slice specs, `tests/phase1/check_specs.sh` 60 checks green (`docs/phase1-consistency.md`). Next: the owner's approval of Phase 1. No feature PHP yet.

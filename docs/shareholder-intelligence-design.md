@@ -23,7 +23,7 @@ the reconciliation; `/srv/apps/consultant_tracking` and `/srv/apps/doccloud` for
 > this document and the owner's answers (§13, recorded in §15); the schema in `db/`, `maludb-os.json`, `os/`, `skills/` and
 > `deploy/` complete it. Phase 1 adds `docs/shareholder-intelligence-mcp-tool-surface.md`, `docs/shareholder-intelligence-action-manifest.md`,
 > `docs/build-specs/position-reports.md`, `docs/build-specs/holder-identity.md`, `docs/build-specs/edgar-and-finra-fetchers.md`,
-> `docs/build-specs/signals.md` and the slice specs. **No feature PHP is written until the owner approves them together.**
+> `docs/build-specs/signals.md` and the eleven slice specs (written 2026-10-09, §16). **No feature PHP is written until the owner approves them together.**
 
 ## 0. The research — what the field does, what the owner already built, and what the estate gives today
 
@@ -928,6 +928,19 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 | (d) | **Holder PII exports: Analyst and above, every export logged with its row count**; a setting may tighten it to admin-only later | §3.3; `si_settings.pii_in_exports` |
 
 ## 16. State
+
+**2026-10-09, later — PHASE 1 WRITTEN, for the owner's checkpoint.** `docs/shareholder-intelligence-mcp-tool-surface.md` (records 95 tools —
+88 for the questions of §7, `app_roles`, `records_search`, the five kernel-only shares — and activity 7; 17 resolvers; the records API),
+`docs/shareholder-intelligence-action-manifest.md` (84 screens, 83 actions; 28 paused for an agent, 23 for people only) and its registry
+`mcp/action_registry.json`, the approvals synced into `maludb-os.json`, the agents' grants rewritten to the surface's names (Expert 83 + 4,
+Analyst 50 + 3), the four build specs (`position-reports`, `holder-identity`, `edgar-and-finra-fetchers`, `signals`) and eleven slice specs
+(`sso-shell`, `issuers-participants`, `spr-positions` THE FIRST EXEMPLAR, `holders`, `edgar-filings`, `ownership-forms`, `short-side`,
+`signals-rules` THE SECOND EXEMPLAR, `events-reports`, `agents-k7-api`, `admin-settings`). **db/018** adds what the tools needed (the ownership
+summary in one read, the five shares as SECURITY DEFINER functions with both walls, the kind proposals, the proposals queue, the Viewer's
+changes as counts, the sources' health, the tombstones, a cancelled dispatch) — the schema proof is now **172 checks**; the kit's 73 unchanged;
+`tests/phase1/check_specs.sh` **60 checks green** (every screen and action claimed by exactly one spec, every tool named by a slice);
+the installer's `plan` clean (51 steps). The record: `docs/phase1-consistency.md`.
+**Next:** the owner's approval of the schema, the surface and the manifest together → Phase 2 the shell → slice 1 → the exemplars.
 
 **2026-10-09, later — THE OWNER'S REAL FILES CONFIRMED THE CONNECTORS (§0.2b; db/017).** 186 files arrived in `tests/fixtures/real/`;
 `tests/fixtures/load_real_spr.py` reads DTC's two layouts; the proof grew to **154 checks**: the real weekly SPR (52 participants × 6

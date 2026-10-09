@@ -1,0 +1,3971 @@
+{
+    "generated_from": "docs/shareholder-intelligence-action-manifest.md",
+    "generated_at": "2026-10-09T20:20:17+00:00",
+    "screens": {
+        "home": {
+            "screen": "home",
+            "url": "/",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "the start for the current issuer: the morning note's last text, the reconciliation tile, the short-side tiles with their dates, the open signals by severity, the price with the events overlay, the next thirty days' events, the latest upload per kind with its tie state; a new installation's one button, Add your first issuer",
+            "params": [
+                "issuer"
+            ],
+            "built": true,
+            "stub": false
+        },
+        "search": {
+            "screen": "search",
+            "url": "/search",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "the one box's results grouped by kind with highlights — a Viewer's results never name a person",
+            "params": [
+                "q",
+                "kinds",
+                "issuer"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "notifications": {
+            "screen": "notifications",
+            "url": "/notifications",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "my notices, unread first",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "activity": {
+            "screen": "activity",
+            "url": "/activity",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "my own trail here",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "settings": {
+            "screen": "settings",
+            "url": "/settings/",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "my preferences: the morning note and its hour, the minimum signal severity, email and text, which issuers",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "settings-tokens": {
+            "screen": "settings-tokens",
+            "url": "/settings/tokens/",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "when": "my MCP tokens and my API keys: mint (shown once), rotate, revoke",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "issuer-list": {
+            "screen": "issuer-list",
+            "url": "/issuers",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "the issuers they may see, as cards: name, ticker, exchange, the primary security's CUSIP, the last position date, the restriction mark",
+            "params": [
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "issuer-view": {
+            "screen": "issuer-view",
+            "url": "/issuers/{id}",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "one issuer: the EDGAR entity, the securities, the share counts, the transfer agent, the restriction list, the last uploads, the sources' state for it",
+            "params": [
+                "tab"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "issuer-add": {
+            "screen": "issuer-add",
+            "url": "/issuers/new",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "to set up an issuer: the ticker with the CIK lookup, the name, the exchange, the transfer agent and its connector, the time zone",
+            "params": [
+                "ticker",
+                "cik"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "issuer-edit": {
+            "screen": "issuer-edit",
+            "url": "/issuers/{id}/edit",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "to change an issuer's fields, holidays, notes",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "issuer-securities": {
+            "screen": "issuer-securities",
+            "url": "/issuers/{id}/securities",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "the issuer's securities with CUSIP, class, ticker, primary; add and edit forms on the page",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "issuer-share-counts": {
+            "screen": "issuer-share-counts",
+            "url": "/issuers/{id}/share-counts",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "the dated share counts by kind and source; record one",
+            "params": [
+                "security",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "issuer-access": {
+            "screen": "issuer-access",
+            "url": "/issuers/{id}/access",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "the restriction list: the members who may see this issuer; add and remove (managers)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "participant-list": {
+            "screen": "participant-list",
+            "url": "/participants",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "the DTC participants as cards by class with number, name, aliases, the latest position for the current security",
+            "params": [
+                "class",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "participant-view": {
+            "screen": "participant-view",
+            "url": "/participants/{id}",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "one participant: the series chart for the current security, the NOBO summary on each record date, the OBO remainder, aliases, class with its source, notes, tags",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "participant-edit": {
+            "screen": "participant-edit",
+            "url": "/participants/{id}/edit",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "when": "to set a participant's class (manual) and notes",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "upload-list": {
+            "screen": "upload-list",
+            "url": "/uploads",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the uploads of the current issuer by kind with their tie state, counts, who and when; the queue",
+            "params": [
+                "kind",
+                "security",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "upload-add": {
+            "screen": "upload-add",
+            "url": "/uploads/new",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "to upload a file: the kind, the security, the connector (detected from the file's first cells where it can be), the record date or period",
+            "params": [
+                "kind",
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "upload-view": {
+            "screen": "upload-view",
+            "url": "/uploads/{id}",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "one upload: control totals against derived, tied or the difference named, the rows with the ones that failed to type first, the override, the matcher's counts, delete and restore",
+            "params": [
+                "rows"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "positions": {
+            "screen": "positions",
+            "url": "/positions",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the position table: the participants ranked on a date for the current security with the class chip, the change against the previous date and the window's open and net",
+            "params": [
+                "security",
+                "date",
+                "from",
+                "to",
+                "class",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "positions-matrix": {
+            "screen": "positions-matrix",
+            "url": "/positions/matrix",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the movement matrix: participants by position dates, the cells coloured by change, sortable by net; one column a date at 375",
+            "params": [
+                "security",
+                "from",
+                "to",
+                "class"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "positions-flow": {
+            "screen": "positions-flow",
+            "url": "/positions/flow",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the flow by class: net shares per class per date as a stacked bar and a cumulative line, with the lore caveat printed under it",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "positions-concentration": {
+            "screen": "positions-concentration",
+            "url": "/positions/concentration",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the concentration over time: top-5, top-10, top-20 shares of the DTC total and the index",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "reconciliation": {
+            "screen": "reconciliation",
+            "url": "/reconciliation",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "when": "the reconciliation's runs for the current security: outstanding against the register's components, Cede against the SPR total, tied or the differences named; run one now",
+            "params": [
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holder-list": {
+            "screen": "holder-list",
+            "url": "/holders",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "the holders of the current issuer as cards (names for the PII roles; \"Individual holder\" for a Viewer) with the latest position, the accounts, the kind; filters",
+            "params": [
+                "channel",
+                "record_date",
+                "kind",
+                "custodian",
+                "q",
+                "tag"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holder-view": {
+            "screen": "holder-view",
+            "url": "/holders/{id}",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "one holder: the accounts (the registration lines as read — PII roles), the positions by record date and channel as a chart, the insider and institution links, notes, tags, Merge into… (managers)",
+            "params": [
+                "tab"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holder-edit": {
+            "screen": "holder-edit",
+            "url": "/holders/{id}/edit",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "to set a holder's kind, entity type, address, notes (PII roles)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "holder-merge": {
+            "screen": "holder-merge",
+            "url": "/holders/{id}/merge",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "the two-column compare page for a merge: this holder and the one chosen by the picker; Merge (managers)",
+            "params": [
+                "into"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-unmatched": {
+            "screen": "holders-unmatched",
+            "url": "/holders/unmatched",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "the queue: a raw registration on the left, the candidates with score and evidence on the right; Accept, Reject, New holder, Set kind",
+            "params": [
+                "upload",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-changes": {
+            "screen": "holders-changes",
+            "url": "/holders/changes",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "holders between two record dates: new, lost, up, down with the shares",
+            "params": [
+                "security",
+                "channel",
+                "date_a",
+                "date_b"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-ranges": {
+            "screen": "holders-ranges",
+            "url": "/holders/ranges",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "holders by share range on a record date — from the list, and from Broadridge's Share Range Analysis with the OBO population when one is loaded",
+            "params": [
+                "security",
+                "channel",
+                "record_date"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-geography": {
+            "screen": "holders-geography",
+            "url": "/holders/geography",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "holders by country and state on a record date",
+            "params": [
+                "security",
+                "channel",
+                "record_date"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-custodians": {
+            "screen": "holders-custodians",
+            "url": "/holders/custodians",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "NOBO holders and shares by custodian (participant) and account kind on a record date, beside the OBO remainder",
+            "params": [
+                "security",
+                "record_date"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "holders-register": {
+            "screen": "holders-register",
+            "url": "/holders/register",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "when": "the register's rows on a record date by position type with Cede flagged, and the components the reconciliation reads",
+            "params": [
+                "security",
+                "record_date"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "filing-list": {
+            "screen": "filing-list",
+            "url": "/filings",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "the filings of the current issuer: form, date, items, title, the text and structured chips, about-us filings by others",
+            "params": [
+                "form",
+                "from",
+                "to",
+                "about_us",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "filing-view": {
+            "screen": "filing-view",
+            "url": "/filings/{id}",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "one filing: the text with search hits highlighted, the structured block when it is a 13D, a Form 4 or a 144, the event it made; Fetch text, Make event",
+            "params": [
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "filings-search": {
+            "screen": "filings-search",
+            "url": "/filings/search",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "a search in the words of every filing's text with highlights",
+            "params": [
+                "q",
+                "form"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "watch-hits": {
+            "screen": "watch-hits",
+            "url": "/filings/watch",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "the full-text watch's hits with the term, the filing and the snippet; Confirm instrument, Dismiss",
+            "params": [
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "dilution-list": {
+            "screen": "dilution-list",
+            "url": "/dilution",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "the dilution instruments as cards: kind, counterparty, facility and remaining, the price terms, the floating-price flag, the status",
+            "params": [
+                "status",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "dilution-view": {
+            "screen": "dilution-view",
+            "url": "/dilution/{id}",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "one instrument with its filing, terms, remaining, notes and the signals it is part of",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "dilution-add": {
+            "screen": "dilution-add",
+            "url": "/dilution/new",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "to record an instrument by hand",
+            "params": [
+                "filing",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "dilution-edit": {
+            "screen": "dilution-edit",
+            "url": "/dilution/{id}/edit",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "when": "to confirm or change an instrument's kind, counterparty, amounts, terms, status",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "institution-list": {
+            "screen": "institution-list",
+            "url": "/institutions",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the 13F and 13D/13G filers as cards with kind, the latest holding in the current security, the activist mark",
+            "params": [
+                "kind",
+                "q",
+                "activist"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "institution-view": {
+            "screen": "institution-view",
+            "url": "/institutions/{id}",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "one institution: its holdings in the current security by quarter as a chart, its 13D/13G history, its filings about us, aliases, notes, tags",
+            "params": [
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "institution-edit": {
+            "screen": "institution-edit",
+            "url": "/institutions/{id}/edit",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "to set an institution's kind, activist flag, website, notes",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "ownership-13f": {
+            "screen": "ownership-13f",
+            "url": "/ownership/13f",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the 13F table for a quarter: holders ranked with shares, value, voting authority and the share of outstanding; the quarter's summary and the concentration",
+            "params": [
+                "security",
+                "period"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "ownership-13f-changes": {
+            "screen": "ownership-13f-changes",
+            "url": "/ownership/13f/changes",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the quarter against the prior: new, out, up, down, with the shares",
+            "params": [
+                "security",
+                "period",
+                "state"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "ownership-beneficial": {
+            "screen": "ownership-beneficial",
+            "url": "/ownership/beneficial",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the 5% holders: the latest 13D or 13G per filer with percent, shares, the event date and the purpose",
+            "params": [
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "ownership-insiders": {
+            "screen": "ownership-insiders",
+            "url": "/ownership/insiders",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the insider ledger: Form 3/4/5 transactions by person with codes, shares, price, owned after, and the register link",
+            "params": [
+                "from",
+                "to",
+                "owner",
+                "code"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "ownership-144": {
+            "screen": "ownership-144",
+            "url": "/ownership/144",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "when": "the Form 144 notices: seller, shares, approximate date, broker",
+            "params": [
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short": {
+            "screen": "short",
+            "url": "/short",
+            "section": "The short side (slice 6)",
+            "when": "the short-side page: one chart of price and volume above and short interest as a share of float, fails, the 5-day short-volume ratio, threshold days shaded and borrow points below, with the events overlay",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short-interest": {
+            "screen": "short-interest",
+            "url": "/short/interest",
+            "section": "The short side (slice 6)",
+            "when": "the short-interest series as a table: settlement date, publication, short, change, days to cover, the share of float and of outstanding, revisions",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short-volume": {
+            "screen": "short-volume",
+            "url": "/short/volume",
+            "section": "The short side (slice 6)",
+            "when": "FINRA's daily off-exchange short volume with the 5- and 20-day means and the caveat on the page",
+            "params": [
+                "security",
+                "market",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short-fails": {
+            "screen": "short-fails",
+            "url": "/short/fails",
+            "section": "The short side (slice 6)",
+            "when": "the fails-to-deliver series with the share of outstanding and the 60-day median",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short-threshold": {
+            "screen": "short-threshold",
+            "url": "/short/threshold",
+            "section": "The short side (slice 6)",
+            "when": "the threshold-list history: on which list, since when, the runs",
+            "params": [
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "short-borrow": {
+            "screen": "short-borrow",
+            "url": "/short/borrow",
+            "section": "The short side (slice 6)",
+            "when": "the borrow observations: date, source, fee, utilisation, note",
+            "params": [
+                "security",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "borrow-add": {
+            "screen": "borrow-add",
+            "url": "/short/borrow/new",
+            "section": "The short side (slice 6)",
+            "when": "to record a borrow observation: the date, the source (broker quote or manual), the fee, the utilisation, shares on loan and available, a note",
+            "params": [
+                "security"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "signal-list": {
+            "screen": "signal-list",
+            "url": "/signals",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "when": "the signals of the current issuer as cards by severity with the evidence-class chip, the rule, the window, the summary, the agent's proposal when one waits",
+            "params": [
+                "status",
+                "severity",
+                "rule",
+                "security",
+                "class"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "signal-view": {
+            "screen": "signal-view",
+            "url": "/signals/{id}",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "when": "one signal: the summary, the basis paragraph, the evidence rendered as rows and a chart of the window, the related events, the outcome prices; Acknowledge, Dismiss with a reason and the explaining event, Escalate; the Analyst's proposal with Take it",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "signal-history": {
+            "screen": "signal-history",
+            "url": "/signals/history",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "when": "every signal of a period with its disposition, who and why; the proposals accepted and rejected",
+            "params": [
+                "from",
+                "to",
+                "rule",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "rule-list": {
+            "screen": "rule-list",
+            "url": "/rules",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "when": "the rules catalogue: key, name, class, basis, severity, thresholds, last fired, enabled; the per-issuer overrides",
+            "params": [
+                "class"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "rule-edit": {
+            "screen": "rule-edit",
+            "url": "/rules/{id}/edit",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "when": "to set a rule's thresholds and enable it, globally or for the current issuer (managers)",
+            "params": [
+                "issuer"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "event-list": {
+            "screen": "event-list",
+            "url": "/events",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "the timeline of the current issuer: filings, financings, record dates, earnings, short reports, notes — by kind and severity",
+            "params": [
+                "kind",
+                "severity",
+                "from",
+                "to",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "event-view": {
+            "screen": "event-view",
+            "url": "/events/{id}",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "one event with its filing, the signals it explains, notes, tags",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "event-add": {
+            "screen": "event-add",
+            "url": "/events/new",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "to record an event: the date, the kind, the title, the body, the URL, the severity",
+            "params": [
+                "on_date",
+                "kind",
+                "filing"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "event-edit": {
+            "screen": "event-edit",
+            "url": "/events/{id}/edit",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "to change an event",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "calendar": {
+            "screen": "calendar",
+            "url": "/calendar",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "the month grid of what happened and what is coming: record dates, earnings, expiries, publication days",
+            "params": [
+                "at",
+                "kinds"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "report-list": {
+            "screen": "report-list",
+            "url": "/reports",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "the packs as cards: kind, period, status, approved by; the Friday draft",
+            "params": [
+                "kind",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "report-view": {
+            "screen": "report-view",
+            "url": "/reports/{id}",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "one pack: the narrative (the agent's draft or the person's edit), the sections toggled, the rendered preview, Approve, Download PDF, Send to… (members)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "report-add": {
+            "screen": "report-add",
+            "url": "/reports/new",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "to draft a pack by hand: the kind, the period, the sections",
+            "params": [
+                "kind",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "report-edit": {
+            "screen": "report-edit",
+            "url": "/reports/{id}/edit",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "to edit a draft's narrative and sections (frozen once approved)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "export-list": {
+            "screen": "export-list",
+            "url": "/exports",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "when": "my exports and the shared ones: kind, rows, size, expiry; download",
+            "params": [
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "proposals": {
+            "screen": "proposals",
+            "url": "/proposals",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "when": "everything the agents proposed and nobody has taken: signal dispositions, holder matches, holder kinds, watch hits — each with its one-click button",
+            "params": [
+                "kind",
+                "issuer"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-agents": {
+            "screen": "admin-agents",
+            "url": "/admin/agents",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "when": "the agents with their last dispatch, the dispatches table with status and Cancel, the Analyst's settings (issuers, the hour, the pack's day, proposals on or off)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-sources": {
+            "screen": "admin-sources",
+            "url": "/admin/sources",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "the fetchers with their schedule, the last pull, the back-off, paused; Pull now, Pause, Resume",
+            "params": [
+                "connector"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-source-view": {
+            "screen": "admin-source-view",
+            "url": "/admin/sources/{id}",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "one source: its settings, its credential (the label and last4 only), its pulls as a table with status, counts, bytes and the policy followed",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-source-edit": {
+            "screen": "admin-source-edit",
+            "url": "/admin/sources/{id}/edit",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "to change a source's name, base URL, settings, schedule, rate, user-agent override, active",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-source-credential": {
+            "screen": "admin-source-credential",
+            "url": "/admin/sources/{id}/credential",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "to set or rotate the source's credential (never shown back)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-participant-classes": {
+            "screen": "admin-participant-classes",
+            "url": "/admin/participant-classes",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "the class vocabulary and which participants sit in each; reclass",
+            "params": [
+                "class"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-templates": {
+            "screen": "admin-templates",
+            "url": "/admin/templates",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "the import templates (the saved column mappings) by kind and connector",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-template-edit": {
+            "screen": "admin-template-edit",
+            "url": "/admin/templates/{id}/edit",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "to change a template's mapping",
+            "params": [
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-settings": {
+            "screen": "admin-settings",
+            "url": "/admin/settings",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "the application settings: the business name and the EDGAR contact (the user-agent), the exchange, the market time zone and holidays, the EDGAR rate, the reconciliation tolerance, the auto-match threshold, PII in exports, the escalation member, the key rates, the upload ceiling, the price source",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-tokens": {
+            "screen": "admin-tokens",
+            "url": "/admin/tokens",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "everyone's keys and tokens: label, person, scope, limits, usage; revoke",
+            "params": [
+                "member"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-purge": {
+            "screen": "admin-purge",
+            "url": "/admin/purge",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "when": "the tombstones waiting: uploads, holders, events, reports, issuers; restore or purge now",
+            "params": [],
+            "built": false,
+            "stub": false
+        }
+    },
+    "actions": {
+        "prefs_save": {
+            "action": "prefs_save",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "endpoint": "/settings/prefs.php",
+            "params": [
+                {
+                    "name": "morning_note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "morning_hour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0 to 23 or blank for the setting"
+                },
+                {
+                    "name": "signals_min_severity",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "info or watch or high"
+                },
+                {
+                    "name": "email_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "text_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "kinds",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                },
+                {
+                    "name": "issuer_ids",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "settings.prefs",
+            "who": "own",
+            "agent": true,
+            "record_id": "the member",
+            "built": false
+        },
+        "notification_read": {
+            "action": "notification_read",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "endpoint": "/notifications/read.php",
+            "params": [
+                {
+                    "name": "notification",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.read",
+            "who": "own",
+            "agent": true,
+            "record_id": "the notification",
+            "built": false
+        },
+        "notifications_read_all": {
+            "action": "notifications_read_all",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "endpoint": "/notifications/read-all.php",
+            "params": [],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.read_all",
+            "who": "own",
+            "agent": true,
+            "record_id": "the member",
+            "built": false
+        },
+        "token_mint": {
+            "action": "token_mint",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "endpoint": "/settings/tokens/mint.php",
+            "params": [
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "scope",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "mcp or api"
+                }
+            ],
+            "undo": "token_revoke",
+            "confirm": false,
+            "approval": null,
+            "log_event": "token.mint",
+            "who": "own",
+            "agent": false,
+            "record_id": "the token",
+            "built": false
+        },
+        "token_revoke": {
+            "action": "token_revoke",
+            "section": "Home, me and the shell (Phase 2; the search box)",
+            "endpoint": "/settings/tokens/revoke.php",
+            "params": [
+                {
+                    "name": "token",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "token.revoke",
+            "who": "own or tokens.manage",
+            "agent": false,
+            "record_id": "the token",
+            "built": false
+        },
+        "issuer_save": {
+            "action": "issuer_save",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "cik",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "ten digits"
+                },
+                {
+                    "name": "ticker",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "exchange",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "nasdaq or nyse or nyse_american or otc or cse or tsx or tsxv or other"
+                },
+                {
+                    "name": "state_of_incorporation",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "fiscal_year_end",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "MMDD"
+                },
+                {
+                    "name": "sic",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "transfer_agent",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "transfer_agent_connector",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "stc or computershare or continental or vstock or pacific or equiniti or generic"
+                },
+                {
+                    "name": "timezone",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "market_holidays",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                },
+                {
+                    "name": "notes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "issuer",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to change an existing one"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "issuer.save",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the issuer",
+            "built": false
+        },
+        "issuer_delete": {
+            "action": "issuer_delete",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/delete.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "to the tombstone with everything under it"
+                }
+            ],
+            "undo": "issuer_restore",
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "issuer.delete",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the issuer",
+            "built": false
+        },
+        "issuer_restore": {
+            "action": "issuer_restore",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/restore.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "issuer.restore",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the issuer",
+            "built": false
+        },
+        "issuer_edgar_sync": {
+            "action": "issuer_edgar_sync",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/edgar-sync.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the submissions JSON now: the entity and the index"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "issuer.edgar_sync",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the issuer",
+            "built": false
+        },
+        "security_save": {
+            "action": "security_save",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/securities/save.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "class",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "common or preferred or warrant or unit or note or other"
+                },
+                {
+                    "name": "cusip",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "nine characters"
+                },
+                {
+                    "name": "isin",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "ticker",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "figi",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "par_value",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "is_primary",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "listed_on",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "delisted_on",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "security",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to change an existing one"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "security.save",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the security",
+            "built": false
+        },
+        "security_delete": {
+            "action": "security_delete",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/securities/delete.php",
+            "params": [
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "with its positions and series"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "security.delete",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the security",
+            "built": false
+        },
+        "share_count_save": {
+            "action": "share_count_save",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/share-counts/save.php",
+            "params": [
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "as_of",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "outstanding or float or authorized or restricted or unrestricted or treasury or cede or drs or certificated or plan or public_float_value"
+                },
+                {
+                    "name": "value",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "source",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "manual or transfer_agent or dtc_letter"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "share_count_delete",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "share_count.save",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the share count",
+            "built": false
+        },
+        "share_count_delete": {
+            "action": "share_count_delete",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/share-counts/delete.php",
+            "params": [
+                {
+                    "name": "share_count",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "share_count.delete",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the share count",
+            "built": false
+        },
+        "restriction_save": {
+            "action": "restriction_save",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/issuers/access/save.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "members",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "the whole list — empty lifts the restriction"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "restriction.save",
+            "who": "restrictions.manage",
+            "agent": true,
+            "record_id": "the issuer",
+            "built": false
+        },
+        "participant_update": {
+            "action": "participant_update",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/participants/save.php",
+            "params": [
+                {
+                    "name": "participant",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "class",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "retail or clearing_retail or prime or market_maker or lending or transfer_agent or bank_custodian or other"
+                },
+                {
+                    "name": "notes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "participant.update",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the participant",
+            "built": false
+        },
+        "tag_apply": {
+            "action": "tag_apply",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/tags/apply.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "holder or institution or participant or event or issuer or signal"
+                },
+                {
+                    "name": "record",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a tag or a new label"
+                }
+            ],
+            "undo": "tag_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.apply",
+            "who": "tags.apply",
+            "agent": true,
+            "record_id": "the record",
+            "built": false
+        },
+        "tag_remove": {
+            "action": "tag_remove",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/tags/remove.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "record",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "tag_apply",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.remove",
+            "who": "tags.apply",
+            "agent": true,
+            "record_id": "the record",
+            "built": false
+        },
+        "note_add": {
+            "action": "note_add",
+            "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
+            "endpoint": "/notes/add.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "issuer or holder or institution or participant or event or signal or report or dilution_instrument or filing"
+                },
+                {
+                    "name": "record",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "body",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "note.add",
+            "who": "notes.write",
+            "agent": true,
+            "record_id": "the note",
+            "built": false
+        },
+        "upload_create": {
+            "action": "upload_create",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/uploads/save.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "spr or nobo or register or share_range or prices_csv"
+                },
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "file",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the file itself — a person's form or the API"
+                },
+                {
+                    "name": "connector",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "detected when omitted"
+                },
+                {
+                    "name": "record_date",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a NOBO job or a register"
+                },
+                {
+                    "name": "template",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a saved mapping for a generic file"
+                }
+            ],
+            "undo": "upload_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "upload.create",
+            "who": "uploads.write",
+            "agent": false,
+            "record_id": "the upload",
+            "built": false
+        },
+        "upload_reparse": {
+            "action": "upload_reparse",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/uploads/reparse.php",
+            "params": [
+                {
+                    "name": "upload",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the file parsed again — after a template changed"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "upload.reparse",
+            "who": "uploads.write",
+            "agent": true,
+            "record_id": "the upload",
+            "built": false
+        },
+        "upload_override": {
+            "action": "upload_override",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/uploads/override.php",
+            "params": [
+                {
+                    "name": "upload",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "note",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "why the difference is accepted"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "other",
+            "log_event": "upload.override",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the upload",
+            "built": false
+        },
+        "upload_delete": {
+            "action": "upload_delete",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/uploads/delete.php",
+            "params": [
+                {
+                    "name": "upload",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "to the tombstone with the rows it made"
+                }
+            ],
+            "undo": "upload_restore",
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "upload.delete",
+            "who": "uploads.delete",
+            "agent": true,
+            "record_id": "the upload",
+            "built": false
+        },
+        "upload_restore": {
+            "action": "upload_restore",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/uploads/restore.php",
+            "params": [
+                {
+                    "name": "upload",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "upload_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "upload.restore",
+            "who": "uploads.delete",
+            "agent": true,
+            "record_id": "the upload",
+            "built": false
+        },
+        "reconciliation_run": {
+            "action": "reconciliation_run",
+            "section": "Uploads and THE SPR — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/reconciliation/run.php",
+            "params": [
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "as_of",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a date — today when omitted"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "reconciliation.run",
+            "who": "uploads.write",
+            "agent": true,
+            "record_id": "the reconciliation",
+            "built": false
+        },
+        "match_accept": {
+            "action": "match_accept",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/matches/accept.php",
+            "params": [
+                {
+                    "name": "proposal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "match.accept",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the holder",
+            "built": false
+        },
+        "match_reject": {
+            "action": "match_reject",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/matches/reject.php",
+            "params": [
+                {
+                    "name": "proposal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "remembered — never proposed again"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "match.reject",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "match_new_holder": {
+            "action": "match_new_holder",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/matches/new-holder.php",
+            "params": [
+                {
+                    "name": "row_kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "nobo or register"
+                },
+                {
+                    "name": "row",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the raw row — a new holder whatever the candidates"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "match.new_holder",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the holder",
+            "built": false
+        },
+        "holder_match_propose": {
+            "action": "holder_match_propose",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/matches/propose.php",
+            "params": [
+                {
+                    "name": "row_kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "nobo or register"
+                },
+                {
+                    "name": "row",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the candidate"
+                },
+                {
+                    "name": "evidence",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one sentence"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "match.propose",
+            "who": "matches.decide or pii",
+            "agent": true,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "holder_kind_propose": {
+            "action": "holder_kind_propose",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/kind-propose.php",
+            "params": [
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "person or entity or custodian_account"
+                },
+                {
+                    "name": "entity_type",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "evidence",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "holder.kind_propose",
+            "who": "pii",
+            "agent": true,
+            "record_id": "the holder",
+            "built": false
+        },
+        "holder_kind_set": {
+            "action": "holder_kind_set",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/kind.php",
+            "params": [
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "person or entity or custodian_account or unknown"
+                },
+                {
+                    "name": "entity_type",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "trust or corporation or fund or partnership or estate or bank or broker or government or nonprofit or other"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "holder.kind_set",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the holder",
+            "built": false
+        },
+        "holder_update": {
+            "action": "holder_update",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/save.php",
+            "params": [
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "kind",
+                    "repeated": false,
+                    "hint": "person or entity or custodian_account or unknown"
+                },
+                {
+                    "required": false,
+                    "name": "entity_type",
+                    "repeated": false,
+                    "hint": "trust or corporation or fund or partnership or estate or bank or broker or government or nonprofit or other"
+                },
+                {
+                    "name": "display_name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "address_line",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "city",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "state",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "country",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "zip",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "notes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "is_insider",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "institution",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "holder.update",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the holder",
+            "built": false,
+            "partial": true
+        },
+        "holders_merge": {
+            "action": "holders_merge",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/merge.php",
+            "params": [
+                {
+                    "name": "survivor",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a holder"
+                },
+                {
+                    "name": "loser",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a holder of the same issuer and kind"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "holder.merge",
+            "who": "holders.merge",
+            "agent": true,
+            "record_id": "the holder",
+            "built": false
+        },
+        "holder_delete": {
+            "action": "holder_delete",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/delete.php",
+            "params": [
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "to the tombstone"
+                }
+            ],
+            "undo": "holder_restore",
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "holder.delete",
+            "who": "holders.merge",
+            "agent": true,
+            "record_id": "the holder",
+            "built": false
+        },
+        "holder_restore": {
+            "action": "holder_restore",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/restore.php",
+            "params": [
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "holder.restore",
+            "who": "holders.merge",
+            "agent": true,
+            "record_id": "the holder",
+            "built": false
+        },
+        "matcher_run": {
+            "action": "matcher_run",
+            "section": "NOBO, the register and HOLDERS (slice 3)",
+            "endpoint": "/holders/matches/run.php",
+            "params": [
+                {
+                    "name": "upload",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "every unmatched row of it scored again"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "matcher.run",
+            "who": "uploads.write",
+            "agent": true,
+            "record_id": "the upload",
+            "built": false
+        },
+        "filing_fetch_text": {
+            "action": "filing_fetch_text",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/filings/fetch-text.php",
+            "params": [
+                {
+                    "name": "filing",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the primary document fetched and its text kept — under the source's policy"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "filing.fetch_text",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the filing",
+            "built": false
+        },
+        "filing_event_make": {
+            "action": "filing_event_make",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/filings/event-make.php",
+            "params": [
+                {
+                    "name": "filing",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "title",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the form's by default"
+                },
+                {
+                    "name": "severity",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "info or watch or high"
+                },
+                {
+                    "name": "body",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "event_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "filing.event_make",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the event",
+            "built": false
+        },
+        "watch_hit_confirm": {
+            "action": "watch_hit_confirm",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/filings/watch/confirm.php",
+            "params": [
+                {
+                    "name": "watch_hit",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "atm or eloc or convertible_note or convertible_preferred or warrant or rights_offering or registered_direct or pipe or other"
+                },
+                {
+                    "name": "counterparty",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "facility_amount",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "price_terms",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "floating_price",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "watch.confirm",
+            "who": "events.write",
+            "agent": false,
+            "record_id": "the instrument",
+            "built": false
+        },
+        "watch_hit_dismiss": {
+            "action": "watch_hit_dismiss",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/filings/watch/dismiss.php",
+            "params": [
+                {
+                    "name": "watch_hit",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "watch.dismiss",
+            "who": "events.write",
+            "agent": false,
+            "record_id": "the watch hit",
+            "built": false
+        },
+        "dilution_save": {
+            "action": "dilution_save",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/dilution/save.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "atm or eloc or convertible_note or convertible_preferred or warrant or rights_offering or registered_direct or pipe or other"
+                },
+                {
+                    "name": "security",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "counterparty",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "filed_on",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "filing",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "facility_amount",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "currency",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "remaining_amount",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "price_terms",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "floating_price",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "shares_issuable_max",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "expires_on",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "status",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "proposed or active or exhausted or terminated"
+                },
+                {
+                    "name": "notes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "instrument",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to change an existing one"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "dilution.save",
+            "who": "events.write",
+            "agent": false,
+            "record_id": "the instrument",
+            "built": false
+        },
+        "dilution_delete": {
+            "action": "dilution_delete",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/dilution/delete.php",
+            "params": [
+                {
+                    "name": "instrument",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "dilution.delete",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the instrument",
+            "built": false
+        },
+        "fetch_now": {
+            "action": "fetch_now",
+            "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
+            "endpoint": "/admin/sources/pull.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a pull now within its policy — a blocked source stays blocked"
+                },
+                {
+                    "name": "issuer",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one issuer only"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "source.pull_now",
+            "who": "uploads.write",
+            "agent": true,
+            "record_id": "the pull",
+            "built": false
+        },
+        "institution_update": {
+            "action": "institution_update",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "endpoint": "/institutions/save.php",
+            "params": [
+                {
+                    "name": "institution",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "investment_adviser or hedge_fund or bank or insurance or pension or mutual_fund or etf_sponsor or activist or individual or corporation or family_office or other"
+                },
+                {
+                    "name": "is_activist",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "website",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "notes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "institution.update",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the institution",
+            "built": false
+        },
+        "insider_holder_link": {
+            "action": "insider_holder_link",
+            "section": "EDGAR — the ownership forms (slice 5)",
+            "endpoint": "/ownership/insiders/link.php",
+            "params": [
+                {
+                    "name": "reporting_owner_cik",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the insider"
+                },
+                {
+                    "name": "holder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the register's holder"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "insider.holder_link",
+            "who": "matches.decide",
+            "agent": false,
+            "record_id": "the holder",
+            "built": false
+        },
+        "borrow_observation_create": {
+            "action": "borrow_observation_create",
+            "section": "The short side (slice 6)",
+            "endpoint": "/short/borrow/save.php",
+            "params": [
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "observed_on",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "name": "source",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "broker_quote or manual"
+                },
+                {
+                    "name": "fee_rate_percent",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "utilization_percent",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "shares_on_loan",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "shares_available",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "borrow_observation_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "borrow.record",
+            "who": "borrow.write",
+            "agent": true,
+            "record_id": "the observation",
+            "built": false
+        },
+        "borrow_observation_delete": {
+            "action": "borrow_observation_delete",
+            "section": "The short side (slice 6)",
+            "endpoint": "/short/borrow/delete.php",
+            "params": [
+                {
+                    "name": "observation",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "borrow.delete",
+            "who": "borrow.write",
+            "agent": true,
+            "record_id": "the observation",
+            "built": false
+        },
+        "signal_acknowledge": {
+            "action": "signal_acknowledge",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/acknowledge.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "reason",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "known or watching"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "signal.acknowledge",
+            "who": "signals.work",
+            "agent": false,
+            "record_id": "the signal",
+            "built": false
+        },
+        "signal_dismiss": {
+            "action": "signal_dismiss",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/dismiss.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "reason",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "explained_by_event or data_defect or false_positive or other"
+                },
+                {
+                    "name": "explaining_event",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "required for explained_by_event"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "signal.dismiss",
+            "who": "signals.work",
+            "agent": false,
+            "record_id": "the signal",
+            "built": false
+        },
+        "signal_escalate": {
+            "action": "signal_escalate",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/escalate.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to the IR Manager"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "signal.escalate",
+            "who": "signals.work",
+            "agent": false,
+            "record_id": "the signal",
+            "built": false
+        },
+        "signal_propose": {
+            "action": "signal_propose",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/propose.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "reason",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "known or watching or explained_by_event or data_defect or false_positive or escalate"
+                },
+                {
+                    "name": "explaining_event",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one sentence of why"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "signal.propose",
+            "who": "signals.work",
+            "agent": true,
+            "record_id": "the signal",
+            "built": false
+        },
+        "signal_note": {
+            "action": "signal_note",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/note.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "body",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "signal.note",
+            "who": "notes.write",
+            "agent": true,
+            "record_id": "the signal",
+            "built": false
+        },
+        "signal_delete": {
+            "action": "signal_delete",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/delete.php",
+            "params": [
+                {
+                    "name": "signal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a signal raised on data since corrected"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "signal.delete",
+            "who": "rules.manage",
+            "agent": true,
+            "record_id": "the signal",
+            "built": false
+        },
+        "rules_run": {
+            "action": "rules_run",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/signals/run.php",
+            "params": [
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "every enabled rule now"
+                },
+                {
+                    "name": "as_of",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a date — today when omitted"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "rules.run",
+            "who": "signals.work",
+            "agent": true,
+            "record_id": "the security",
+            "built": false
+        },
+        "rule_save": {
+            "action": "rule_save",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/rules/save.php",
+            "params": [
+                {
+                    "name": "rule",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "params",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the thresholds as an object"
+                },
+                {
+                    "name": "enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "severity_default",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "info or watch or high"
+                },
+                {
+                    "name": "window_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "rule.save",
+            "who": "rules.manage",
+            "agent": true,
+            "record_id": "the rule",
+            "built": false
+        },
+        "rule_override_save": {
+            "action": "rule_override_save",
+            "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
+            "endpoint": "/rules/override.php",
+            "params": [
+                {
+                    "name": "rule",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "params",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the issuer's thresholds"
+                },
+                {
+                    "name": "enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no or blank for the rule's"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "rule.override",
+            "who": "rules.manage",
+            "agent": true,
+            "record_id": "the rule",
+            "built": false
+        },
+        "event_create": {
+            "action": "event_create",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/events/save.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "on_date",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "filing or financing or dilution_instrument or record_date or earnings or press or activist_short_report or lawsuit or exchange_notice or insider_transaction or share_count or threshold or note or other"
+                },
+                {
+                    "name": "title",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "security",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "body",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "url",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "filing",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "severity",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "info or watch or high"
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "event_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "event.create",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the event",
+            "built": false
+        },
+        "event_update": {
+            "action": "event_update",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/events/save.php",
+            "params": [
+                {
+                    "name": "event",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "issuer",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "on_date",
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "required": false,
+                    "name": "kind",
+                    "repeated": false,
+                    "hint": "filing or financing or dilution_instrument or record_date or earnings or press or activist_short_report or lawsuit or exchange_notice or insider_transaction or share_count or threshold or note or other"
+                },
+                {
+                    "required": false,
+                    "name": "title",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "security",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "body",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "url",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "filing",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "severity",
+                    "repeated": false,
+                    "hint": "info or watch or high"
+                },
+                {
+                    "required": false,
+                    "name": "tags",
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "event.update",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the event",
+            "built": false,
+            "partial": true
+        },
+        "event_delete": {
+            "action": "event_delete",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/events/delete.php",
+            "params": [
+                {
+                    "name": "event",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "to the tombstone"
+                }
+            ],
+            "undo": "event_restore",
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "event.delete",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the event",
+            "built": false
+        },
+        "event_restore": {
+            "action": "event_restore",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/events/restore.php",
+            "params": [
+                {
+                    "name": "event",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "event.restore",
+            "who": "events.write",
+            "agent": true,
+            "record_id": "the event",
+            "built": false
+        },
+        "report_draft": {
+            "action": "report_draft",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/save.php",
+            "params": [
+                {
+                    "name": "issuer",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "weekly_pack or monthly_pack or board_pack or record_date_pack or custom"
+                },
+                {
+                    "name": "period_from",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "name": "period_to",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "title",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "narrative",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "Markdown"
+                },
+                {
+                    "name": "sections",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "report_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "report.draft",
+            "who": "reports.run",
+            "agent": true,
+            "record_id": "the report",
+            "built": false
+        },
+        "report_update": {
+            "action": "report_update",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/save.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "issuer",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "kind",
+                    "repeated": false,
+                    "hint": "weekly_pack or monthly_pack or board_pack or record_date_pack or custom"
+                },
+                {
+                    "required": false,
+                    "name": "period_from",
+                    "repeated": false,
+                    "hint": "a date"
+                },
+                {
+                    "required": false,
+                    "name": "period_to",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "title",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "narrative",
+                    "repeated": false,
+                    "hint": "Markdown"
+                },
+                {
+                    "required": false,
+                    "name": "sections",
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "report.update",
+            "who": "reports.run",
+            "agent": true,
+            "record_id": "the report",
+            "built": false,
+            "partial": true
+        },
+        "report_render": {
+            "action": "report_render",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/render.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the HTML and the PDF when the renderer is present"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "report.render",
+            "who": "reports.run",
+            "agent": true,
+            "record_id": "the report",
+            "built": false
+        },
+        "report_approve": {
+            "action": "report_approve",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/approve.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the narrative is frozen"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "other",
+            "log_event": "report.approve",
+            "who": "reports.approve",
+            "agent": true,
+            "record_id": "the report",
+            "built": false
+        },
+        "report_send": {
+            "action": "report_send",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/send.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "recipients",
+                    "required": true,
+                    "repeated": true,
+                    "hint": "members only"
+                },
+                {
+                    "name": "message",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "report.send",
+            "who": "reports.approve",
+            "agent": true,
+            "record_id": "the report",
+            "built": false
+        },
+        "report_delete": {
+            "action": "report_delete",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/reports/delete.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a draft or an approved pack to the tombstone"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "report.delete",
+            "who": "reports.approve",
+            "agent": true,
+            "record_id": "the report",
+            "built": false
+        },
+        "export_create": {
+            "action": "export_create",
+            "section": "Events, the calendar, reports and the pack (slice 8)",
+            "endpoint": "/exports/create.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "positions_csv or holders_csv or institutions_csv or short_csv or signals_csv or events_csv or filings_csv"
+                },
+                {
+                    "name": "security",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "from",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "to",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "record_date",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "channel",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a holders export is logged with its row count — PII roles"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "export.create",
+            "who": "export.own",
+            "agent": true,
+            "record_id": "the export",
+            "built": false
+        },
+        "notification": {
+            "action": "notification",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/agents/notify.php",
+            "params": [
+                {
+                    "name": "recipient",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a member"
+                },
+                {
+                    "name": "title",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "body",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "morning_note or signal or mention or digest"
+                },
+                {
+                    "name": "issuer",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "never about an issuer the recipient may not see"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.send",
+            "who": "signals.work",
+            "agent": true,
+            "record_id": "the notification",
+            "built": false
+        },
+        "dispatch_cancel": {
+            "action": "dispatch_cancel",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/agents/dispatches/cancel.php",
+            "params": [
+                {
+                    "name": "dispatch",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "dispatch.cancel",
+            "who": "agents.settings",
+            "agent": false,
+            "record_id": "the dispatch",
+            "built": false
+        },
+        "agents_settings_save": {
+            "action": "agents_settings_save",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/agents/settings.php",
+            "params": [
+                {
+                    "name": "morning_note_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "morning_note_hour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0 to 23"
+                },
+                {
+                    "name": "analyst_proposals",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "pack_day",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 7"
+                },
+                {
+                    "name": "analyst_issuers",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "empty for every issuer"
+                },
+                {
+                    "name": "escalate_high_to",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a member"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "agents_settings.save",
+            "who": "agents.settings",
+            "agent": false,
+            "record_id": "the settings",
+            "built": false
+        },
+        "key_mint": {
+            "action": "key_mint",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/settings/tokens/key-mint.php",
+            "params": [
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "key_revoke",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "key.mint",
+            "who": "tokens.own",
+            "agent": false,
+            "record_id": "the key",
+            "built": false
+        },
+        "key_rotate": {
+            "action": "key_rotate",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/settings/tokens/key-rotate.php",
+            "params": [
+                {
+                    "name": "api_key",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the old one keeps 24 hours"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "key.rotate",
+            "who": "tokens.own",
+            "agent": false,
+            "record_id": "the key",
+            "built": false
+        },
+        "key_revoke": {
+            "action": "key_revoke",
+            "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
+            "endpoint": "/settings/tokens/key-revoke.php",
+            "params": [
+                {
+                    "name": "api_key",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "key.revoke",
+            "who": "tokens.own or tokens.manage",
+            "agent": false,
+            "record_id": "the key",
+            "built": false
+        },
+        "source_save": {
+            "action": "source_save",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/sources/save.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "base_url",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "settings",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "an object"
+                },
+                {
+                    "name": "rate_per_second",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0.1 to 10"
+                },
+                {
+                    "name": "user_agent",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "active",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "source.save",
+            "who": "sources.manage",
+            "agent": true,
+            "record_id": "the source",
+            "built": false
+        },
+        "source_schedule_set": {
+            "action": "source_schedule_set",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/sources/schedule.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "schedule_minutes",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "0 for manual"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "source.schedule",
+            "who": "sources.manage",
+            "agent": true,
+            "record_id": "the source",
+            "built": false
+        },
+        "source_pause": {
+            "action": "source_pause",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/sources/pause.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "reason",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "source_resume",
+            "confirm": false,
+            "approval": null,
+            "log_event": "source.pause",
+            "who": "sources.manage",
+            "agent": true,
+            "record_id": "the source",
+            "built": false
+        },
+        "source_resume": {
+            "action": "source_resume",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/sources/resume.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "source_pause",
+            "confirm": false,
+            "approval": null,
+            "log_event": "source.resume",
+            "who": "sources.manage",
+            "agent": true,
+            "record_id": "the source",
+            "built": false
+        },
+        "credential_set": {
+            "action": "credential_set",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/sources/credential.php",
+            "params": [
+                {
+                    "name": "source",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "api_key or bearer or basic or oauth_client"
+                },
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "secret",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "never logged — a person's form"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "other",
+            "log_event": "credential.set",
+            "who": "credentials.manage",
+            "agent": false,
+            "record_id": "the source",
+            "built": false
+        },
+        "participant_class_set": {
+            "action": "participant_class_set",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/participant-classes/set.php",
+            "params": [
+                {
+                    "name": "participant",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "class",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "retail or clearing_retail or prime or market_maker or lending or transfer_agent or bank_custodian or other"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "participant.class_set",
+            "who": "issuers.manage",
+            "agent": true,
+            "record_id": "the participant",
+            "built": false
+        },
+        "template_save": {
+            "action": "template_save",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/templates/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "spr or nobo or register or prices_csv or holders_csv or share_range"
+                },
+                {
+                    "name": "connector",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "mapping",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an object"
+                },
+                {
+                    "name": "template",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to change an existing one"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "template.save",
+            "who": "settings.manage",
+            "agent": true,
+            "record_id": "the template",
+            "built": false
+        },
+        "template_delete": {
+            "action": "template_delete",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/templates/delete.php",
+            "params": [
+                {
+                    "name": "template",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "template.delete",
+            "who": "settings.manage",
+            "agent": true,
+            "record_id": "the template",
+            "built": false
+        },
+        "settings_save": {
+            "action": "settings_save",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/settings/save.php",
+            "params": [
+                {
+                    "name": "business_name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "edgar_contact_email",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "default_exchange",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "market_timezone",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "market_holidays",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                },
+                {
+                    "name": "edgar_rate_per_second",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "reconciliation_tolerance_shares",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "auto_match_threshold",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0.5 to 1"
+                },
+                {
+                    "name": "pii_in_exports",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "analyst or admin or nobody"
+                },
+                {
+                    "name": "escalate_high_to",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a member"
+                },
+                {
+                    "name": "signal_grace_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tombstone_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "retain_raw_rows_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key_rate_per_minute",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key_rate_per_day",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "max_upload_bytes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "price_source_default",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "timezone",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "settings.save",
+            "who": "settings.manage",
+            "agent": false,
+            "record_id": "the settings",
+            "built": false
+        },
+        "token_revoke_any": {
+            "action": "token_revoke_any",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/tokens/revoke.php",
+            "params": [
+                {
+                    "name": "token",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "anyone's"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "token.revoke_any",
+            "who": "tokens.manage",
+            "agent": false,
+            "record_id": "the token",
+            "built": false
+        },
+        "records_purge": {
+            "action": "records_purge",
+            "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
+            "endpoint": "/admin/purge/run.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "upload or holder or event or report or issuer or all"
+                },
+                {
+                    "name": "record",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one record now"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "records.purge",
+            "who": "records.purge",
+            "agent": true,
+            "record_id": "the count",
+            "built": false
+        }
+    }
+}
