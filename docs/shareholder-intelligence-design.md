@@ -800,7 +800,7 @@ installation's.
 | plugin | `shared-schema.md` gains `issuers`, `securities`, `share_counts`, `prices`, `participants`, `participant_positions`, `holders`, `holder_accounts`, `holder_positions`, `filings`, `filing_text`, `institutions`, `institutional_holdings`, `beneficial_ownership`, `insider_transactions`, `short_interest`, `daily_short_volume`, `fails_to_deliver`, `threshold_listings`, `events`, `signal_rules`/`signals` as canonical; records the `sources` reuse with `supplier_id` kept and `role` widened | the planning model, in Phase 0 |
 | the owner | **three real files, anonymised** (§13 (a)), and the EDGAR contact email for the user-agent | at Phase 0 |
 
-## 13. The decisions (recommendations; the owner's answers go in §15)
+## 13. The decisions (recommendations; the owner's answers are §15 — every one taken, 2026-10-09)
 
 | # | Decision | Recommendation | Alternative |
 |---|---|---|---|
@@ -859,9 +859,37 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 15. The owner's answers
 
-*(awaiting the owner — D1–D16 and (a)–(d))*
+**2026-10-09 — every recommendation of §13 taken, and the four open questions answered**, walked through one by one.
+
+| # | Decision | Where it lives |
+|---|---|---|
+| D1 | **"Shareholder Intelligence", key `shareholder_intelligence`, DNS label `shareholders`**, database `<tenant>_shareholder_intelligence`, roles `shareholder_intelligence_rw` / `_records_ro` / `_activity_ro`, prefix `si_`; Finance; category `investor_relations` (K34 widens both checks); the repository keeps the name `maludb-os-shareholder-intelligence` | `maludb-os.json`; §14; kernel db/178 |
+| D2 | **Four roles**: Viewer, Analyst (`user`), IR Manager, SI admin; the advisory firm's client an external Viewer restricted to their issuer | §3; `si_roles`; `app_roles` |
+| D3 | **Many issuers, scope none, a restriction list per issuer** (`issuer_members`) | §3.1; §6.1 |
+| D4 | **The PII wall**: a natural person's name and address for Analyst and above; a Viewer sees aggregates and entities; the shares and Viewer API reads carry no person | §3.2; `mcp_holders` |
+| D5 | **The Expert answers, records, proposes and drafts; never sends, deletes, merges or changes a rule** | §5; `os/expert.md` |
+| D6 | **The three files uploaded, never fetched**; one transaction with control totals tied; the vendor connectors and `generic_mapped` with templates | §6.2; slice 2 and 3 |
+| D7 | **One row per participant per date**; the weekly grid unpivoted; absent ≠ zero; seeded classes a manager corrects; the migration signal marked lore | §6.1–6.2; `participant_classes` |
+| D8 | **A normalised holder with many accounts; the scoring matcher; ≥ 0.95 auto and logged; below it an Analyst; merge a manager's** | §6.3; `docs/build-specs/holder-identity.md` |
+| D9 | **EDGAR v1**: the index and cover facts, the watched forms' text, the full-text watch, 13F from the quarterly data sets, 13D/G, Forms 3/4/5 and 144 from XML, 2 requests a second; fresh 13F-HR and N-PORT Extended | §6.5; slices 4–5 |
+| D10 | **The free public record**: FINRA short interest with revisions as rows, daily short volume with the caveat, the SEC's fails, the three threshold lists; borrow typed until a licensed key; Form SHO and SLATE tables empty now | §6.5; slice 6 |
+| D11 | **Nineteen SQL rules with an evidence class on every signal**, one open per rule per security, a person's disposition with a reason; `signal_outcomes`; no composite score, no model | §6.6; `docs/build-specs/signals.md` |
+| D12 | **The reconciliation** as a dated row with a tolerance; untied is a data-defect signal first | §6.4 |
+| D13 | **Prices through a connector**: stooq keyless by default, Alpha Vantage and Polygon with a key, manual CSV | §6.5 |
+| D14 | **Expert and Surveillance Analyst hired on install**; the Analyst 07:00 ET on market days, proposals only, the Friday pack as a draft | §5; `agents[]` |
+| D15 | **On request, not a default; the repository private** until the owner says | §12; the org |
+| D16 | **Ports 8192 / 8845 / 8846**, scratch 8901–8907; **the Spaces division** — the planning model builds K34, Phases 0–2, slice 1 and the exemplars (slice 2 the SPR, slice 3 the holders, slice 7 the signals); Sonnet 5.5 the remaining slices and Phases 4–5 | §14; `CLAUDE.md` |
+| (a) | **The two files in KineticIntel2 (`NOBOLIST.xlsx`, `STCCommon.xlsx`) anonymised as fixtures** — names and addresses replaced, shares and structure kept; **the owner provides one real SPR week** as DTC delivered it (the parser is built from the Angular grid until it arrives and confirmed on it) | `tests/fixtures/`; Phase 0 |
+| (b) | **The EDGAR user-agent is a setting the admin fills at install**; the proofs use `Kinetic Seas claude@kineticseas.com`; `ROOT_STEPS.sh` reminds; K35 makes the installer warn when empty | `si_settings`; §12 |
+| (c) | **The first issuer is the company behind the reference files (CUSIP 07831X206)**; its ticker and CIK are looked up at setup | Phase 5 |
+| (d) | **Holder PII exports: Analyst and above, every export logged with its row count**; a setting may tighten it to admin-only later | §3.3; `si_settings.pii_in_exports` |
 
 ## 16. State
+
+**2026-10-09 — APPROVED the same day (§15: D1–D16 and (a)–(d), every recommendation), walked through one by one with the owner.**
+**Next:** K34 (kernel db/178: the catalog row under Finance, category `investor_relations` widened into both checks) → Phase 0 (the
+schema and proofs against the anonymised fixtures; the SPR parser from the Angular grid until the owner's real week arrives) →
+Phase 1 for approval → Phase 2 → slice 1 → the exemplars (slices 2, 3 and 7) → the handoff to Sonnet 5.5.
 
 **2026-10-09 — planned; awaiting the owner's decisions (§13).** The research of §0 done: the field (Q4, Nasdaq IR Intelligence,
 Broadridge, Georgeson, Alliance, Morrow Sodali, Okapi, Irwin, S&P, Sequire; Ortex, S3, Fintel, Breakout Point, Insightia,

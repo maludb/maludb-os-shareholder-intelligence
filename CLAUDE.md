@@ -61,4 +61,5 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — planned; awaiting the owner's decisions (design §13) and the three anonymised files for the fixtures. Nothing is built.
+2026-10-09 — planned and **APPROVED** (design §15: D1–D16 and (a)–(d), every recommendation). Next: K34 (kernel db/178) → Phase 0 against the
+anonymised KineticIntel2 fixtures (the owner provides one real SPR week) → Phase 1 → Phase 2 → slice 1 → the exemplars (slices 2, 3, 7). Nothing is built.
