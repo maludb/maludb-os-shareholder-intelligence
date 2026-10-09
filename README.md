@@ -16,5 +16,5 @@ Installed by the kernel's installer at `/srv/apps/shareholder_intelligence`, ser
 `shareholder_intelligence`. The reference implementation for the three file formats is the owner's
 [KineticIntel2](https://github.com/KineticGuides/KineticIntel2) (Angular 18, 2025).
 
-**State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15: D1–D16 and (a)–(d), every recommendation). K34 and Phase 0
+**State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15: D1–D16 and (a)–(d), every recommendation). K34 built (kernel db/178); Phase 0
 next; the owner provides one real SPR week; nothing is built yet.

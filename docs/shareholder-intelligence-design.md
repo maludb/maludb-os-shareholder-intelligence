@@ -787,7 +787,7 @@ installation's.
 
 | # | Item | State |
 |---|---|---|
-| **K34** | **Catalog entry `shareholder_intelligence`** (kind `ours`, Finance, `feather-trending-down`); **category `investor_relations` widened into both checks** (`application_catalog` and `applications`, db/172 and db/175's lists) — the K30 lesson: widen both or the apply fails at register; on request, not a default (D15) | owed: kernel `db/178`, after the owner's go |
+| **K34** | **Catalog entry `shareholder_intelligence`** (kind `ours`, Finance, `feather-trending-down`); **category `investor_relations` widened into both checks** (`application_catalog` and `applications`, db/172 and db/175's lists) — the K30 lesson: widen both or the apply fails at register; on request, not a default (D15) | **built** 2026-10-09: kernel db/178 (both checks widened, `APPLICATION_CATEGORIES` too), applied on the build server |
 | K26 | K7 names the consumer; `timeout_seconds` | **built** (db/173) — `filing_text` declares 60 |
 | K6 | texts to a member | **built** — a `high` signal's text when the member asked |
 | K8 | wake an agent from an application | owed to every sibling; the chat-turn dispatch until then |
@@ -887,7 +887,7 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 ## 16. State
 
 **2026-10-09 — APPROVED the same day (§15: D1–D16 and (a)–(d), every recommendation), walked through one by one with the owner.**
-**Next:** K34 (kernel db/178: the catalog row under Finance, category `investor_relations` widened into both checks) → Phase 0 (the
+**K34 built the same day** (kernel db/178, applied). **Next:** Phase 0 (the
 schema and proofs against the anonymised fixtures; the SPR parser from the Angular grid until the owner's real week arrives) →
 Phase 1 for approval → Phase 2 → slice 1 → the exemplars (slices 2, 3 and 7) → the handoff to Sonnet 5.5.
 
