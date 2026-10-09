@@ -1,0 +1,8 @@
+config/.env
+config/.env.*
+!config/.env.example
+storage/
+mcp/venv/
+mcp/__pycache__/
+*.pyc
+.DS_Store
