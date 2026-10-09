@@ -70,7 +70,8 @@ function log_screen_view(PDO $pdo, string $screen): void
     if (wants_json() && ($_SERVER['HTTP_X_SCREEN_VIEW'] ?? '') !== '1') {
         return;
     }
-    log_activity($pdo, 'screen.view', null, null, ['screen' => $screen]);
+    $issuer = function_exists('current_issuer') && PHP_SAPI !== 'cli' && is_logged_in() ? current_issuer($pdo) : null;     // the screen's issuer (sso-shell.md)
+    log_activity($pdo, 'screen.view', null, null, ['screen' => $screen, 'issuer_id' => $issuer !== null ? (int) $issuer['issuer_id'] : null]);
 }
 
 /**

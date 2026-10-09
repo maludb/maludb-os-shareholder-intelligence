@@ -19,7 +19,8 @@ function ask_assistant(PDO $pdo, int $memberId, string $utterance, array $contex
     $conversation = (string) ($context['conversation_id'] ?? '');
     $answer = kernel_call('POST', '/api/v1/agents/chat.php?agent=' . rawurlencode($agent), [
         'utterance' => $utterance, 'screen' => (string) ($context['screen'] ?? ''),
-        'context' => ['entity' => (string) ($context['entity'] ?? ''), 'record_id' => $context['record_id'] ?? null, 'application' => app_key()],
+        'context' => ['entity' => (string) ($context['entity'] ?? ''), 'record_id' => $context['record_id'] ?? null, 'application' => app_key(),
+                      'issuer_id' => $context['issuer_id'] ?? null, 'issuer' => $context['issuer'] ?? null],      // the issuer the person is working on (sso-shell.md)
         'conversation_id' => $conversation, 'wait' => 60,
     ], ['X-Acting-Member: ' . $memberId], 75);                     // the kernel holds the request up to `wait`
     $fallback = [
@@ -63,12 +64,12 @@ function ask_assistant(PDO $pdo, int $memberId, string $utterance, array $contex
 /** A tool `{entity}_{verb}` that succeeded refreshes the screens listening for `{entity}Changed` (chat-actions, Pattern D). */
 function assistant_refresh_events(array $actions): array
 {
-    $families = ['product' => 'product', 'variant' => 'product', 'identifier' => 'product', 'bundle' => 'product', 'price' => 'product',
-        'location' => 'location', 'stock' => 'stock', 'receipt' => 'stock', 'transfer' => 'stock', 'adjustment' => 'stock', 'count' => 'stock',
-        'supplier' => 'supplier', 'source' => 'source', 'listing' => 'listing', 'match' => 'listing', 'offer' => 'listing', 'watch' => 'watch',
-        'customer' => 'customer', 'order' => 'order', 'line' => 'order', 'payment' => 'order', 'shipment' => 'order',
-        'purchase' => 'purchase_order', 'po' => 'purchase_order', 'return' => 'return', 'feed' => 'feed', 'key' => 'feed',
-        'settings' => 'settings', 'token' => 'token', 'notification' => 'notification', 'export' => 'export', 'agent' => 'agent', 'buyer' => 'proposal'];
+    $families = ['issuer' => 'issuer', 'security' => 'issuer', 'share' => 'issuer', 'restriction' => 'issuer', 'participant' => 'participant', 'tag' => 'tag', 'note' => 'note',
+        'upload' => 'upload', 'reconciliation' => 'upload', 'match' => 'holder', 'matcher' => 'holder', 'holder' => 'holder', 'holders' => 'holder', 'insider' => 'holder',
+        'filing' => 'filing', 'watch' => 'filing', 'dilution' => 'filing', 'fetch' => 'source', 'institution' => 'institution', 'borrow' => 'short',
+        'signal' => 'signal', 'rules' => 'signal', 'rule' => 'signal', 'event' => 'event', 'report' => 'report', 'export' => 'export',
+        'notification' => 'notification', 'notifications' => 'notification', 'dispatch' => 'agent', 'agents' => 'agent', 'key' => 'token', 'token' => 'token',
+        'source' => 'source', 'credential' => 'source', 'template' => 'template', 'settings' => 'settings', 'prefs' => 'prefs', 'records' => 'settings'];
     $events = [];
     foreach ($actions as $a) {
         if (($a['status'] ?? '') === 'ok' && preg_match('/^([a-z]+)(?:_[a-z_]+)?$/', (string) ($a['tool'] ?? ''), $m) && isset($families[$m[1]])) {

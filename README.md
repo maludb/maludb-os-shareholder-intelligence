@@ -16,7 +16,7 @@ Installed by the kernel's installer at `/srv/apps/shareholder_intelligence`, ser
 `shareholder_intelligence`. The reference implementation for the three file formats is the owner's
 [KineticIntel2](https://github.com/KineticGuides/KineticIntel2) (Angular 18, 2025).
 
-**State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15); K34 built in the kernel; **Phase 0 complete**
-(§16): the kit, the schema proven against the anonymised fixtures and the owner's real files (172 checks with db/018) and without a kernel (73);
-**Phase 1 written** — the tool surface (95 + 7 tools), the action manifest (84 screens, 83 actions) and its registry, four build specs and eleven
-slice specs, `tests/phase1/check_specs.sh` 60 checks green (`docs/phase1-consistency.md`). Next: the owner's approval of Phase 1. No feature PHP yet.
+**State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15); K34 built in the kernel; Phase 0 complete; **Phase 1
+approved** (the tool surface, the action manifest and its registry, four build specs, eleven slice specs); **Phase 2 the shell built** — the issuer
+switcher, the home's ownership tiles with their sources, the search box, the person's screens, the record picker, seventeen placeholders
+(`tests/phase2/run.sh`, under php -S and a real Apache). Next: slice 1, then the exemplars (slices 2, 3, 7).

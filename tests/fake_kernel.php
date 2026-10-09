@@ -10,6 +10,7 @@
  *                                         every request is appended to "<state file>.ledger" (the period asked, or "list")
  *   POST /api/v1/notify/sms.php         → K6, as state.sms says (mode = ok | no_sender | not_held | no_verified_phone | opted_out | rate_limited | server_error);
  *                                         every request body is appended to "<state file>.sms" (one JSON line each)
+ *   GET  /api/v1/apps/mine.php          → K31, state.apps_mine (an os.my-applications/1 document) for the acting member, else 404 (no switcher shown)
  * Every call needs Authorization: Bearer $OS_APPLICATION_TOKEN (else 401), like the real one. Never a real kernel.
  */
 $state = json_decode((string) @file_get_contents((string) getenv('FAKE_KERNEL_STATE')), true) ?: [];
@@ -19,6 +20,9 @@ $out = static function (array $body, int $status = 200): never { http_response_c
 if ($auth !== 'Bearer ' . getenv('OS_APPLICATION_TOKEN')) { $out(['error' => ['code' => 'unauthorized', 'message' => 'A valid application token is required.']], 401); }
 $input = json_decode((string) file_get_contents('php://input'), true) ?: [];
 switch ($path) {
+    case '/api/v1/apps/mine.php':
+        if (!isset($state['apps_mine'])) { $out(['error' => ['code' => 'not_found', 'message' => 'No switcher here.']], 404); }
+        $out($state['apps_mine'] + ['acting' => $_SERVER['HTTP_X_ACTING_MEMBER'] ?? null]);
     case '/api/v1/ledger/periods.php':
         $ledger = $state['ledger'] ?? ['periods' => [], 'docs' => []];
         file_put_contents((string) getenv('FAKE_KERNEL_STATE') . '.ledger', ($_GET['period'] ?? 'list') . "\n", FILE_APPEND);
@@ -50,7 +54,7 @@ switch ($path) {
         $run = $parts[2] ?? '';
         $out($state['facts'][$run] ?? ['valid' => false]);
     case '/api/v1/agents/chat.php':
-        file_put_contents((string) getenv('FAKE_KERNEL_STATE') . '.chat', json_encode(['agent' => $_GET['agent'] ?? null, 'acting' => $_SERVER['HTTP_X_ACTING_MEMBER'] ?? null, 'utterance' => $input['utterance'] ?? null]) . "\n", FILE_APPEND);
+        file_put_contents((string) getenv('FAKE_KERNEL_STATE') . '.chat', json_encode(['agent' => $_GET['agent'] ?? null, 'acting' => $_SERVER['HTTP_X_ACTING_MEMBER'] ?? null, 'utterance' => $input['utterance'] ?? null, 'context' => $input['context'] ?? null]) . "\n", FILE_APPEND);
         if (isset($state['chat_status'])) {
             $messages = [403 => 'This person may not use the expert.', 404 => 'No expert for this application.', 409 => 'The expert is busy with another turn.'];
             $out(['error' => ['code' => 'refused', 'message' => $state['chat_message'] ?? ($messages[(int) $state['chat_status']] ?? 'Refused.')]], (int) $state['chat_status']);

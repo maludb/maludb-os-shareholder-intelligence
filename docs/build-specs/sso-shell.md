@@ -103,5 +103,26 @@ reads; prefs save and read back; a token minted once and revoked; the applicatio
 a person, 501 to JSON; the command bar's post reaches the fake kernel's chat endpoint and renders the reply; 375 (the tab bar, no horizontal scroll) and 1280; no
 console errors; the installer's `plan` clean.
 
+## Built (2026-10-09) — what the build decided within this spec
+1. **The phone's fifth tab is Me** (My settings, as in every sibling), not "More": the sidebar's offcanvas is already the header's menu button.
+2. **The issuers a person follows** (`prefs_save` `issuer_ids[]`) are checkboxes of the issuers they may see, not the record picker: the picker
+   chooses one record and an installation follows a handful of issuers; the handler refuses an issuer outside the wall.
+3. **Seventeen placeholders**: the fourteen menu items, the calendar the home links to, and the two buttons the home offers (`/issuers/new`,
+   `/uploads/new`) — so no link of the shell is a 404. The registry marks eighteen screens `stub` (issuer-edit shares the form placeholder).
+   Each logs the manifest's screen id (`NAV_SCREENS`).
+4. **`X-Nav`**: an HTMX screen sends the menu item it belongs to, so the highlight follows the server's choice, not a guess from the screen id.
+5. **db/019** — `mcp_activity_log` gains `actor_is_agent` (the trail says "(agent)"), appended last.
+6. **`app/si/svg.php` starts here** with the home's price-and-events line (gaps of more than five days unjoined, a table twin); slice 2 adds the
+   bars, the stacked flow and the matrix to the same file.
+7. **Health** reports `edgar_user_agent` (set/missing) and `storage` (unset/missing/unwritable/ok; only missing or unwritable fail it).
+8. **The kit's mirror fix** (Inventory, 2026-10-09) is in: a hand-off's claims carry no title, phone or time zone, and the mirror keeps the
+   directory's (proven).
+9. **The command bar's context** carries `issuer_id` and the issuer's ticker to the kernel's chat endpoint.
+10. DocCloud's leftovers removed from the kit: the `/d/`, `/f/`, `/upload/` rewrites in the internal vhost and the dev router, the `INVSID`
+    session name (now `SISID`), the web manifest's name; `is_dc_admin()` is `is_si_admin()`.
+
+Proof: `tests/phase2/run.sh` — browser 82, gates 87, vhost 46, picker 30, switcher 14 under php -S; the same with 49 vhost checks under a real
+Apache (`SI_APP=apache`); the schema proof 172 and the kit 73 re-run green; Phase 1's 60 consistency checks green; the installer's plan clean.
+
 ## Open questions
 None.

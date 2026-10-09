@@ -71,4 +71,7 @@ row of them into a committed fixture or a proof; `build_fixtures.py` anonymises,
 proof's real-files section (154 checks) confirmed the connectors: design §0.2b. **PHASE 1 WRITTEN 2026-10-09** (design §16, `docs/phase1-consistency.md`): `docs/shareholder-intelligence-mcp-tool-surface.md` (95 + 7 tools),
 `docs/shareholder-intelligence-action-manifest.md` (84 screens, 83 actions) → `mcp/action_registry.json` (`php bin/build_action_registry.php --approvals`),
 `docs/build-specs/` (four build specs, eleven slice specs), db/018 (the shares and the reads the tools need; the schema proof 172 checks); the checks:
-`bash tests/phase1/check_specs.sh` (60). **Next: the owner's approval of Phase 1**; no feature PHP before that.
+`bash tests/phase1/check_specs.sh` (60). **Phase 1 APPROVED by the owner 2026-10-09; PHASE 2 THE SHELL BUILT the same day** (`docs/build-specs/sso-shell.md`
+"Built"): `tests/phase2/run.sh` (php -S; `SI_APP=apache` for a real Apache) — the issuer is the shell's first fact (`current_issuer()` in
+`app/features/shell/queries.php`: every screen reads it, `?issuer=` switches it, the wall decides), charts are server-rendered SVG (`app/si/svg.php`),
+every number carries its source line (`shared/source-line.php`). **Next: slice 1**, then the exemplars (slices 2, 3, 7), then the Sonnet handoff.

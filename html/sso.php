@@ -68,6 +68,8 @@ try {
     if (array_key_exists('roles', $claims)) {
         mirror_apply_roles($pdo, $memberId, is_array($claims['roles']) ? $claims['roles'] : []);
     }
+    // the person's notification preferences exist before they look (sso-shell.md)
+    $pdo->prepare('INSERT INTO notification_prefs (member_id) VALUES (:m) ON CONFLICT (member_id) DO NOTHING')->execute(['m' => $memberId]);
     $pdo->commit();
 } catch (Throwable $e) {
     $pdo->rollBack();

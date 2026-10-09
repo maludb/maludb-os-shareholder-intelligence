@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-09T20:20:17+00:00",
+    "generated_at": "2026-10-09T20:49:58+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -23,7 +23,7 @@
                 "kinds",
                 "issuer"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "notifications": {
@@ -32,7 +32,7 @@
             "section": "Home, me and the shell (Phase 2; the search box)",
             "when": "my notices, unread first",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "activity": {
@@ -41,7 +41,7 @@
             "section": "Home, me and the shell (Phase 2; the search box)",
             "when": "my own trail here",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "settings": {
@@ -50,7 +50,7 @@
             "section": "Home, me and the shell (Phase 2; the search box)",
             "when": "my preferences: the morning note and its hour, the minimum signal severity, email and text, which issuers",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "settings-tokens": {
@@ -59,7 +59,7 @@
             "section": "Home, me and the shell (Phase 2; the search box)",
             "when": "my MCP tokens and my API keys: mint (shown once), rotate, revoke",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "issuer-list": {
@@ -71,7 +71,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "issuer-view": {
             "screen": "issuer-view",
@@ -94,7 +94,7 @@
                 "cik"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "issuer-edit": {
             "screen": "issuer-edit",
@@ -103,7 +103,7 @@
             "when": "to change an issuer's fields, holidays, notes",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "issuer-securities": {
             "screen": "issuer-securities",
@@ -145,7 +145,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "participant-view": {
             "screen": "participant-view",
@@ -180,7 +180,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "upload-add": {
             "screen": "upload-add",
@@ -192,7 +192,7 @@
                 "security"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "upload-view": {
             "screen": "upload-view",
@@ -219,7 +219,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "positions-matrix": {
             "screen": "positions-matrix",
@@ -286,7 +286,7 @@
                 "tag"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "holder-view": {
             "screen": "holder-view",
@@ -408,7 +408,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "filing-view": {
             "screen": "filing-view",
@@ -529,7 +529,7 @@
                 "period"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "ownership-13f-changes": {
             "screen": "ownership-13f-changes",
@@ -592,7 +592,7 @@
                 "to"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "short-interest": {
             "screen": "short-interest",
@@ -682,7 +682,7 @@
                 "class"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "signal-view": {
             "screen": "signal-view",
@@ -742,7 +742,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "event-view": {
             "screen": "event-view",
@@ -785,7 +785,7 @@
                 "kinds"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "report-list": {
             "screen": "report-list",
@@ -797,7 +797,7 @@
                 "status"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "report-view": {
             "screen": "report-view",
@@ -851,7 +851,7 @@
                 "issuer"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-agents": {
             "screen": "admin-agents",
@@ -860,7 +860,7 @@
             "when": "the agents with their last dispatch, the dispatches table with status and Cancel, the Analyst's settings (issuers, the hour, the pack's day, proposals on or off)",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-sources": {
             "screen": "admin-sources",
@@ -871,7 +871,7 @@
                 "connector"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-source-view": {
             "screen": "admin-source-view",
@@ -1017,7 +1017,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the member",
-            "built": false
+            "built": true
         },
         "notification_read": {
             "action": "notification_read",
@@ -1038,7 +1038,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the notification",
-            "built": false
+            "built": true
         },
         "notifications_read_all": {
             "action": "notifications_read_all",
@@ -1052,7 +1052,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the member",
-            "built": false
+            "built": true
         },
         "token_mint": {
             "action": "token_mint",
@@ -1079,7 +1079,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "token_revoke": {
             "action": "token_revoke",
@@ -1100,7 +1100,7 @@
             "who": "own or tokens.manage",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "issuer_save": {
             "action": "issuer_save",

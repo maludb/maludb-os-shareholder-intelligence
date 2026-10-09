@@ -224,6 +224,7 @@ function render_screen(string $title, string $pageHtml, array $layout = []): voi
         header('X-Screen: ' . ($layout['screen'] ?? ''));
         header('X-Entity: ' . ($layout['entity'] ?? ''));
         header('X-Record-Id: ' . ($layout['recordId'] ?? ''));
+        header('X-Nav: ' . ($layout['activeNav'] ?? ''));            // the menu item to highlight, as the server chose it
         echo $pageHtml;
         return;
     }

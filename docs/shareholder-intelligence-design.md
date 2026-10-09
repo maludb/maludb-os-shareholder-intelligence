@@ -929,6 +929,19 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-09, later — PHASE 1 APPROVED by the owner as written; PHASE 2 THE SHELL BUILT and proven the same day** (`docs/build-specs/sso-shell.md`,
+"Built"): the layout at 375 and 1280 with **the issuer switcher** (only what the wall admits; `?issuer=` by id, ticker or CIK, remembered and
+logged `issuer.switch`; every screen view carries the issuer), the header's search box over `si_search` (both walls), the bell, the application
+switcher, the command bar with the issuer in its context, the bottom tab bar; **the home** — a new installation's one button (Add your first
+issuer) or the Viewer's sentence, a card per issuer to choose, then the ownership tiles each with its source line (`si_ownership_summary`), the
+open signals with their evidence class, the price-and-events chart (`app/si/svg.php`), the coming events, the latest upload per kind with its
+tie, the morning note; My settings (the morning note, its hour, the least severity, the issuers followed, the channels and kinds), Tokens,
+Notifications, My activity; the five shell actions; the record picker with `member` and `issuer`; seventeen placeholders; preferences for every
+member at sign-on and on every sync; db/019 (`actor_is_agent`); the kit's mirror fix. `tests/phase2/run.sh`: 82 + 87 + 46 + 30 + 14 checks under
+php -S, the same with 49 vhost checks under a real Apache; the schema proof 172, the kit 73, Phase 1's 60 re-run green; the installer's plan clean.
+**Next:** slice 1 (issuers, securities, share counts, participants — the CRUD exemplar), then the exemplars: slice 2 the SPR, slice 3 the holders,
+slice 7 the signals; then the handoff to Sonnet 5.5.
+
 **2026-10-09, later — PHASE 1 WRITTEN, for the owner's checkpoint.** `docs/shareholder-intelligence-mcp-tool-surface.md` (records 95 tools —
 88 for the questions of §7, `app_roles`, `records_search`, the five kernel-only shares — and activity 7; 17 resolvers; the records API),
 `docs/shareholder-intelligence-action-manifest.md` (84 screens, 83 actions; 28 paused for an agent, 23 for people only) and its registry

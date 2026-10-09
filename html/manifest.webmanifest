@@ -1,7 +1,7 @@
 {
-  "name": "Inventory",
-  "short_name": "Inventory",
-  "description": "What the business sells and where it can get it — the catalog, the stock, the sources, the orders.",
+  "name": "Shareholder Intelligence",
+  "short_name": "Shareholders",
+  "description": "Who owns the company and who is short it: the DTC position report, the NOBO list and the register reconciled, the public record watched, signals with their evidence.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
