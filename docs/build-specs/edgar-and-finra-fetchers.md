@@ -6,7 +6,7 @@ calendar each one keeps, and how they are proven — **against the fixtures firs
 live pull each against the real host under the policy.** Nothing is fetched that the host did not publish for machines; no portal, no
 login, no vendor page; the three issuer files are never fetched.
 
-## 1. The client (`app/si/fetch/http.php`, one place)
+## 1. The client (`app/si/fetch/http.php`, one place — Inventory's client ported, slice 1)
 - `si_http_get(PDO $pdo, array $source, string $url, array $opts = []): array{status, headers, body, bytes, ms}` — `curl` with: the
   **user-agent** — for an `edgar_*` connector `si_edgar_user_agent()` (`"<business name> <contact email>"`); when NULL the pull is refused
   before any request (`status = 'failed'`, error "EDGAR needs the business name and a contact email in Settings (the SEC's rule)") and the
@@ -26,7 +26,7 @@ login, no vendor page; the three issuer files are never fetched.
 ## 2. The connectors (`app/si/fetch/<connector>.php`, each `fetch_<connector>(PDO, array $source, DateTimeImmutable $now): array{status, seen, new, changed, requests, bytes, error?}`)
 | Connector | Request | Parse into | Calendar | Slice |
 |---|---|---|---|---|
-| `dtcc_participants` | the alphabetical and numerical listing `.xlsx` linked from `https://www.dtcc.com/support/dtc-directories` (the page read for the current file's link) | `si_participant_upsert(number, name, kind, file_date)` per row; renames into aliases; a new number classed from its name | monthly (the file is dated) | 1 |
+| `dtcc_participants` | the participant listing `.xlsx` linked from `https://www.dtcc.com/support/dtc-directories` (the page read for the current file's link; the alphabetical one, else the numerical; never the settling-bank, pledgee or DRS registers — built 2026-10-09) | `si_participant_upsert(number, name, kind, file_date)` per row; renames into aliases; a new number classed from its name | monthly (the file is dated) | 1 |
 | `edgar_submissions` | `https://data.sec.gov/submissions/CIK##########.json` per issuer with a CIK (and `…-submissions-001.json` pages when `filings.files[]` names older ones, once) | `issuers.edgar_entity` (the scalars, addresses, former names), `edgar_synced_at`; `filings` upserted by accession from `filings.recent` (the column arrays zipped); the events trigger makes the watched forms' events | 06:00 and 18:30 market time on market days; on `issuer_edgar_sync` | 1 (the entity), 4 (the index) |
 | `edgar_companyfacts` | `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json` | `share_counts` kind `outstanding` from `dei:EntityCommonStockSharesOutstanding` (each `end` → `as_of`, `frame` → `xbrl_frame`, the `accn` → `filing_id`), `public_float_value` from `dei:EntityPublicFloat` — `source = 'filing'`, never overwriting a person's row | daily, after the index | 4 |
 | `edgar_fulltext` | `https://efts.sec.gov/LATEST/search-index?q="<term>"&forms=<forms>&startdt=<since>&enddt=<today>` per watch term, for the issuer's name and CIK (`ciks=`), and for **others' filings naming the issuer** (`q="<issuer name>"` without `ciks`) | `watch_hits` (term, filing, snippet from `_source` highlights); a filing not yet indexed is inserted (`about_us = true` when the filer is not the issuer); a dilution term proposes a `dilution_instruments` row (`status = proposed`, `proposed_by = 'watch'`) | hourly on market days, 07:00–20:00 market time | 4 |

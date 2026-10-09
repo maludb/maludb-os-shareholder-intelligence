@@ -50,7 +50,7 @@ ok($r['code'] === 404, 'a search is a GET; a POST with a source the registry lac
 
 echo "3. The shell's two sources, through the walls\n";
 $sources = require $root . '/app/pickers.php';
-ok(array_keys($sources) === ['member', 'issuer'], 'app/pickers.php has the shell\'s two sources: member and issuer');
+ok(array_slice(array_keys($sources), 0, 2) === ['member', 'issuer'], 'app/pickers.php has the shell\'s two sources first, member and issuer (the slices add theirs after)');
 $rows = fn (string $j, string $u): array => (preg_match_all('/id="record-picker-row-(\d+)"/', page($j, $u)['body'], $m) ? array_map('intval', $m[1]) : []);
 [$jP, ] = sign_on(26);
 ok($rows($jP, '/pick/?source=issuer') === [$seed['alpha'], $seed['gamma']], 'Priya picks from Alpha and Gamma — never the restricted Beta');

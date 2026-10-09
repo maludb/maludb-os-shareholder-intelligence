@@ -19,4 +19,4 @@ Installed by the kernel's installer at `/srv/apps/shareholder_intelligence`, ser
 **State (2026-10-09):** planned and approved (`docs/shareholder-intelligence-design.md`, §15); K34 built in the kernel; Phase 0 complete; **Phase 1
 approved** (the tool surface, the action manifest and its registry, four build specs, eleven slice specs); **Phase 2 the shell built** — the issuer
 switcher, the home's ownership tiles with their sources, the search box, the person's screens, the record picker, seventeen placeholders
-(`tests/phase2/run.sh`, under php -S and a real Apache). Next: slice 1, then the exemplars (slices 2, 3, 7).
+(`tests/phase2/run.sh`, under php -S and a real Apache); **slice 1 built** — issuers from a ticker read from EDGAR, securities, share counts, the restriction list, tags and notes, the DTC participant directory (`tests/phase3/slice1/run.sh`, with one live pull each). Next: slice 2, the SPR.

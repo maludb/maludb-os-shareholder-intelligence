@@ -929,6 +929,15 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-09, later — SLICE 1 BUILT (the CRUD exemplar; `docs/build-specs/issuers-participants.md` "Built").** Issuers set up from a ticker or a
+CIK through the SEC's ticker file and read from EDGAR at once (the entity, the blanks filled, never a person's value overwritten); securities with
+one primary; dated share counts with their sources; the restriction list through the record picker (the wall proven on the list, the page, the
+switcher, the picker, the search and the notes); the tombstone; tags and notes on any record behind both walls (db/020); the DTC participant
+directory read monthly (the participant listing only) with renames kept as aliases and a person's class never overwritten; participants as cards
+by class and one participant's series; the fetch layer (Inventory's client ported, the pull lifecycle, the calendar, the stub server, the live
+pulls). `tests/phase3/slice1/run.sh`: 24 + 70 + 29 + 13 + 42 checks and 5 live pulls, under php -S and Apache. **Next:** slice 2, the SPR (the first
+exemplar).
+
 **2026-10-09, later — PHASE 1 APPROVED by the owner as written; PHASE 2 THE SHELL BUILT and proven the same day** (`docs/build-specs/sso-shell.md`,
 "Built"): the layout at 375 and 1280 with **the issuer switcher** (only what the wall admits; `?issuer=` by id, ticker or CIK, remembered and
 logged `issuer.switch`; every screen view carries the issuer), the header's search box over `si_search` (both walls), the bell, the application

@@ -76,5 +76,31 @@ Analyst no longer sees it in the list, the switcher, a URL (404) or the search; 
 renames 0164 keeping the class and the alias; a participant's class set by hand survives the next pull; tags and notes on an issuer and a participant; an agent's
 `issuer_save` answers `pending_approval`; a Viewer reads every screen and changes nothing (403 on every POST); 375 and 1280; JSON mode everywhere.
 
+## Built (2026-10-09) — what the build decided within this spec
+1. **A CIK is up to ten digits, kept zero-padded** (EDGAR's number: 320193 is 0000320193). The proof's "a CIK of five digits is refused" became:
+   letters or eleven digits are refused, a short CIK is padded.
+2. **Making a security primary steps the issuer's other primary down** in the same transaction (one primary, always) rather than refusing it;
+   an issuer's first security is its primary.
+3. **The lookup reads `company_tickers_exchange.json`** (the same list with the exchange beside each ticker), through the one client and its cache;
+   its URL is the edgar_submissions source's `settings.tickers_url`. A company with two classes names both tickers.
+4. **The directory reads the participant listing only** ("DTC Participant in Alphabetical Listing - MM.DD.YYYY.xlsx", else the numerical one): the
+   settling-bank, pledgee and DRS registers number their own entries and could overwrite a participant's name. The file's date comes from its name.
+5. **The fetch client is Inventory's `app/sources/http.php`, ported** (`app/si/fetch/http.php`: robots, the per-host rate across processes, the
+   ETag cache under `SI_STORAGE_DIR/http-cache`, blocked detection, an injectable transport); `app/si/fetch/source.php` runs a pull end to end
+   (the EDGAR user-agent or no request, the pull row, si_pull_finish, the log, the keeper told on a block or a fourth failure); `calendar.php`
+   holds EDGAR's market-day window (06:00–20:59 market time); `app/si/xlsx.php` reads a workbook (Inventory's reader, every sheet).
+6. **db/020** — `si_record_issuer()`, `si_can_see_record()` (both walls for any record kind), `mcp_notes` re-created behind both walls (a note on a
+   restricted issuer was readable by anyone admitted), `si_tag_ensure()`.
+7. **The issuer's page has tabs** — Overview · Securities · Share counts · Access (managers) · Sources · Notes; the participant's page shows where the
+   NOBO panel goes (slice 3). The participant form's `tags` sets the whole list.
+8. **On a phone** a table folds its secondary columns under the first cell (the CUSIP under the security, the source under the kind), so its row's
+   buttons stay on the screen; the browser proof checks no control reaches past its card.
+9. **The worker's `fetch` and `search_catch_up` passes are filled** (the comments assigned them to slice 1).
+
+Proof: `tests/phase3/slice1/run.sh` (each proof on a fresh scratch database) — fetch 24, issuers 70, participants 29, json 13, browser 42, the live
+pulls 5 (DTCC: 906 participants; EDGAR: Bitmine Immersion, CIK 1829311, DE, year end 0831; the ticker file finds BMNR and BMNP), under php -S and a
+real Apache (`SI_APP=apache`); Phase 2's 82 + 87 + 46 + 30 + 14, the schema proof 180 and the kit 73 re-run green; the registry 16 screens and 18
+actions built; the installer's plan clean.
+
 ## Open questions
 None.

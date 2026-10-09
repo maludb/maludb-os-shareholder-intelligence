@@ -9,6 +9,10 @@
  * Run after the browser proof through tests/phase2/run.sh (the seed is idempotent).
  */
 require __DIR__ . '/lib.php';
+/** The manifest's screen id of each placeholder (app/features/shell/nav.php NAV_SCREENS). */
+const NAV_SCREENS_T = ['signals' => 'signal-list', 'positions' => 'positions', 'holders' => 'holder-list', 'ownership' => 'ownership-13f', 'filings' => 'filing-list',
+    'short' => 'short', 'events' => 'event-list', 'reports' => 'report-list', 'uploads' => 'upload-list', 'upload-add' => 'upload-add', 'issuers' => 'issuer-list',
+    'issuer-add' => 'issuer-add', 'participants' => 'participant-list', 'proposals' => 'proposals', 'calendar' => 'calendar', 'admin' => 'admin-sources', 'agents' => 'admin-agents'];
 $json = ['headers' => ['Accept: application/json']];
 $seed = seed_store();
 
@@ -48,14 +52,18 @@ ok(badge_of($jAdmin) === 'Super-admin' && badge_of($jManager) === 'IR Manager' &
     'the header badge reads the highest role held: Super-admin, IR Manager, Analyst, Analyst (by capability), Viewer');
 
 echo "2. The placeholders — a page naming its slice, 501 for JSON and for a POST\n";
-$stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
-ok((int) $stubs === 17, "seventeen controllers call render_nav_stub: $stubs");
+// The shell's seventeen placeholders, less the ones a built slice has replaced (a slice's first step removes its render_nav_stub call).
+$stubFiles = array_filter(explode("\n", trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null'))));
+$stubNav = [];
+foreach ($stubFiles as $f) { if (preg_match("/render_nav_stub\('([a-z-]+)'/", (string) file_get_contents($f), $m)) { $stubNav[$m[1]] = true; } }
+ok(count($stubFiles) >= 1 && count($stubFiles) <= 17 && count($stubNav) === count($stubFiles), count($stubFiles) . ' controllers still call render_nav_stub (seventeen in the shell, fewer as slices land)');
 $ph = ['signals' => ['/signals', 'slice 7', 'Signals', 'signal-list'], 'positions' => ['/positions', 'slice 2', 'Positions', 'positions'], 'holders' => ['/holders', 'slice 3', 'Holders', 'holder-list'],
        'ownership' => ['/ownership/13f', 'slice 5', 'Ownership', 'ownership-13f'], 'filings' => ['/filings', 'slice 4', 'Filings', 'filing-list'], 'short' => ['/short', 'slice 6', 'Short side', 'short'],
        'events' => ['/events', 'slice 8', 'Events', 'event-list'], 'reports' => ['/reports', 'slice 8', 'Reports', 'report-list'], 'uploads' => ['/uploads', 'slice 2', 'Uploads', 'upload-list'],
        'upload-add' => ['/uploads/new', 'slice 2', 'Upload a file', 'upload-add'], 'issuers' => ['/issuers', 'slice 1', 'Issuers', 'issuer-list'], 'issuer-add' => ['/issuers/new', 'slice 1', 'Add an issuer', 'issuer-add'],
        'participants' => ['/participants', 'slice 1', 'Participants', 'participant-list'], 'proposals' => ['/proposals', 'slice 9', 'Proposals', 'proposals'], 'calendar' => ['/calendar', 'slice 8', 'Calendar', 'calendar'],
        'admin' => ['/admin/sources', 'slice 10', 'Sources and settings', 'admin-sources'], 'agents' => ['/admin/agents', 'slice 9', 'Agents', 'admin-agents']];
+$ph = array_intersect_key($ph, $stubNav);
 $bad = [];
 foreach ($ph as $id => [$url, $slice, $title]) {
     $b = page($jAdmin, $url)['body'];
@@ -77,9 +85,11 @@ $built = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/acti
 $stubIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['stub'])));
 $builtIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['built'])));
 $builtActions = array_keys(array_filter($built['actions'], static fn ($a) => !empty($a['built'])));
-ok($builtIds === ['home', 'search', 'notifications', 'activity', 'settings', 'settings-tokens'] && count($stubIds) === 18 && in_array('issuer-edit', $stubIds, true),
-    'the registry marks the shell\'s six screens built and eighteen stubs (issuer-edit shares the placeholder form), so the voice surface never offers an unbuilt screen');
-ok($builtActions === ['prefs_save', 'notification_read', 'notifications_read_all', 'token_mint', 'token_revoke'], 'and the shell\'s five actions built: ' . implode(', ', $builtActions));
+$stubScreens = array_values(array_intersect_key(NAV_SCREENS_T, $stubNav));
+ok(array_intersect(['home', 'search', 'notifications', 'activity', 'settings', 'settings-tokens'], $builtIds) === ['home', 'search', 'notifications', 'activity', 'settings', 'settings-tokens']
+    && array_diff($stubScreens, $stubIds) === [] && array_intersect($stubIds, $builtIds) === [],
+    'the registry marks the shell\'s six screens built and every remaining placeholder a stub (never both), so the voice surface never offers an unbuilt screen');
+ok(array_diff(['prefs_save', 'notification_read', 'notifications_read_all', 'token_mint', 'token_revoke'], $builtActions) === [], 'and the shell\'s five actions built');
 
 echo "3. The menu and the tab bar per role, and no session\n";
 $menu = fn (string $j): array => (preg_match_all('/id="nav-([a-z-]+)"/', page($j, '/')['body'], $m) ? $m[1] : []);

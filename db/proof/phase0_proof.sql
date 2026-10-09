@@ -508,6 +508,27 @@ SELECT pg_temp.check((SELECT count(*) FROM si_source_health()) = 15 AND (SELECT 
 UPDATE agent_dispatches SET status = 'cancelled' WHERE id = (SELECT min(id) FROM agent_dispatches);
 SELECT pg_temp.check((SELECT count(*) FROM agent_dispatches WHERE status = 'cancelled') = 1, 'a dispatch may be cancelled');
 
+-- ---------------------------------------------------------------- SLICE 1's additions (db/020): one gate for any record, notes behind both walls, tags by label
+SELECT pg_temp.as_member(26);
+SELECT pg_temp.check(si_can_see_record('issuer', pg_temp.i('iss')) AND NOT si_can_see_record('issuer', pg_temp.i('iss2')) AND NOT si_can_see_record('galaxy', 1)
+    AND si_can_see_record('participant', (SELECT id FROM participants WHERE number = '0005')), 'si_can_see_record: the open issuer yes, the restricted one no (Priya is off its list), a participant yes, an unknown kind no');
+SELECT pg_temp.check(si_can_see_record('holder', (SELECT id FROM holders WHERE issuer_id = pg_temp.i('iss') AND kind = 'person' LIMIT 1)), 'an Analyst may see a person-holder''s record');
+SELECT pg_temp.as_member(29);
+SELECT pg_temp.check(NOT si_can_see_record('holder', (SELECT id FROM holders WHERE issuer_id = pg_temp.i('iss') AND kind = 'person' LIMIT 1))
+    AND si_can_see_record('holder', (SELECT id FROM holders WHERE name_key = 'ZETA HOLDINGS LLC')), 'a Viewer: no person-holder''s record (the PII wall), an entity''s yes');
+SELECT pg_temp.as_member(27);
+INSERT INTO notes (record_type, record_id, member_id, body) VALUES ('issuer', pg_temp.i('iss2'), 27, 'SMOKE: a note on the restricted issuer'), ('issuer', pg_temp.i('iss'), 27, 'SMOKE: a note on the open issuer');
+SELECT pg_temp.check((SELECT count(*) FROM mcp_notes WHERE record_type = 'issuer' AND record_id = pg_temp.i('iss2')) = 1, 'a manager reads the note on the restricted issuer');
+SELECT pg_temp.as_member(26);
+SELECT pg_temp.check((SELECT count(*) FROM mcp_notes WHERE record_type = 'issuer' AND record_id = pg_temp.i('iss2')) = 0 AND (SELECT count(*) FROM mcp_notes WHERE record_type = 'issuer' AND record_id = pg_temp.i('iss')) = 1,
+    'mcp_notes walls a restricted issuer''s note from someone off its list (db/016 did not)');
+SELECT pg_temp.keep('tg', si_tag_ensure('Watch List', 26));
+SELECT pg_temp.check(si_tag_ensure('watch   list', 26) = pg_temp.i('tg') AND (SELECT slug FROM tags WHERE id = pg_temp.i('tg')) = 'watch-list', 'si_tag_ensure: one tag per label in any case and spacing, slugged');
+INSERT INTO tags (slug, label) VALUES ('short-report', 'Short report (old)');
+SELECT pg_temp.keep('tg2', si_tag_ensure('Short Report', 26));
+SELECT pg_temp.check((SELECT slug FROM tags WHERE id = pg_temp.i('tg2')) = 'short-report-2', 'a slug another label holds is numbered');
+SELECT pg_temp.refused($$SELECT si_tag_ensure('   ', 26)$$, '1 to 60', 'an empty tag is refused');
+
 -- ---------------------------------------------------------------- the read roles see only the views
 RESET ROLE; SET ROLE shareholder_intelligence_records_ro;
 SELECT pg_temp.as_member(26);

@@ -79,8 +79,21 @@ exit($report['errors'] === [] ? 0 : 1);
 
 // ---- the passes (stubs until their slice) ------------------------------------------------------------------------------------------
 
-/** SLICES 1, 4, 5, 6 — every active source whose schedule is due: one pull under its policy (user-agent, rate, If-Modified-Since, back-off on 403/429); a source_pulls row each. */
-function worker_pass_fetch(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pulled' => 0, 'skipped' => 0, 'blocked' => 0, 'stub' => true]; }
+/**
+ * SLICES 1, 4, 5, 6 — every active source whose schedule is due and whose connector this build has (si_fetchers()), on its calendar: one
+ * pull under its policy (user-agent, rate, If-Modified-Since, robots, back-off on 403/429); a source_pulls row each (app/si/fetch/source.php).
+ */
+function worker_pass_fetch(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/si/fetch/source.php';
+    $lines = si_fetch_pass($pdo, $now);
+    $out = ['pulled' => count($lines), 'blocked' => 0, 'failed' => 0];
+    foreach ($lines as $l) {
+        if (str_contains($l, ': blocked')) { $out['blocked']++; }
+        if (str_contains($l, ': failed')) { $out['failed']++; }
+    }
+    return $out + ['runs' => $lines];
+}
 /** SLICES 2, 3 — queued uploads parsed in one transaction each: the raw rows, the typed columns, the control totals tied or the difference named. */
 function worker_pass_uploads(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['parsed' => 0, 'tied' => 0, 'untied' => 0, 'stub' => true]; }
 /** SLICE 3 — the matcher: raw NOBO and register rows without a holder scored against holders; >= the threshold accepted and logged auto, below it a proposal. */
@@ -89,8 +102,11 @@ function worker_pass_matcher(PDO $pdo, int $limit, DateTimeImmutable $now): arra
 function worker_pass_reconciliation(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['ran' => 0, 'untied' => 0, 'stub' => true]; }
 /** SLICE 7 — si_rules_run() after every pull and upload: the enabled rules over their windows; one open signal per rule per security; expiries. */
 function worker_pass_rules(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['raised' => 0, 'expired' => 0, 'stub' => true]; }
-/** SLICE 1 — si_search_catch_up(): every record whose index row is older than its change. */
-function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['indexed' => 0, 'stub' => true]; }
+/** SLICE 1 — si_search_catch_up(): every record whose index row is older than its change (a participant the directory renamed, a holder, an event). */
+function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    return ['indexed' => (int) one_value($pdo, 'SELECT si_search_catch_up(:n)', ['n' => max(1, $limit)])];
+}
 /** SLICE 8 — the pack's draft on pack_day (a dispatch to the Analyst) and queued renders (HTML, PDF when SI_WKHTMLTOPDF). */
 function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['drafted' => 0, 'rendered' => 0, 'stub' => true]; }
 /** SLICE 8 — queued exports built (CSV; a holders export logged with its row count); expired exports' files removed. */

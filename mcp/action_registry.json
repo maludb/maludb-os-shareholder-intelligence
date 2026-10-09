@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-09T20:49:58+00:00",
+    "generated_at": "2026-10-09T21:34:29+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -70,8 +70,8 @@
             "params": [
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "issuer-view": {
             "screen": "issuer-view",
@@ -81,7 +81,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "issuer-add": {
@@ -93,8 +93,8 @@
                 "ticker",
                 "cik"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "issuer-edit": {
             "screen": "issuer-edit",
@@ -102,8 +102,8 @@
             "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
             "when": "to change an issuer's fields, holidays, notes",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "issuer-securities": {
             "screen": "issuer-securities",
@@ -111,7 +111,7 @@
             "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
             "when": "the issuer's securities with CUSIP, class, ticker, primary; add and edit forms on the page",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "issuer-share-counts": {
@@ -123,7 +123,7 @@
                 "security",
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "issuer-access": {
@@ -132,7 +132,7 @@
             "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
             "when": "the restriction list: the members who may see this issuer; add and remove (managers)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "participant-list": {
@@ -144,8 +144,8 @@
                 "class",
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "participant-view": {
             "screen": "participant-view",
@@ -157,7 +157,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "participant-edit": {
@@ -166,7 +166,7 @@
             "section": "Issuers, securities, share counts and the DTC participants (slice 1)",
             "when": "to set a participant's class (manual) and notes",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "upload-list": {
@@ -1193,7 +1193,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the issuer",
-            "built": false
+            "built": true
         },
         "issuer_delete": {
             "action": "issuer_delete",
@@ -1214,7 +1214,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the issuer",
-            "built": false
+            "built": true
         },
         "issuer_restore": {
             "action": "issuer_restore",
@@ -1235,7 +1235,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the issuer",
-            "built": false
+            "built": true
         },
         "issuer_edgar_sync": {
             "action": "issuer_edgar_sync",
@@ -1256,7 +1256,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the issuer",
-            "built": false
+            "built": true
         },
         "security_save": {
             "action": "security_save",
@@ -1343,7 +1343,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the security",
-            "built": false
+            "built": true
         },
         "security_delete": {
             "action": "security_delete",
@@ -1364,7 +1364,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the security",
-            "built": false
+            "built": true
         },
         "share_count_save": {
             "action": "share_count_save",
@@ -1415,7 +1415,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the share count",
-            "built": false
+            "built": true
         },
         "share_count_delete": {
             "action": "share_count_delete",
@@ -1436,7 +1436,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the share count",
-            "built": false
+            "built": true
         },
         "restriction_save": {
             "action": "restriction_save",
@@ -1463,7 +1463,7 @@
             "who": "restrictions.manage",
             "agent": true,
             "record_id": "the issuer",
-            "built": false
+            "built": true
         },
         "participant_update": {
             "action": "participant_update",
@@ -1502,7 +1502,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the participant",
-            "built": false
+            "built": true
         },
         "tag_apply": {
             "action": "tag_apply",
@@ -1535,7 +1535,7 @@
             "who": "tags.apply",
             "agent": true,
             "record_id": "the record",
-            "built": false
+            "built": true
         },
         "tag_remove": {
             "action": "tag_remove",
@@ -1568,7 +1568,7 @@
             "who": "tags.apply",
             "agent": true,
             "record_id": "the record",
-            "built": false
+            "built": true
         },
         "note_add": {
             "action": "note_add",
@@ -1601,7 +1601,7 @@
             "who": "notes.write",
             "agent": true,
             "record_id": "the note",
-            "built": false
+            "built": true
         },
         "upload_create": {
             "action": "upload_create",

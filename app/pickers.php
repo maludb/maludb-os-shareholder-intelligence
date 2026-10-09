@@ -9,7 +9,7 @@ declare(strict_types=1);
  *           'label'  => fn(PDO, int $id): ?string]
  * `search` reads the same view the feature's screens read (the walls in SQL), never a second rule; `label` names the chosen record.
  *
- * The Phase 2 shell has `member` and `issuer` (sso-shell.md). The slices add: security, participant, tag (1); template (2); holder — an
+ * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag. Later: template (2); holder — an
  * Analyst's only — and institution (3, 5); filing, instrument (4); reporting_owner (5); signal, rule, event (7); report (8).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
@@ -52,5 +52,27 @@ return [
                     CASE WHEN restricted THEN 'restricted' END AS badge
                FROM mcp_issuers WHERE name ILIKE :q OR coalesce(ticker, '') ILIKE :q OR coalesce(cik, '') ILIKE :q ORDER BY name", $q, $page),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT name FROM mcp_issuers WHERE issuer_id = :id', $id),
+    ],
+    // slice 1: a security (of an issuer the caller may see; `issuer` narrows it), a DTC participant (by number, name or an old name), a tag
+    'security' => [
+        'title' => 'Securities', 'noun' => 'security', 'roles' => ['issuers.read'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT security_id AS id, issuer_name || ' — ' || name AS label, NULLIF(concat_ws(' · ', ticker, cusip), '') AS detail, CASE WHEN is_primary THEN 'primary' END AS badge
+               FROM mcp_securities WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint))
+                AND (name ILIKE :q OR issuer_name ILIKE :q OR coalesce(cusip, '') ILIKE :q OR coalesce(ticker, '') ILIKE :q) ORDER BY issuer_name, is_primary DESC, name", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT issuer_name || ' — ' || name FROM mcp_securities WHERE security_id = :id", $id),
+    ],
+    'participant' => [
+        'title' => 'DTC participants', 'noun' => 'participant', 'roles' => ['positions.read'], 'params' => [],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT participant_id AS id, number || ' ' || name AS label, (SELECT name FROM participant_classes WHERE key = class_key) AS detail, NULL AS badge
+               FROM mcp_participants WHERE number ILIKE :q OR name ILIKE :q OR EXISTS (SELECT 1 FROM unnest(aliases) a WHERE a ILIKE :q) ORDER BY number", $q, $page),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT number || ' ' || name FROM mcp_participants WHERE participant_id = :id", $id),
+    ],
+    'tag' => [
+        'title' => 'Tags', 'noun' => 'tag', 'roles' => ['tags.apply'], 'params' => [],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT tag_id AS id, label, usage_count || ' in use' AS detail, NULL AS badge FROM mcp_tags WHERE label ILIKE :q OR slug ILIKE :q ORDER BY usage_count DESC, label", $q, $page),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT label FROM mcp_tags WHERE tag_id = :id', $id),
     ],
 ];

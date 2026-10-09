@@ -74,4 +74,8 @@ proof's real-files section (154 checks) confirmed the connectors: design §0.2b.
 `bash tests/phase1/check_specs.sh` (60). **Phase 1 APPROVED by the owner 2026-10-09; PHASE 2 THE SHELL BUILT the same day** (`docs/build-specs/sso-shell.md`
 "Built"): `tests/phase2/run.sh` (php -S; `SI_APP=apache` for a real Apache) — the issuer is the shell's first fact (`current_issuer()` in
 `app/features/shell/queries.php`: every screen reads it, `?issuer=` switches it, the wall decides), charts are server-rendered SVG (`app/si/svg.php`),
-every number carries its source line (`shared/source-line.php`). **Next: slice 1**, then the exemplars (slices 2, 3, 7), then the Sonnet handoff.
+every number carries its source line (`shared/source-line.php`). **SLICE 1 BUILT 2026-10-09** (`docs/build-specs/issuers-participants.md` "Built"; `tests/phase3/slice1/run.sh`, each proof on a fresh scratch
+database; `SI_LIVE=0` skips the live pulls): every fetcher goes through `app/si/fetch/source.php` → `si_run_source()` (the user-agent or no request,
+the pull row, the back-off in SQL) and the one client `app/si/fetch/http.php`; a connector is a function in `si_fetchers()`; the proofs read the
+public record from `tests/fetch/stub_server.php` (:8905) and once live (`tests/fetch/live.php`); `si_can_see_record()` (db/020) is the gate for a
+note or a tag on any record. **Next: slice 2 (the SPR, the first exemplar)**, then slices 3 and 7, then the Sonnet handoff.
