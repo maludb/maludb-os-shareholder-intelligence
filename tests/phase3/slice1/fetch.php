@@ -27,7 +27,8 @@ stub_reset();
 source_due('edgar_submissions');
 $w = worker('fetch', '2026-10-07T14:00:00-04:00');
 $reqs = array_values(array_filter(stub_requests(), static fn ($r) => str_starts_with($r['path'], '/submissions/')));
-ok(count($reqs) === 1 && $reqs[0]['ua'] === 'Kinetic Seas claude@kineticseas.com' && $reqs[0]['status'] === 200, 'one request, sent as "Kinetic Seas claude@kineticseas.com"');
+ok(count($reqs) === 2 && array_unique(array_column($reqs, 'ua')) === ['Kinetic Seas claude@kineticseas.com'] && array_unique(array_column($reqs, 'status')) === [200],
+    'the submissions document and the older page it names (slice 4\'s index), sent as "Kinetic Seas claude@kineticseas.com"');
 $i = q('SELECT * FROM issuers WHERE id = :i', ['i' => $iid])[0];
 $ent = json_decode((string) $i['edgar_entity'], true);
 ok($ent['name'] === 'SMOKE ISSUER INC' && $ent['formerNames'][0]['name'] === 'SMOKE ACQUISITION CORP' && $i['edgar_synced_at'] !== null, 'the entity kept: the name, the former name, the time');

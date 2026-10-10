@@ -929,6 +929,12 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-10 — SLICE 4 BUILT: EDGAR, the index, the text and the watch (`docs/build-specs/edgar-filings.md` "Built").** The issuers' filing index twice a
+market day (the older pages once), the watched forms' text on arrival (HTML with its paragraphs and tables, XML safely, PDF through pdftotext), the cover
+share counts from companyfacts, the full-text watch on seven dilution terms and on the company's name in others' filings, the instruments it proposes and a
+person confirms (the floating-price flag); the filings ledger, a filing's text with its hits marked, the search, the watch, dilution; fetch_now. Live against
+EDGAR: Bitmine's 346 filings, its 22 cover counts, the watch. **Next:** slice 5, the ownership forms (13F, 13D/G, Forms 3/4/5, 144).
+
 **2026-10-10 — SLICE 3 BUILT: NOBO lists, the register, holders (`docs/build-specs/holders.md` "Built").** Broadridge's NOBO job file (CSV and
 workbook) and names export, the transfer agent's Shareholder Extract and STC's position detail, Broadridge's Share Range Analysis (old Excel,
 read without a library) on slice 2's pipeline, each tied to what the file says of itself; the matcher (in the request for a short list, by the

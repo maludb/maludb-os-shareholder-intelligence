@@ -7,6 +7,9 @@ declare(strict_types=1);
  * keep the ENTITY: issuers.edgar_entity (the scalars, the tickers and exchanges, the addresses, the former names), edgar_synced_at, and the
  * blanks a person left (SIC, state of incorporation, fiscal year end, EIN, the ticker) filled — never a value a person wrote. Slice 1 builds
  * this half; slice 4 adds THE INDEX (filings.recent → filings) through si_edgar_index_apply() when that function exists.
+ * THE INDEX (slice 4): filings.recent's column arrays zipped into `filings` by accession (inserted — the events trigger makes a watched form's
+ * event — or, when EDGAR changed a field, updated); the older pages filings.files[] names are read once (when the issuer holds fewer filings
+ * than EDGAR counts); then the text of up to settings.text_per_pull (12) watched filings without it, newest first.
  * A CIK the SEC does not know (404) is noted for that issuer and the pull is `partial`; a restricted issuer is fetched like any other (the
  * wall is on reading; the public record is public).
  */
@@ -59,6 +62,8 @@ function si_fetch_edgar_submissions(PDO $pdo, array $source, SiHttp $client, arr
             $new += (int) si_edgar_index_apply($pdo, (int) $i['id'], $doc, (int) $ctx['pull'], $client, $base);
         }
     }
+    $changed += (int) ($GLOBALS['si_index_changed'] ?? 0);
+    $GLOBALS['si_index_changed'] = 0;
     return ['seen' => $seen, 'new' => $new, 'changed' => $changed, 'status' => $missing === [] ? 'ok' : ($seen > 0 ? 'partial' : 'failed'),
             'error' => $missing === [] ? null : 'EDGAR does not know ' . count($missing) . ' CIK' . (count($missing) === 1 ? '' : 's') . ' (issuer ' . implode(', ', $missing) . ').', 'detail' => $detail];
 }
@@ -90,4 +95,77 @@ function si_edgar_entity_apply(PDO $pdo, array $issuer, array $doc): array
     $pdo->prepare('UPDATE issuers SET ' . implode(', ', $set) . ' WHERE id = :id')->execute($args);
     $entityChanged = $before !== $entity;
     return ['changed' => array_keys($fill), 'entity_changed' => $entityChanged, 'name' => (string) $doc['name']];
+}
+
+
+/**
+ * The filing index of one submissions document (slice 4). Answers the count of filings new to the issuer; $GLOBALS['si_index_changed'] counts
+ * the changed. The older pages are read once; the text of the watched filings that lack it is fetched (up to settings.text_per_pull).
+ */
+function si_edgar_index_apply(PDO $pdo, int $issuer, array $doc, int $pull, SiHttp $client, string $base): int
+{
+    require_once __DIR__ . '/filing_text.php';
+    $pages = [$doc['filings']['recent'] ?? []];
+    $files = $doc['filings']['files'] ?? [];
+    $edgarCount = count($pages[0]['accessionNumber'] ?? []) + array_sum(array_map(static fn ($f) => (int) ($f['filingCount'] ?? 0), $files));
+    $have = (int) one_value($pdo, 'SELECT count(*) FROM filings WHERE issuer_id = :i AND NOT about_us', ['i' => $issuer]);
+    if ($files !== [] && $have + count($pages[0]['accessionNumber'] ?? []) < $edgarCount) {
+        foreach ($files as $f) {
+            $r = $client->get($base . ltrim((string) ($f['name'] ?? ''), '/'), ['accept' => 'application/json']);
+            if ($r['ok'] && is_array($j = json_decode($r['body'], true))) {
+                $pages[] = $j;
+            }
+        }
+    }
+    $cik = str_pad((string) ($doc['cik'] ?? ''), 10, '0', STR_PAD_LEFT);
+    $new = 0;
+    $changed = 0;
+    $up = $pdo->prepare('INSERT INTO filings (issuer_id, filer_cik, accession_number, form, filed_on, report_date, accepted_at, act, file_number, film_number, items, size, is_xbrl, is_inline_xbrl,
+                                               primary_document, primary_doc_description, source_pull_id)
+                         VALUES (:iss, :cik, :acc, :form, :filed, :rep, :acc_at, :act, :fileno, :film, CAST(:items AS text[]), :size, :xbrl, :ixbrl, :doc, :descr, :pull)
+                         ON CONFLICT (issuer_id, accession_number) DO UPDATE SET form = EXCLUDED.form, report_date = EXCLUDED.report_date, items = EXCLUDED.items, size = EXCLUDED.size,
+                                primary_document = EXCLUDED.primary_document, primary_doc_description = EXCLUDED.primary_doc_description
+                          WHERE (filings.form, filings.report_date, filings.items, filings.size, filings.primary_document, filings.primary_doc_description)
+                                IS DISTINCT FROM (EXCLUDED.form, EXCLUDED.report_date, EXCLUDED.items, EXCLUDED.size, EXCLUDED.primary_document, EXCLUDED.primary_doc_description)
+                         RETURNING (xmax = 0) AS inserted');
+    foreach ($pages as $p) {
+        $n = count($p['accessionNumber'] ?? []);
+        for ($k = 0; $k < $n; $k++) {
+            $acc = (string) $p['accessionNumber'][$k];
+            if (!preg_match('~^\d{10}-\d{2}-\d{6}$~', $acc) || !preg_match('~^\d{4}-\d{2}-\d{2}$~', (string) ($p['filingDate'][$k] ?? ''))) {
+                continue;
+            }
+            $items = array_values(array_filter(array_map('trim', explode(',', (string) ($p['items'][$k] ?? '')))));
+            $rep = (string) ($p['reportDate'][$k] ?? '');
+            $at = (string) ($p['acceptanceDateTime'][$k] ?? '');
+            $up->execute(['iss' => $issuer, 'cik' => $cik, 'acc' => $acc, 'form' => mb_substr((string) $p['form'][$k], 0, 40), 'filed' => $p['filingDate'][$k],
+                'rep' => preg_match('~^\d{4}-\d{2}-\d{2}$~', $rep) ? $rep : null, 'acc_at' => $at !== '' ? $at : null, 'act' => ($p['act'][$k] ?? '') ?: null,
+                'fileno' => ($p['fileNumber'][$k] ?? '') ?: null, 'film' => ($p['filmNumber'][$k] ?? '') ?: null, 'items' => '{' . implode(',', array_map(static fn ($x) => '"' . str_replace('"', '', $x) . '"', $items)) . '}',
+                'size' => isset($p['size'][$k]) ? (int) $p['size'][$k] : null, 'xbrl' => !empty($p['isXBRL'][$k]) ? 'true' : 'false', 'ixbrl' => !empty($p['isInlineXBRL'][$k]) ? 'true' : 'false',
+                'doc' => ($p['primaryDocument'][$k] ?? '') ?: null, 'descr' => ($p['primaryDocDescription'][$k] ?? '') ?: null, 'pull' => $pull]);
+            $row = $up->fetch();
+            if ($row !== false) {
+                $row['inserted'] ? $new++ : $changed++;
+            }
+        }
+    }
+    $GLOBALS['si_index_changed'] = ($GLOBALS['si_index_changed'] ?? 0) + $changed;
+    if ($new > 0 || $changed > 0) {
+        log_activity($pdo, 'filing.index', 'issuer', $issuer, ['issuer_id' => $issuer, 'after' => ['new' => $new, 'changed' => $changed, 'pull_id' => $pull]]);
+    }
+    // the watched forms' text on arrival, newest first
+    $set = json_decode((string) one_value($pdo, "SELECT settings FROM sources WHERE connector = 'edgar_submissions' ORDER BY id LIMIT 1"), true) ?: [];
+    $limit = max(0, min(50, (int) ($set['text_per_pull'] ?? 12)));
+    $due = $pdo->prepare('SELECT id FROM filings WHERE issuer_id = :i AND fetched_text_at IS NULL AND error IS NULL AND si_watched_form(form) AND primary_document IS NOT NULL ORDER BY filed_on DESC, id DESC LIMIT ' . $limit);
+    $due->execute(['i' => $issuer]);
+    foreach ($due->fetchAll(PDO::FETCH_COLUMN) as $fid) {
+        $t = si_filing_text_fetch($pdo, $client, (int) $fid);
+        if (!empty($t['blocked'])) {
+            break;
+        }
+        if ($t['ok']) {
+            log_activity($pdo, 'filing.fetch_text', 'filing', (int) $fid, ['issuer_id' => $issuer, 'after' => ['filing_id' => (int) $fid, 'chars' => (int) $t['chars']]]);
+        }
+    }
+    return $new;
 }

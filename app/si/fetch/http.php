@@ -122,8 +122,14 @@ final class SiHttp
     }
 
     /** Does robots.txt let us fetch this URL? */
+    /** The hosts that are APIs, not sites: robots.txt does not govern them (edgar-and-finra-fetchers.md §1 — efts.sec.gov answers its robots.txt 403). */
+    public const API_HOSTS = ['data.sec.gov', 'efts.sec.gov', 'api.finra.org'];
+
     public function allows(string $url): bool
     {
+        if (in_array(strtolower((string) parse_url($url, PHP_URL_HOST)), self::API_HOSTS, true)) {
+            return true;
+        }
         $r = $this->robotsFor($url);
         if ($r['robots'] === null) {
             return $r['state'] !== 'blocked';

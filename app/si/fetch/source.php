@@ -24,6 +24,8 @@ function si_fetchers(): array
     return [
         'dtcc_participants' => [__DIR__ . '/dtcc_participants.php', 'si_fetch_dtcc_participants'],
         'edgar_submissions' => [__DIR__ . '/edgar_submissions.php', 'si_fetch_edgar_submissions'],
+        'edgar_companyfacts' => [__DIR__ . '/edgar_companyfacts.php', 'si_fetch_edgar_companyfacts'],
+        'edgar_fulltext' => [__DIR__ . '/edgar_fulltext.php', 'si_fetch_edgar_fulltext'],
     ];
 }
 
@@ -94,6 +96,9 @@ function si_run_source(PDO $pdo, array $source, array $o = []): array
         $pdo->prepare('SELECT si_pull_finish(:p, :st, :e, 0, 0, 0, 0, 0, CAST(:pol AS jsonb))')->execute(['p' => $pull, 'st' => 'failed', 'e' => $error, 'pol' => json_encode($policy + ['refused_before_request' => true])]);
         log_activity($pdo, 'source.pull_fail', 'source', (int) $source['id'], ['actor_member_id' => $by, 'after' => ['pull_id' => $pull, 'error' => $error, 'requests' => 0]]);
         foreach (si_source_keepers($pdo) as $m) {
+            if (one_value($pdo, "SELECT 1 FROM notifications WHERE member_id = :m AND kind = 'source_failed' AND title = 'EDGAR is waiting for the contact email' AND created_at >= date_trunc('day', now())", ['m' => $m])) {
+                continue;                                              // once a day, whichever EDGAR source asked first
+            }
             $pdo->prepare('SELECT si_notify(:m, :k, :t, :b, :rt, :rid, NULL, NULL, NULL, :d)')->execute(['m' => $m, 'k' => 'source_failed', 't' => 'EDGAR is waiting for the contact email',
                 'b' => $error, 'rt' => 'source', 'rid' => (int) $source['id'], 'd' => 'ua-missing:' . date('Y-m-d') . ':' . $m]);
         }

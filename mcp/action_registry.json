@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-10T13:51:25+00:00",
+    "generated_at": "2026-10-10T18:30:06+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -407,8 +407,8 @@
                 "about_us",
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "filing-view": {
             "screen": "filing-view",
@@ -418,7 +418,7 @@
             "params": [
                 "q"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "filings-search": {
@@ -430,7 +430,7 @@
                 "q",
                 "form"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "watch-hits": {
@@ -441,7 +441,7 @@
             "params": [
                 "status"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "dilution-list": {
@@ -453,7 +453,7 @@
                 "status",
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "dilution-view": {
@@ -462,7 +462,7 @@
             "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
             "when": "one instrument with its filing, terms, remaining, notes and the signals it is part of",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "dilution-add": {
@@ -474,7 +474,7 @@
                 "filing",
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "dilution-edit": {
@@ -483,7 +483,7 @@
             "section": "EDGAR — the index, the text, the watch and the dilution instruments (slice 4)",
             "when": "to confirm or change an instrument's kind, counterparty, amounts, terms, status",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "institution-list": {
@@ -2154,7 +2154,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the filing",
-            "built": false
+            "built": true
         },
         "filing_event_make": {
             "action": "filing_event_make",
@@ -2193,7 +2193,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the event",
-            "built": false
+            "built": true
         },
         "watch_hit_confirm": {
             "action": "watch_hit_confirm",
@@ -2244,7 +2244,7 @@
             "who": "events.write",
             "agent": false,
             "record_id": "the instrument",
-            "built": false
+            "built": true
         },
         "watch_hit_dismiss": {
             "action": "watch_hit_dismiss",
@@ -2265,7 +2265,7 @@
             "who": "events.write",
             "agent": false,
             "record_id": "the watch hit",
-            "built": false
+            "built": true
         },
         "dilution_save": {
             "action": "dilution_save",
@@ -2376,7 +2376,7 @@
             "who": "events.write",
             "agent": false,
             "record_id": "the instrument",
-            "built": false
+            "built": true
         },
         "dilution_delete": {
             "action": "dilution_delete",
@@ -2397,7 +2397,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the instrument",
-            "built": false
+            "built": true
         },
         "fetch_now": {
             "action": "fetch_now",
@@ -2424,7 +2424,7 @@
             "who": "uploads.write",
             "agent": true,
             "record_id": "the pull",
-            "built": false
+            "built": true
         },
         "institution_update": {
             "action": "institution_update",

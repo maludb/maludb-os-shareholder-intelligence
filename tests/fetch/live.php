@@ -18,7 +18,10 @@ $fails = 0;
 $passes = 0;
 $ok = static function (bool $c, string $l) use (&$fails, &$passes): void { $c ? $passes++ : $fails++; echo ($c ? '  ok   ' : '  FAIL ') . $l . "\n"; };
 $pdo->exec("UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email = 'claude@kineticseas.com' WHERE id = 1");
-$real = ['edgar_submissions' => ['https://data.sec.gov/submissions/', 2], 'dtcc_participants' => ['https://www.dtcc.com/support/dtc-directories', 1]];
+$real = ['edgar_submissions' => ['https://data.sec.gov/submissions/', 2], 'dtcc_participants' => ['https://www.dtcc.com/support/dtc-directories', 1],
+         'edgar_companyfacts' => ['https://data.sec.gov/api/xbrl/companyfacts/', 2], 'edgar_fulltext' => ['https://efts.sec.gov/LATEST/search-index', 2]];
+$pdo->exec("UPDATE sources SET settings = settings - 'archives_url' WHERE connector = 'edgar_submissions'");       // the real archives
+$pdo->exec("UPDATE sources SET settings = settings || '{\"terms\": [\"at-the-market\"]}' WHERE connector = 'edgar_fulltext'");   // one query a term: the live check is one term
 foreach (array_slice($argv, 1) as $connector) {
     if (!isset($real[$connector])) {
         $ok(false, "$connector: no live pull is defined for it yet");
@@ -28,11 +31,12 @@ foreach (array_slice($argv, 1) as $connector) {
         ->execute(['u' => $real[$connector][0], 'r' => $real[$connector][1], 'c' => $connector]);
     $src = si_source_by_connector($pdo, $connector);
     $issuer = null;
-    if ($connector === 'edgar_submissions') {
+    if (str_starts_with($connector, 'edgar_')) {
         $issuer = (int) (one_value($pdo, "SELECT id FROM issuers WHERE cik = '0001829311'") ?: 0);
         if ($issuer === 0) {
-            $pdo->exec("INSERT INTO issuers (name, cik) VALUES ('LIVE REFERENCE ISSUER', '0001829311')");
+            $pdo->exec("INSERT INTO issuers (name, cik) VALUES ('BITMINE IMMERSION TECHNOLOGIES, INC.', '0001829311')");
             $issuer = (int) one_value($pdo, "SELECT id FROM issuers WHERE cik = '0001829311'");
+            $pdo->exec("INSERT INTO securities (issuer_id, name, cusip, ticker, is_primary) VALUES ($issuer, 'Common Stock', '09175A107', 'BMNR', true)");
         }
     }
     $t0 = microtime(true);
@@ -51,6 +55,20 @@ foreach (array_slice($argv, 1) as $connector) {
         } catch (SiFetchError $e) {
             $ok(false, '  the ticker lookup: ' . $e->getMessage());
         }
+    }
+    if ($connector === 'edgar_submissions' && $issuer) {
+        $f = $pdo->query("SELECT count(*) AS n, count(*) FILTER (WHERE fetched_text_at IS NOT NULL) AS t, max(filed_on) AS last FROM filings WHERE issuer_id = $issuer")->fetch();
+        $ok((int) $f['n'] > 50, sprintf('  the index: %d filings, the newest %s; %d watched filings read as text on arrival', $f['n'], $f['last'], $f['t']));
+    }
+    if ($connector === 'edgar_companyfacts' && $issuer) {
+        $c = $pdo->query("SELECT count(*) AS n, max(as_of) AS last FROM share_counts WHERE kind = 'outstanding' AND source = 'filing'")->fetch();
+        $v = one_value($pdo, "SELECT value FROM share_counts WHERE kind = 'outstanding' AND source = 'filing' ORDER BY as_of DESC LIMIT 1");
+        $ok((int) $c['n'] > 3, sprintf('  the covers: %d outstanding counts, the latest %s shares as of %s', $c['n'], number_format((float) $v), $c['last']));
+    }
+    if ($connector === 'edgar_fulltext' && $issuer) {
+        $w = $pdo->query("SELECT count(*) AS n, count(DISTINCT filing_id) AS f FROM watch_hits")->fetch();
+        $d = (int) one_value($pdo, "SELECT count(*) FROM dilution_instruments WHERE status = 'proposed'");
+        $ok(true, sprintf('  the watch (90 days, "at-the-market" and the name in others\' filings): %d hits on %d filings, %d instruments proposed', $w['n'], $w['f'], $d));
     }
     if ($connector === 'dtcc_participants') {
         $n = (int) one_value($pdo, 'SELECT count(*) FROM participants');

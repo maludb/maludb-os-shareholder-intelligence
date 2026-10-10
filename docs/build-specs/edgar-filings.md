@@ -61,5 +61,34 @@ The ownership forms' parsing and screens (5 — the structured block reads their
 filing; a second pull changes nothing; the 8-K's text is fetched, searched and highlighted; the watch proposes the ELOC, a person confirms it (floating), an agent's confirm is refused
 (people) and its `filing_event_make` lands; `fetch_now` on a backed-off source answers when; a Viewer reads every screen; 375 and 1280; JSON mode; the live pulls of §5.
 
+## Built (2026-10-10) — what the build found and decided within this spec
+1. **A connector is `si_fetch_<connector>(PDO, array $source, SiHttp $client, array $ctx)`** (slice 1's shape, `si_fetchers()`), not `fetch_<connector>(PDO,
+   source, now)`; the index half is `si_edgar_index_apply()` in `edgar_submissions.php`.
+2. **The archives' base is a setting** (`archives_url` on the `edgar_submissions` source, default `https://www.sec.gov/Archives/edgar/data/`) — the proofs
+   point it at the stub; filings' `url` stays the SEC's.
+3. **EDGAR's full-text search answers no highlight**: a hit is `<accession>:<file>`; its snippet is the term in THAT document's own words (one read under the
+   policy — an 8-K's exhibit, not the 8-K), else in the filing's text when read, else the hit's form and names.
+4. **"About us" is a filing that does not list the issuer's CIK** (a lawsuit, another company's 8-K): a 13D or a Form 4 lists it and is the index's; at most
+   `about_limit` (50) new such hits a pull — each costs a document read (Bitmine draws dozens a quarter).
+5. **robots.txt does not govern `data.sec.gov`, `efts.sec.gov` or `api.finra.org`** (the spec's §1): `efts.sec.gov` answers its robots.txt with a 403 JSON,
+   which the client read as "disallow everything" — found by the live pull; `SiHttp::API_HOSTS`.
+6. **A refused full-text query is noted and the others go on** (the pull partial); a refused later page ends that query's paging (EDGAR answered one 500
+   on the live run).
+7. **Text on arrival: up to `text_per_pull` (12) watched filings a pull, newest first**; a document EDGAR lacks keeps its error on the filing and is read
+   again only on request (`filing_fetch_text`). An XML primary document reads as its elements' text (`transactionShares value: 5000`); an entity
+   declaration is refused before parsing.
+8. **companyfacts writes the PRIMARY security's counts**; of several facts for one date the latest filed wins (an amendment restates it); a person's count
+   is another source and never touched.
+9. **One instrument per filing and kind**: "equity line" and "equity purchase agreement" in one 8-K propose one ELOC. **The confirm form is `dilution-add`
+   with `hit`** (`/dilution/new?hit=`), posting to `watch_hit_confirm`. **`dilution_delete` deletes** (the table has no tombstone).
+10. **ts_headline drops a filing's tags itself**; the headline is escaped and its `<b>` markers become `<mark>`.
+11. **"EDGAR is waiting for the contact email" is told to the keepers once a day**, whichever of the three EDGAR sources asked first — `si_notify`'s
+    dedupe rides on the email outbox, which a keeper without email never gets.
+
+Proof: `tests/phase3/slice4/run.sh` (each proof on a fresh scratch database, the stub on :8905) — the index 30, the text 20, the watch 19, dilution 15,
+JSON 3, browser 58, under php -S and a real Apache; **the live pulls**: Bitmine's submissions (346 filings to 2026-10-07, 12 watched ones read as text),
+its companyfacts (22 outstanding counts, the latest 603,226,394 shares as of 2026-07-09), one full-text term over 90 days (50 hits in others' filings
+— the cap); slices 1–3, Phase 2, the schema proof, the kit and Phase 1 re-run green; the registry 42 screens and 42 actions built.
+
 ## Open questions
 None.

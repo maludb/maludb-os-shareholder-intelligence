@@ -86,5 +86,8 @@ oracle (`tests/fixtures/load_real_spr.py`) against the database. **SLICE 3 BUILT
 scratch database and DROPS it at the end): the loaders are `app/features/uploads/load.php` (one upload of a kind per security and record date; the
 matcher in the request for ≤ 200 waiting rows, else the worker's `matcher` pass); holders in `app/features/holders/`; the parsers in `app/si/parse/`,
 old Excel in `app/si/xls.php`. **Every holder read goes through `mcp_holders` / `mcp_holder_accounts` / the `si_holders_*` functions; those functions
-have no wall of their own — prove the security visible first.** The real-files proof prints counts only and compares names in memory. **Next:
-slice 4 (EDGAR)**, then slices 5–6, slice 7 (the second exemplar), then the Sonnet handoff.
+have no wall of their own — prove the security visible first.** The real-files proof prints counts only and compares names in memory. **SLICE 4 BUILT 2026-10-10** (`docs/build-specs/edgar-filings.md` "Built"; `tests/phase3/slice4/run.sh` — the stub serves the samples
+`tests/fetch/make_edgar_samples.py` writes; `SI_LIVE=0` skips the live pulls): the EDGAR fetchers are `app/si/fetch/edgar_{submissions,companyfacts,fulltext}.php`
+on slice 1's `si_run_source()`; the archives' base is the `edgar_submissions` source's `archives_url` setting (point it at the stub in every proof that pulls
+EDGAR — slice 1's runner does); `SiHttp::API_HOSTS` are not robots-governed. **Next: slice 5 (the ownership forms)**, then slice 6, slice 7 (the second
+exemplar), then the Sonnet handoff.

@@ -10,8 +10,8 @@ declare(strict_types=1);
  * `search` reads the same view the feature's screens read (the walls in SQL), never a second rule; `label` names the chosen record.
  *
  * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
- * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution. Later: filing, instrument (4); reporting_owner (5); signal, rule,
- * event (7); report (8).
+ * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument. Later: reporting_owner (5); signal,
+ * rule, event (7); report (8).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
 
@@ -92,5 +92,22 @@ return [
             "SELECT institution_id AS id, name AS label, NULLIF(concat_ws(' · ', kind, CASE WHEN cik IS NOT NULL THEN 'CIK ' || ltrim(cik, '0') END), '') AS detail, CASE WHEN is_activist THEN 'activist' END AS badge
                FROM mcp_institutions WHERE name ILIKE :q OR coalesce(cik, '') ILIKE :q OR EXISTS (SELECT 1 FROM unnest(aliases) a WHERE a ILIKE :q) ORDER BY name", $q, $page),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT name FROM mcp_institutions WHERE institution_id = :id', $id),
+    ],
+    // slice 4: a filing of an issuer (`issuer` narrows it) and a dilution instrument
+    'filing' => [
+        'title' => 'Filings', 'noun' => 'filing', 'roles' => ['filings.read'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT filing_id AS id, form || ' of ' || to_char(filed_on, 'Mon FMDD, YYYY') AS label, NULLIF(concat_ws(' · ', primary_doc_description, accession_number), '') AS detail, CASE WHEN about_us THEN 'about us' END AS badge
+               FROM mcp_filings WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (form ILIKE :q OR coalesce(primary_doc_description, '') ILIKE :q OR accession_number ILIKE :q)
+              ORDER BY filed_on DESC, filing_id DESC", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT form || ' of ' || to_char(filed_on, 'Mon FMDD, YYYY') FROM mcp_filings WHERE filing_id = :id", $id),
+    ],
+    'instrument' => [
+        'title' => 'Dilution instruments', 'noun' => 'instrument', 'roles' => ['filings.read'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT instrument_id AS id, initcap(replace(kind, '_', ' ')) || COALESCE(' — ' || counterparty, '') AS label, NULLIF(concat_ws(' · ', status, to_char(filed_on, 'Mon FMDD, YYYY')), '') AS detail,
+                    CASE WHEN floating_price THEN 'floating' END AS badge
+               FROM mcp_dilution_instruments WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (kind ILIKE :q OR coalesce(counterparty, '') ILIKE :q) ORDER BY filed_on DESC NULLS LAST", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT initcap(replace(kind, '_', ' ')) || COALESCE(' — ' || counterparty, '') FROM mcp_dilution_instruments WHERE instrument_id = :id", $id),
     ],
 ];

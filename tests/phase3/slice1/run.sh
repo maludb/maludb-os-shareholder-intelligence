@@ -27,7 +27,7 @@ fresh() {
   export FAKE_KERNEL_STATE="$SI_DEV_STATE/kernel.json" FAKE_MALUDB_LOG="$SI_DEV_STATE/maludb.log"
   for i in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8905/robots.txt && break; sleep 0.2; done
   php bin/directory_sync.php --full >/dev/null || { echo "the first sync failed"; exit 1; }
-  sudo -n -u postgres psql -q -v ON_ERROR_STOP=1 -d "$SI_DEV_DB" -c "UPDATE sources SET base_url = 'http://127.0.0.1:8905/submissions/', settings = settings || '{\"tickers_url\": \"http://127.0.0.1:8905/files/company_tickers_exchange.json\"}', rate_per_second = 10 WHERE connector = 'edgar_submissions'; UPDATE sources SET base_url = 'http://127.0.0.1:8905/support/dtc-directories', rate_per_second = 10 WHERE connector = 'dtcc_participants'; UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email = NULL" || exit 1
+  sudo -n -u postgres psql -q -v ON_ERROR_STOP=1 -d "$SI_DEV_DB" -c "UPDATE sources SET base_url = 'http://127.0.0.1:8905/submissions/', settings = settings || '{\"tickers_url\": \"http://127.0.0.1:8905/files/company_tickers_exchange.json\"}', rate_per_second = 10 WHERE connector = 'edgar_submissions'; UPDATE sources SET base_url = 'http://127.0.0.1:8905/support/dtc-directories', rate_per_second = 10 WHERE connector = 'dtcc_participants'; UPDATE sources SET settings = settings || '{\"archives_url\": \"http://127.0.0.1:8905/Archives/edgar/data/\"}' WHERE connector = 'edgar_submissions'; UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email = NULL" || exit 1
 }
 status=0
 PROOFS=${*:-fetch issuers participants json browser}

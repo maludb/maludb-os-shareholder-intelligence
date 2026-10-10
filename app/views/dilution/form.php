@@ -1,0 +1,30 @@
+<?php /** Record, confirm or edit an instrument (screens `dilution-add` / `dilution-edit`). Data: d, hit, v, issuer, securities */
+$action = $hit !== null ? '/filings/watch/confirm.php' : '/dilution/save.php';
+$num = static fn ($x) => $x === null || $x === '' ? '' : rtrim(rtrim((string) $x, '0'), '.');
+$fld = static fn (string $n, string $l, $val, string $type = 'text', string $hint = '') => '<div class="mb-3"><label class="form-label" for="dilution-form-field-' . $n . '">' . e($l) . '</label><input type="' . $type . '" class="form-control btn-touch" name="' . $n . '" id="dilution-form-field-' . $n . '" value="' . e((string) $val) . '">' . ($hint ? '<div class="form-text">' . e($hint) . '</div>' : '') . '</div>';
+$title = $d === null ? ($hit !== null ? 'Confirm the instrument' : 'Record an instrument') : 'Edit the instrument';
+?>
+<?= view('shared/header.php', ['id' => 'dilution-form', 'title' => $title, 'crumbs' => [['Home', '/'], ['Dilution', '/dilution'], [$title, null]], 'back' => $hit !== null ? ['/filings/watch', 'The watch'] : ['/dilution', 'Dilution']]) ?>
+<div class="main-content" id="dilution-form-content">
+    <?php if ($hit !== null): ?><div class="alert alert-warning fs-12" id="dilution-form-hit">The watch found “<?= e((string) $hit['term']) ?>” in the <?= e((string) $hit['form']) ?> of <?= e(format_date($hit['filed_on'])) ?>: <?= e((string) $hit['snippet']) ?></div><?php endif; ?>
+    <form method="post" action="<?= $action ?>" hx-post="<?= $action ?>" hx-target="#flash" class="card" id="dilution-form"><?= csrf_field() ?>
+        <?php if ($hit !== null): ?><input type="hidden" name="watch_hit" value="<?= (int) $hit['watch_hit_id'] ?>"><?php else: ?><input type="hidden" name="issuer" value="<?= (int) $issuer['issuer_id'] ?>"><?php endif; ?>
+        <?php if ($d !== null): ?><input type="hidden" name="instrument" value="<?= (int) $d['instrument_id'] ?>"><?php endif; ?>
+        <div class="card-body">
+            <div class="row g-2"><div class="col-sm-6 mb-3"><label class="form-label" for="dilution-form-field-kind">Kind</label><select name="kind" id="dilution-form-field-kind" class="form-select btn-touch"><?php foreach (DILUTION_KINDS as $k => $l): ?><option value="<?= e($k) ?>" <?= $v['kind'] === $k ? 'selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?></select></div>
+                <?php if ($hit === null): ?><div class="col-sm-6 mb-3"><label class="form-label" for="dilution-form-field-status">Status</label><select name="status" id="dilution-form-field-status" class="form-select btn-touch"><?php foreach (['proposed', 'active', 'exhausted', 'terminated'] as $s): ?><option value="<?= $s ?>" <?= ($v['status'] ?? 'active') === $s || (($v['status'] ?? '') === 'proposed' && $d !== null && $s === 'active') ? 'selected' : '' ?>><?= e(DILUTION_STATUSES[$s]) ?></option><?php endforeach; ?></select></div><?php endif; ?></div>
+            <?= $fld('counterparty', 'Counterparty', $v['counterparty'] ?? '', 'text', 'The investor, the sales agent or the underwriter.') ?>
+            <div class="row g-2"><div class="col-sm-6"><?= $fld('facility_amount', 'Facility', $num($v['facility_amount'] ?? null), 'text', 'In the currency, e.g. 10,000,000.') ?></div><div class="col-sm-6"><?= $fld('remaining_amount', 'Remaining', $num($v['remaining_amount'] ?? null)) ?></div></div>
+            <div class="mb-3"><label class="form-label" for="dilution-form-field-price_terms">Price terms</label><textarea name="price_terms" id="dilution-form-field-price_terms" class="form-control" rows="2" maxlength="1000"><?= e((string) ($v['price_terms'] ?? '')) ?></textarea></div>
+            <div class="mb-3"><label class="btn btn-light btn-touch text-start w-100" for="dilution-form-field-floating_price"><input type="hidden" name="floating_price" value="no"><input type="checkbox" class="form-check-input me-2" name="floating_price" value="yes" id="dilution-form-field-floating_price" <?= !empty($v['floating_price']) ? 'checked' : '' ?>>
+                A floating price (a discount to a future market price — the death-spiral kind)</label></div>
+            <div class="row g-2"><div class="col-sm-4"><?= $fld('shares_issuable_max', 'Most shares issuable', $num($v['shares_issuable_max'] ?? null)) ?></div><div class="col-sm-4"><?= $fld('expires_on', 'Expires', $v['expires_on'] ?? '', 'date') ?></div>
+                <div class="col-sm-4"><?= $fld('currency', 'Currency', $v['currency'] ?? 'USD') ?></div></div>
+            <?php if (count($securities) > 1): ?><div class="mb-3"><label class="form-label" for="dilution-form-field-security">Security</label><select name="security" id="dilution-form-field-security" class="form-select btn-touch"><option value="">—</option><?php foreach ($securities as $s): ?><option value="<?= (int) $s['security_id'] ?>" <?= (int) ($v['security_id'] ?? 0) === (int) $s['security_id'] ? 'selected' : '' ?>><?= e($s['name']) ?></option><?php endforeach; ?></select></div><?php endif; ?>
+            <?php if ($hit === null): ?><div class="mb-3"><label class="form-label" id="dilution-form-filing-label" for="dilution-form-field-filing-open">The filing</label><?= picker_field(['id' => 'dilution-form-field-filing', 'name' => 'filing', 'source' => 'filing', 'value' => $v['filing_id'] ?? '', 'labelledby' => 'dilution-form-filing-label', 'params' => ['issuer' => (int) $issuer['issuer_id']]]) ?></div>
+                <?= $fld('filed_on', 'Filed', $v['filed_on'] ?? '', 'date') ?><?php endif; ?>
+            <div class="mb-0"><label class="form-label" for="dilution-form-field-notes">Notes</label><textarea name="notes" id="dilution-form-field-notes" class="form-control" rows="2" maxlength="4000"><?= e((string) ($v['notes'] ?? '')) ?></textarea></div>
+        </div>
+        <div class="card-footer d-flex gap-2"><button type="submit" class="btn btn-primary btn-touch flex-grow-1" id="dilution-form-save-btn"><?= $hit !== null ? 'Confirm' : 'Save' ?></button><?= hx_link($hit !== null ? '/filings/watch' : '/dilution', 'Cancel', 'btn btn-light btn-touch', 'id="dilution-form-cancel-btn"') ?></div>
+    </form>
+</div>
