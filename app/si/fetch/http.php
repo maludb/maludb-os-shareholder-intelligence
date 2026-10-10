@@ -160,7 +160,7 @@ final class SiHttp
                 $this->robotsSkipped++;
                 return $this->done($t0, $current, $host, $path, ['status' => 0, 'headers' => [], 'body' => '', 'error' => null], false, false, 'robots_disallow', true);
             }
-            $cacheKey = $method === 'GET' ? $this->cacheKey($current) : null;
+            $cacheKey = $method === 'GET' && empty($opts['no_cache']) ? $this->cacheKey($current) : null;   // no_cache: a large file (a 13F data set) is not kept twice
             $cachedEntry = $cacheKey !== null ? $this->cacheRead($cacheKey) : null;
             $headers = array_merge([
                 'User-Agent' => $this->userAgent,

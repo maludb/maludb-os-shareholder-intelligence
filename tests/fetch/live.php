@@ -13,13 +13,17 @@ if (getenv('SI_DEV_ENV') === false || getenv('SI_DEV_ENV') === '') {
 }
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/app/si/fetch/source.php';
+foreach (['edgar_ownership', 'edgar_13dg', 'edgar_144'] as $__c) { require_once dirname(__DIR__, 2) . '/app/si/fetch/' . $__c . '.php'; }   // their form lists, for the checks
 $pdo = db();
 $fails = 0;
 $passes = 0;
 $ok = static function (bool $c, string $l) use (&$fails, &$passes): void { $c ? $passes++ : $fails++; echo ($c ? '  ok   ' : '  FAIL ') . $l . "\n"; };
 $pdo->exec("UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email = 'claude@kineticseas.com' WHERE id = 1");
 $real = ['edgar_submissions' => ['https://data.sec.gov/submissions/', 2], 'dtcc_participants' => ['https://www.dtcc.com/support/dtc-directories', 1],
-         'edgar_companyfacts' => ['https://data.sec.gov/api/xbrl/companyfacts/', 2], 'edgar_fulltext' => ['https://efts.sec.gov/LATEST/search-index', 2]];
+         'edgar_companyfacts' => ['https://data.sec.gov/api/xbrl/companyfacts/', 2], 'edgar_fulltext' => ['https://efts.sec.gov/LATEST/search-index', 2],
+         'edgar_ownership' => ['https://data.sec.gov/submissions/', 2], 'edgar_13dg' => ['https://data.sec.gov/submissions/', 2], 'edgar_144' => ['https://data.sec.gov/submissions/', 2],
+         'edgar_13f_dataset' => ['https://www.sec.gov/files/structureddata/data/form-13f-data-sets/', 1]];
+$pdo->exec("UPDATE sources SET settings = settings - 'listing_url' WHERE connector = 'edgar_13f_dataset'");            // the SEC's own page
 $pdo->exec("UPDATE sources SET settings = settings - 'archives_url' WHERE connector = 'edgar_submissions'");       // the real archives
 $pdo->exec("UPDATE sources SET settings = settings || '{\"terms\": [\"at-the-market\"]}' WHERE connector = 'edgar_fulltext'");   // one query a term: the live check is one term
 foreach (array_slice($argv, 1) as $connector) {
@@ -40,7 +44,7 @@ foreach (array_slice($argv, 1) as $connector) {
         }
     }
     $t0 = microtime(true);
-    $r = si_run_source($pdo, $src, ['kind' => 'manual', 'issuer' => $issuer]);
+    $r = si_run_source($pdo, $src, ['kind' => 'manual', 'issuer' => $connector === 'edgar_13f_dataset' ? null : $issuer, 'listing_only' => $connector === 'edgar_13f_dataset']);   // the 13F set: its listing, not the download
     $pull = $pdo->query('SELECT http_requests, bytes, policy FROM source_pulls WHERE id = ' . (int) $r['pull_id'])->fetch();
     $pol = json_decode((string) $pull['policy'], true);
     $ok(in_array($r['status'], ['ok', 'partial'], true), sprintf('%s live: %s — %d seen, %d new, %d changed; %d requests, %d bytes, %.1f s, as "%s"%s', $connector, $r['status'], $r['seen'], $r['new'], $r['changed'],
@@ -69,6 +73,17 @@ foreach (array_slice($argv, 1) as $connector) {
         $w = $pdo->query("SELECT count(*) AS n, count(DISTINCT filing_id) AS f FROM watch_hits")->fetch();
         $d = (int) one_value($pdo, "SELECT count(*) FROM dilution_instruments WHERE status = 'proposed'");
         $ok(true, sprintf('  the watch (90 days, "at-the-market" and the name in others\' filings): %d hits on %d filings, %d instruments proposed', $w['n'], $w['f'], $d));
+    }
+    if (in_array($connector, ['edgar_ownership', 'edgar_13dg', 'edgar_144'], true) && $issuer) {
+        $n = (int) one_value($pdo, ['edgar_ownership' => 'SELECT count(*) FROM insider_transactions', 'edgar_13dg' => 'SELECT count(*) FROM beneficial_ownership', 'edgar_144' => 'SELECT count(*) FROM form144_notices'][$connector]);
+        $forms = ['edgar_ownership' => SI_OWNERSHIP_FORMS, 'edgar_13dg' => SI_13DG_FORMS, 'edgar_144' => ['144', '144/A']][$connector];
+        $st = $pdo->prepare("SELECT count(*) FILTER (WHERE error LIKE 'Not read%'), count(*) FILTER (WHERE error LIKE 'About another%'), count(*) FILTER (WHERE structured_at IS NOT NULL) FROM filings WHERE form = ANY (CAST(:f AS text[]))");
+        $st->execute(['f' => '{' . implode(',', array_map(static fn ($x) => '"' . $x . '"', $forms)) . '}']);
+        [$e, $other, $read] = array_map('intval', $st->fetch(PDO::FETCH_NUM));
+        $ok($e === 0, sprintf('  %s: %d of its filings read, %d rows kept, %d about another company set aside, %d not read as their form', $connector, $read, $n, $other, $e));
+    }
+    if ($connector === 'edgar_13f_dataset') {
+        $ok(count($r['detail']['zips'] ?? []) > 4, '  the 13F page lists ' . count($r['detail']['zips'] ?? []) . ' data sets, the newest ' . (($r['detail']['zips'] ?? [])[0] ?? '?') . ' (not downloaded)');
     }
     if ($connector === 'dtcc_participants') {
         $n = (int) one_value($pdo, 'SELECT count(*) FROM participants');

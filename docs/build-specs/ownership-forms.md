@@ -64,5 +64,44 @@ kinds, the quarter-over-quarter changes (Alpha down, Beta out with its put apart
 the 144; a second pull changes nothing; an XML with an external entity is refused; a Viewer reads every screen without the register link's holder; 375 and 1280; JSON mode; the live
 pull of the newest data set's listing.
 
+## Built (2026-10-10) — what the build found and decided within this spec
+1. **The four connectors are `si_fetch_<connector>(PDO, array $source, SiHttp $client, array $ctx)`** on slice 1's `si_run_source()`, registered in `si_fetchers()`;
+   what they share is `app/si/fetch/ownership_common.php`. **The 13D/G, Forms 3/4/5 and 144 are read from the issuer's own filing index** (slice 4) — EDGAR
+   lists them under the subject company — the filings of their forms not yet `structured_at`, oldest first, `per_pull` (40) a pull, so a new issuer's years of
+   Forms 4 clear over a few pulls; each one's RAW document (the index names the rendered page `xslF345X05/form4.xml`; the raw is `form4.xml`). A filing read or
+   refused is marked structured and never read again; a refusal keeps its words in the filing's `error`. Their calendar is the index's (market days 06–20 New York).
+2. **A document about another company is set aside** ("About another company: …" on the filing, nothing loaded): the issuer's index also carries what the issuer
+   itself FILED — found by the live pull: Bitmine's own 13D on Eightco would have made Bitmine a 31.94% holder of itself. The subject is the document's
+   `issuerCik`/`issuerCIK`; an older HTML schedule has none and is taken as the index gives it.
+3. **The 2024 XML schedules come in two layouts**: the 13D's `reportingPersonInfo` (the person's CIK, `percentOfClass`, `aggregateAmountOwned`, item 4's purpose)
+   and the 13G's `coverPageHeaderReportingPersonDetails` (no CIK on the person — the filer's, from `headerData`; `classPercent`;
+   `reportingPersonBeneficiallyOwnedAggregateNumberOfShares`; item 4 is the amount, so a 13G has no purpose). The first reporting person is the institution, the
+   rest its group; `filer_type` is `active` for a 13D and `qii` / `passive` / `exempt` from a 13G's 13d-1(b)/(c)/(d) designation.
+4. **An older HTML schedule is read from its cover** whether the rows are table cells or lines of their own (an older filer's cover): the names, row 11's amount,
+   row 13's percent ("15,700,000 Common Shares / 41.72%"), the four powers, the event date, the CUSIP; its filer's CIK is the accession's prefix (a filing agent's,
+   at times — the institution is then named but its CIK is the agent's). Live: all eleven of Bitmine's schedules read (nine kept, two about Eightco set aside).
+5. **13F: the data sets' page (`listing_url`) is read for its zips; the zips loaded are kept in the source's `loaded`**; with none loaded the newest `backfill` (2)
+   are read, after that every newer one, oldest first. The zip is downloaded whole into a temporary file without the HTTP cache (`no_cache`) and its three TSVs
+   streamed; only the tracked CUSIPs' rows are kept, a filer's rows for one CUSIP summed per accession and put/call; VALUE in thousands before 2023-01-03; a
+   RESTATEMENT amendment replaces the filer's other rows for its period. A data set also carries late filings for earlier quarters, which load as their own
+   periods. **fetch_now on the 13F source queues it for the worker** (a data set is ~100 MB). Live, by hand on the scratch database: the newest set
+   (01jun2026-31aug2026) in 15 s at a 127 MB peak — 531 rows from 454 institutions of Bitmine, 511 filers holding 254,830,686 shares at 2026-06-30, 63 option rows apart.
+6. **A security holds one CUSIP** (slice 1): a 13F row under a FORMER CUSIP is not read — Bitmine's 09175A107 became 09175A206 at its split; the scratch security
+   carried the old one and read nothing until it was corrected. The owner's question (open): a security's former CUSIPs.
+7. **`si_insider_mark` reads EDGAR's name order** — "SMITH ROBERT A", the family name first and no comma — beside "Smith, Robert" and the name as given (db/022);
+   the trigger proposes, a person confirms or corrects: **`insider_holder_link` moves every row of that insider at the issuer**, marks the holder, refuses an
+   entity holder (an insider is a person) and another issuer's.
+8. **`institution.create` is logged for a filer a schedule makes; a 13F data set's new institutions are counted in its `holding.load`** (`institutions_new`) —
+   a set makes hundreds.
+9. **`/ownership/13f/changes` and `/ownership/144` are named rewrites** in the vhost, the dev router and the registry's controller lookup — `144` would otherwise
+   read as a record id (`/{module}/{id}` → `view.php`).
+10. **On a phone the insider ledger puts the code chip and the 10b5-1 mark under the date** (the person column keeps its width; the shares stay on the screen).
+
+Proof: `tests/phase3/slice5/run.sh` (each proof on a fresh scratch database, the stub on :8905 serving the samples `tests/fetch/make_ownership_samples.py` writes —
+two 13F zips and their page, a 13D and a 13G in the 2024 layouts, an older HTML 13G/A, a Form 4, a Form 4 about another company, a 144, a schedule declaring an
+entity) — the 13F 18, the schedules 14, the insiders and 144 19, JSON 3, browser 76, under php -S and a real Apache; **the live pulls**: Bitmine's index, its
+Forms 3/4/5 (40 read, 89 rows), its schedules (11 read, 9 kept, 2 set aside), its Forms 144 (8), the 13F page (11 data sets listed); slices 1–4, Phase 2, the
+schema proof, the kit and Phase 1 re-run green; the registry 50 screens and 44 actions built.
+
 ## Open questions
-None.
+None of the build's; the owner's: a security's former CUSIPs (Built 6).

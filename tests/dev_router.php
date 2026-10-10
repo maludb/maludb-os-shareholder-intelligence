@@ -15,7 +15,9 @@ if (str_starts_with($path, '/api/') && !preg_match('#^/api/v1/[a-z_/0-9-]+$#', $
 $map = ['/sso' => '/sso.php', '/sso/logout' => '/sso/logout.php', '/api/v1/health' => '/api/v1/health.php'];
 $rel = rtrim($path, '/') ?: '/';
 $set = static function (array $kv): void { foreach ($kv as $k => $v) { $_GET[$k] = $v; $_REQUEST[$k] = $v; } };
-if (preg_match('#^/exports/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/exports/download.php'; }
+if ($rel === '/ownership/13f/changes') { $target = '/ownership/13f-changes.php'; }
+elseif ($rel === '/ownership/144') { $target = '/ownership/144.php'; }               // a screen named by a number, not a record
+elseif (preg_match('#^/exports/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/exports/download.php'; }
 elseif (preg_match('#^/api/v1/([a-z_-]+)/([0-9]+)(?:/([a-z_]+))?$#', $path, $m)) { $set(['id' => $m[2], 'do' => $m[3] ?? '']); $target = '/api/v1/' . $m[1] . '.php'; }
 elseif (preg_match('#^/api/v1/([a-z_-]+)(?:/([a-z_]+))?$#', $path, $m) && $path !== '/api/v1/health') { $target = '/api/v1/' . $m[1] . (isset($m[2]) ? '/' . $m[2] : '') . '.php'; }
 elseif (preg_match('#^/(.+)/([0-9]+)/([a-z_-]+)$#', $path, $m) && is_file($root . '/' . $m[1] . '/' . $m[3] . '.php')) { $target = '/' . $m[1] . '/' . $m[3] . '.php'; $set(['id' => $m[2]]); }

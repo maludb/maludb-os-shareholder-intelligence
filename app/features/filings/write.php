@@ -98,5 +98,9 @@ function fetch_now(PDO $pdo, int $source, ?int $issuer): array
         throw new DomainException('This source is read by a later slice.');
     }
     log_activity($pdo, 'source.pull_now', 'source', $source, ['issuer_id' => $issuer, 'after' => ['source_id' => $source, 'connector' => $s['connector'], 'issuer_id' => $issuer]]);
+    if ($s['connector'] === 'edgar_13f_dataset') {                       // a data set runs to tens of megabytes: the worker reads it
+        $pdo->prepare('UPDATE sources SET last_ok_at = NULL WHERE id = :s')->execute(['s' => $source]);
+        return ['status' => 'queued', 'pull_id' => null, 'seen' => 0, 'new' => 0, 'changed' => 0, 'error' => null, 'detail' => []];
+    }
     return si_run_source($pdo, $s, ['kind' => 'manual', 'by' => current_member_id(), 'issuer' => $issuer]);
 }

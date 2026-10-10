@@ -229,6 +229,10 @@ function screen_controller(string $url): ?string
     $path = parse_url($url, PHP_URL_PATH) ?: $url;
     $path = '/' . ltrim($path, '/');
     $path = preg_replace('/\{[a-z_]+\}/', '1', $path);          // /pages/{id} → /pages/1
+    $special = ['/ownership/13f/changes' => '/ownership/13f-changes.php'];   // the vhost's named rewrites (deploy/apache-shareholder_intelligence.conf)
+    if (isset($special[$path]) && is_file(WEB_ROOT . $special[$path])) {
+        return WEB_ROOT . $special[$path];
+    }
     if (str_ends_with($path, '/')) {
         return is_file(WEB_ROOT . $path . 'index.php') ? WEB_ROOT . $path . 'index.php' : null;
     }

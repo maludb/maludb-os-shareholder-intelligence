@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-10T18:30:06+00:00",
+    "generated_at": "2026-10-10T21:07:41+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -496,7 +496,7 @@
                 "q",
                 "activist"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "institution-view": {
@@ -507,7 +507,7 @@
             "params": [
                 "security"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "institution-edit": {
@@ -516,7 +516,7 @@
             "section": "EDGAR — the ownership forms (slice 5)",
             "when": "to set an institution's kind, activist flag, website, notes",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ownership-13f": {
@@ -528,8 +528,8 @@
                 "security",
                 "period"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "ownership-13f-changes": {
             "screen": "ownership-13f-changes",
@@ -541,7 +541,7 @@
                 "period",
                 "state"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ownership-beneficial": {
@@ -552,7 +552,7 @@
             "params": [
                 "security"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ownership-insiders": {
@@ -566,7 +566,7 @@
                 "owner",
                 "code"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "ownership-144": {
@@ -578,7 +578,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "short": {
@@ -2475,7 +2475,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the institution",
-            "built": false
+            "built": true
         },
         "insider_holder_link": {
             "action": "insider_holder_link",
@@ -2502,7 +2502,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "borrow_observation_create": {
             "action": "borrow_observation_create",

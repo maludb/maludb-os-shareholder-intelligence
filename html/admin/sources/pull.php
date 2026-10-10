@@ -9,5 +9,5 @@ $src = request_integer('source') ?? si_refuse_fields(['source' => 'Name the sour
 $iss = request_integer('issuer');
 if ($iss !== null && find_issuer($pdo, $iss) === null) { refuse(404, 'Not found.'); }
 $r = si_guard($pdo, static fn (): array => fetch_now($pdo, (int) $src, $iss));
-$did = match ($r['status']) { 'ok', 'partial' => 'Pulled: ' . $r['seen'] . ' seen, ' . $r['new'] . ' new, ' . $r['changed'] . ' changed', 'blocked' => 'Refused by the host: ' . (string) $r['error'], default => 'The pull failed: ' . (string) $r['error'] };
+$did = match ($r['status']) { 'queued' => 'Queued: the worker reads the 13F data set on its next pass', 'ok', 'partial' => 'Pulled: ' . $r['seen'] . ' seen, ' . $r['new'] . ' new, ' . $r['changed'] . ' changed', 'blocked' => 'Refused by the host: ' . (string) $r['error'], default => 'The pull failed: ' . (string) $r['error'] };
 si_done($did, $r['pull_id'], si_land(return_path('/filings'), 'pulled'), 'sourceChanged', ['status' => $r['status'], 'seen' => $r['seen'], 'new' => $r['new'], 'changed' => $r['changed']]);

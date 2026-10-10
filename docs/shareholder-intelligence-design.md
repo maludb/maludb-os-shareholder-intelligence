@@ -929,6 +929,13 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-10 — SLICE 5 BUILT: the ownership forms (`docs/build-specs/ownership-forms.md` "Built").** The SEC's 13F data sets (the page read for its zips,
+only the tracked CUSIPs kept, a restatement replacing, the quarter's changes and summary), Schedules 13D and 13G in both 2024 XML layouts and the older HTML
+covers, Forms 3/4/5 into the insider ledger with the register's holder proposed by name (EDGAR's "SMITH ROBERT A", db/022) and confirmed by a person, Forms 144;
+institutions with pages and kinds; the six ownership screens. A document the issuer itself filed about another company is set aside (found on Bitmine's 13D on
+Eightco). Live: Bitmine's 89 insider rows, 9 schedules, 8 notices; one real 13F set — 511 filers, 254,830,686 shares at 2026-06-30. Open for the owner: a
+security's former CUSIPs (a 13F row under the pre-split CUSIP is not read). **Next:** slice 6, the short side (FINRA short interest and volume, fails, Reg SHO).
+
 **2026-10-10 — SLICE 4 BUILT: EDGAR, the index, the text and the watch (`docs/build-specs/edgar-filings.md` "Built").** The issuers' filing index twice a
 market day (the older pages once), the watched forms' text on arrival (HTML with its paragraphs and tables, XML safely, PDF through pdftotext), the cover
 share counts from companyfacts, the full-text watch on seven dilution terms and on the company's name in others' filings, the instruments it proposes and a

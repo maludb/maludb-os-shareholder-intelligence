@@ -89,5 +89,9 @@ old Excel in `app/si/xls.php`. **Every holder read goes through `mcp_holders` / 
 have no wall of their own — prove the security visible first.** The real-files proof prints counts only and compares names in memory. **SLICE 4 BUILT 2026-10-10** (`docs/build-specs/edgar-filings.md` "Built"; `tests/phase3/slice4/run.sh` — the stub serves the samples
 `tests/fetch/make_edgar_samples.py` writes; `SI_LIVE=0` skips the live pulls): the EDGAR fetchers are `app/si/fetch/edgar_{submissions,companyfacts,fulltext}.php`
 on slice 1's `si_run_source()`; the archives' base is the `edgar_submissions` source's `archives_url` setting (point it at the stub in every proof that pulls
-EDGAR — slice 1's runner does); `SiHttp::API_HOSTS` are not robots-governed. **Next: slice 5 (the ownership forms)**, then slice 6, slice 7 (the second
-exemplar), then the Sonnet handoff.
+EDGAR — slice 1's runner does); `SiHttp::API_HOSTS` are not robots-governed. **SLICE 5 BUILT
+2026-10-10** (`docs/build-specs/ownership-forms.md` "Built"; `tests/phase3/slice5/run.sh`, samples by `tests/fetch/make_ownership_samples.py`): the four ownership
+connectors `app/si/fetch/edgar_{13f_dataset,13dg,ownership,144}.php`; the 13D/G, Forms 3/4/5 and 144 are read from the issuer's index (`structured_at`), and
+**a document whose subject is another company is set aside** — the index also carries what the issuer itself filed; the 13F set is never read in a request
+(fetch_now queues it). `/ownership/144` and `/ownership/13f/changes` are named rewrites (the registry knows them). **Next: slice 6 (the short side)**, then slice 7
+(the second exemplar), then the Sonnet handoff.

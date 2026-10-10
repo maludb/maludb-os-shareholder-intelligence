@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13g" xmlns:com="http://www.sec.gov/edgar/common">
+  <headerData><submissionType>SCHEDULE 13G</submissionType><filerInfo><filer><filerCredentials><cik>0001777777</cik><ccc>XXXXXXXX</ccc></filerCredentials></filer></filerInfo></headerData>
+  <formData>
+    <coverPageHeader><securitiesClassTitle>Common Stock</securitiesClassTitle><eventDateRequiresFilingThisStatement>04/30/2024</eventDateRequiresFilingThisStatement>
+      <issuerInfo><issuerCik>0000999999</issuerCik><issuerName>SMOKE ISSUER INC</issuerName><issuerCusip>07831X206</issuerCusip></issuerInfo>
+      <designateRulesPursuantThisScheduleFiled><designateRulePursuantThisScheduleFiled>Rule 13d-1(c)</designateRulePursuantThisScheduleFiled></designateRulesPursuantThisScheduleFiled></coverPageHeader>
+    <coverPageHeaderReportingPersonDetails><reportingPersonName>SMOKE ZETA GROWTH FUND LP</reportingPersonName><citizenshipOrOrganization>DE</citizenshipOrOrganization>
+      <reportingPersonBeneficiallyOwnedNumberOfShares><soleVotingPower>0.00</soleVotingPower><sharedVotingPower>870000.00</sharedVotingPower><soleDispositivePower>0.00</soleDispositivePower><sharedDispositivePower>870000.00</sharedDispositivePower></reportingPersonBeneficiallyOwnedNumberOfShares>
+      <reportingPersonBeneficiallyOwnedAggregateNumberOfShares>870000.00</reportingPersonBeneficiallyOwnedAggregateNumberOfShares><classPercent>5.1</classPercent><typeOfReportingPerson>PN</typeOfReportingPerson></coverPageHeaderReportingPersonDetails>
+    <coverPageHeaderReportingPersonDetails><reportingPersonName>SMOKE ZETA GP LLC</reportingPersonName><classPercent>5.1</classPercent></coverPageHeaderReportingPersonDetails>
+    <items><item4><amountBeneficiallyOwned>870000</amountBeneficiallyOwned></item4></items>
+  </formData>
+</edgarSubmission>

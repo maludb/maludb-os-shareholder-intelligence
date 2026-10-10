@@ -26,6 +26,10 @@ function si_fetchers(): array
         'edgar_submissions' => [__DIR__ . '/edgar_submissions.php', 'si_fetch_edgar_submissions'],
         'edgar_companyfacts' => [__DIR__ . '/edgar_companyfacts.php', 'si_fetch_edgar_companyfacts'],
         'edgar_fulltext' => [__DIR__ . '/edgar_fulltext.php', 'si_fetch_edgar_fulltext'],
+        'edgar_13f_dataset' => [__DIR__ . '/edgar_13f_dataset.php', 'si_fetch_edgar_13f_dataset'],
+        'edgar_13dg' => [__DIR__ . '/edgar_13dg.php', 'si_fetch_edgar_13dg'],
+        'edgar_ownership' => [__DIR__ . '/edgar_ownership.php', 'si_fetch_edgar_ownership'],
+        'edgar_144' => [__DIR__ . '/edgar_144.php', 'si_fetch_edgar_144'],
     ];
 }
 
@@ -111,7 +115,7 @@ function si_run_source(PDO $pdo, array $source, array $o = []): array
     $error = null;
     $r = ['seen' => 0, 'new' => 0, 'changed' => 0, 'detail' => []];
     try {
-        $r = $fn($pdo, $source, $client, ['pull' => $pull, 'kind' => $kind, 'by' => $by, 'issuer' => $o['issuer'] ?? null, 'now' => $o['now'] ?? new DateTimeImmutable('now')]) + $r;
+        $r = $fn($pdo, $source, $client, ['pull' => $pull, 'kind' => $kind, 'by' => $by, 'issuer' => $o['issuer'] ?? null, 'now' => $o['now'] ?? new DateTimeImmutable('now'), 'listing_only' => $o['listing_only'] ?? false]) + $r;
         $status = (string) ($r['status'] ?? 'ok');
         $error = $r['error'] ?? null;
     } catch (SiFetchError $e) {

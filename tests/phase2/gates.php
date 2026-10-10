@@ -75,12 +75,12 @@ ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') 
 $r = req('POST', '/signals', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
 ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 7.'), 'a POST to a placeholder: 501, in words');
 $since = last_activity_id();
-$r = page($jAdmin, '/ownership/13f', ['headers' => ['HX-Request: true']]);
-ok($r['code'] === 200 && str_contains($r['body'], 'id="ownership-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Ownership/mi', $r['headers']) === 1
-    && preg_match('/^X-Screen: ownership-13f\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: ownership\r?$/mi', $r['headers']) === 1,
+$r = page($jAdmin, '/short', ['headers' => ['HX-Request: true']]);                    // slice 5 built /ownership/13f; the short side is slice 6's
+ok($r['code'] === 200 && str_contains($r['body'], 'id="short-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Short(%20| )side/mi', $r['headers']) === 1
+    && preg_match('/^X-Screen: short\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: short\r?$/mi', $r['headers']) === 1,
     'over HTMX a placeholder is the partial with HX-Title, X-Screen (the manifest\'s id) and X-Nav, so the highlight and the command bar follow');
 $v = activity('screen.view', $since);
-ok($v !== [] && end($v)['screen'] === 'ownership-13f', 'opening a placeholder logs screen.view under the manifest\'s screen id');
+ok($v !== [] && end($v)['screen'] === 'short', 'opening a placeholder logs screen.view under the manifest\'s screen id');
 $built = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true);
 $stubIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['stub'])));
 $builtIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['built'])));

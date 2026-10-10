@@ -10,7 +10,7 @@ declare(strict_types=1);
  * `search` reads the same view the feature's screens read (the walls in SQL), never a second rule; `label` names the chosen record.
  *
  * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
- * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument. Later: reporting_owner (5); signal,
+ * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument; slice 5 reporting_owner. Later: signal,
  * rule, event (7); report (8).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
@@ -109,5 +109,14 @@ return [
                     CASE WHEN floating_price THEN 'floating' END AS badge
                FROM mcp_dilution_instruments WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (kind ILIKE :q OR coalesce(counterparty, '') ILIKE :q) ORDER BY filed_on DESC NULLS LAST", $q, $page, ['iss' => $p['issuer'] ?? null]),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT initcap(replace(kind, '_', ' ')) || COALESCE(' — ' || counterparty, '') FROM mcp_dilution_instruments WHERE instrument_id = :id", $id),
+    ],
+    // slice 5: a reporting owner (an insider of Forms 3/4/5, by CIK — the value is the CIK's number)
+    'reporting_owner' => [
+        'title' => 'Insiders', 'noun' => 'insider', 'roles' => ['institutions.read'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT CAST(reporting_owner_cik AS bigint) AS id, max(reporting_owner_name) AS label, 'CIK ' || ltrim(reporting_owner_cik, '0') || ' · ' || count(*) || ' rows' AS detail, NULL AS badge
+               FROM mcp_insider_transactions WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (reporting_owner_name ILIKE :q OR reporting_owner_cik ILIKE :q)
+              GROUP BY reporting_owner_cik ORDER BY max(transaction_date) DESC NULLS LAST", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT max(reporting_owner_name) FROM mcp_insider_transactions WHERE reporting_owner_cik = lpad(CAST(:id AS text), 10, '0')", $id),
     ],
 ];

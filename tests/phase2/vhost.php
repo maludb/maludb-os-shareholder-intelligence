@@ -18,7 +18,7 @@ ok(page($j, '/search')['code'] === 200 && page($j, '/notifications')['code'] ===
 foreach (['signals', 'positions', 'holders', 'filings', 'short', 'events', 'reports', 'uploads', 'issuers', 'participants', 'proposals', 'calendar'] as $d) {
     ok(page($j, "/$d")['code'] === 200 && page($j, "/$d/")['code'] === 200, "/$d and /$d/ both reach $d/index.php (the placeholder)");
 }
-ok(page($j, '/ownership/13f')['code'] === 200, '/ownership/13f reaches ownership/13f.php (the placeholder)');
+ok(page($j, '/ownership/13f')['code'] === 200, '/ownership/13f reaches ownership/13f.php');
 ok(page($j, '/issuers/new')['code'] === 200 && page($j, '/uploads/new')['code'] === 200, '/issuers/new and /uploads/new reach their form.php (the placeholders)');
 $refused = static fn (array $r): bool => $r['code'] === 404 && str_contains($r['body'], 'Refused · Shareholder Intelligence');      // the controller's own 404, not the router's
 ok($refused(page($j, '/issuers/99999/edit')) && $refused(page($j, '/issuers/99999')) && $refused(page($j, '/issuers/99999/securities')) && $refused(page($j, '/participants/99999')),

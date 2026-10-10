@@ -35,6 +35,9 @@ function si_source_on_calendar(PDO $pdo, array $source, DateTimeImmutable $now):
         'edgar_companyfacts' => si_is_market_day_on($pdo, $now) && $hour >= 7 && $hour <= 20,
         // the full-text watch: hourly on market days, 07:00–20:59 market time
         'edgar_fulltext' => si_is_market_day_on($pdo, $now) && $hour >= 7 && $hour <= 20,
+        // the ownership forms: with the index (market days, 06:00–20:59); the 13F page any day (the sets appear quarterly)
+        'edgar_13dg', 'edgar_ownership', 'edgar_144' => si_is_market_day_on($pdo, $now) && $hour >= 6 && $hour <= 20,
+        'edgar_13f_dataset' => true,
         // the directory: any day (DTCC refreshes it monthly; the schedule is 30 days)
         'dtcc_participants' => true,
         default => true,

@@ -10,7 +10,9 @@
  *   /submissions/CIK##########-submissions-001.json   the older page a submissions document names (slice 4)
  *   /api/xbrl/companyfacts/CIK##########.json     samples/companyfacts_CIK##########.json, else 404 (slice 4)
  *   /LATEST/search-index?q=&ciks=&…               samples/efts/<the term as a slug>.json (q without ciks: about-<slug>.json), else no hits (slice 4)
- *   /Archives/edgar/data/<cik>/<accession>/<file> samples/archives/<file>, else 404 (slice 4)
+ *   /Archives/edgar/data/<cik>/<accession>/<file> samples/archives/<accession>/<file>, else samples/archives/<file>, else 404 (slices 4, 5)
+ *   /data-research/sec-markets-data/form-13f-data-sets   the 13F data sets' page (samples/form13f/listing.html) (slice 5)
+ *   /files/structureddata/data/form-13f-data-sets/<zip>  samples/form13f/<zip> (slice 5)
  *   /private/…                                    served only to a client that ignores robots (the proof checks it is never asked)
  * The SEC's rule is enforced on /files/ and /submissions/: a User-Agent without an email answers 403. Every answer carries an ETag, and a
  * matching If-None-Match answers 304. $STUB_STATE (a JSON file) may force answers: {"force": {"/path": 429}} or {"force_all": 503}; $STUB_LOG
@@ -46,7 +48,7 @@ if (isset($state['force_all'])) {
 if (isset($state['force'][$path])) {
     $send((int) $state['force'][$path], 'forced', 'text/plain');
 }
-if ((str_starts_with($path, '/files/') || str_starts_with($path, '/submissions/') || str_starts_with($path, '/api/xbrl/') || str_starts_with($path, '/LATEST/') || str_starts_with($path, '/Archives/')) && !str_contains($ua, '@')) {
+if ((str_starts_with($path, '/files/') || str_starts_with($path, '/submissions/') || str_starts_with($path, '/api/xbrl/') || str_starts_with($path, '/LATEST/') || str_starts_with($path, '/Archives/') || str_starts_with($path, '/data-research/')) && !str_contains($ua, '@')) {
     $send(403, '<html><body>Your request has been identified as part of a network of automated tools outside of the acceptable policy.</body></html>', 'text/html');
 }
 if ($path === '/robots.txt') {
@@ -81,8 +83,15 @@ if ($path === '/LATEST/search-index') {
     $f = $root . '/efts/' . $slug . '.json';
     $send(200, is_file($f) && (int) ($_GET['from'] ?? 0) === 0 ? (string) file_get_contents($f) : '{"took":1,"timed_out":false,"hits":{"total":{"value":0,"relation":"eq"},"hits":[]}}', 'application/json');
 }
-if (preg_match('~^/Archives/edgar/data/\d+/\d{18}/([A-Za-z0-9_.\-]+)$~', $path, $m)) {
-    $f = $root . '/archives/' . $m[1];
+if ($path === '/data-research/sec-markets-data/form-13f-data-sets') {
+    $send(200, (string) file_get_contents($root . '/form13f/listing.html'), 'text/html');
+}
+if (preg_match('~^/files/structureddata/data/form-13f-data-sets/([A-Za-z0-9_\-]+\.zip)$~', $path, $m)) {
+    $f = $root . '/form13f/' . $m[1];
+    is_file($f) ? $send(200, (string) file_get_contents($f), 'application/zip') : $send(404, 'not found', 'text/plain');
+}
+if (preg_match('~^/Archives/edgar/data/\d+/(\d{18})/([A-Za-z0-9_.\-]+)$~', $path, $m)) {
+    $f = is_file($root . '/archives/' . $m[1] . '/' . $m[2]) ? $root . '/archives/' . $m[1] . '/' . $m[2] : $root . '/archives/' . $m[2];
     is_file($f) ? $send(200, (string) file_get_contents($f), str_ends_with($f, '.xml') ? 'application/xml' : 'text/html') : $send(404, 'not found', 'text/plain');
 }
 if (str_starts_with($path, '/private/')) {
