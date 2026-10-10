@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-09T21:34:29+00:00",
+    "generated_at": "2026-10-10T11:40:26+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -179,8 +179,8 @@
                 "security",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "upload-add": {
             "screen": "upload-add",
@@ -191,8 +191,8 @@
                 "kind",
                 "security"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "upload-view": {
             "screen": "upload-view",
@@ -202,7 +202,7 @@
             "params": [
                 "rows"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "positions": {
@@ -218,8 +218,8 @@
                 "class",
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "positions-matrix": {
             "screen": "positions-matrix",
@@ -232,7 +232,7 @@
                 "to",
                 "class"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "positions-flow": {
@@ -245,7 +245,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "positions-concentration": {
@@ -258,7 +258,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "reconciliation": {
@@ -269,7 +269,7 @@
             "params": [
                 "security"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holder-list": {
@@ -1652,7 +1652,7 @@
             "who": "uploads.write",
             "agent": false,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "upload_reparse": {
             "action": "upload_reparse",
@@ -1673,7 +1673,7 @@
             "who": "uploads.write",
             "agent": true,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "upload_override": {
             "action": "upload_override",
@@ -1700,7 +1700,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "upload_delete": {
             "action": "upload_delete",
@@ -1721,7 +1721,7 @@
             "who": "uploads.delete",
             "agent": true,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "upload_restore": {
             "action": "upload_restore",
@@ -1742,7 +1742,7 @@
             "who": "uploads.delete",
             "agent": true,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "reconciliation_run": {
             "action": "reconciliation_run",
@@ -1775,7 +1775,7 @@
             "who": "uploads.write",
             "agent": true,
             "record_id": "the reconciliation",
-            "built": false
+            "built": true
         },
         "match_accept": {
             "action": "match_accept",

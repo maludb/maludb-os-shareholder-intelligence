@@ -33,9 +33,10 @@ $tile = static function (string $id, string $label, string $value, string $sourc
         ($short['pct_of_float'] ?? 0) >= 20 ? 'danger' : '', $short !== null ? e($n($short['short_shares'])) . ' shares · ' . e($short['days_to_cover'] === null ? '—' : number_format((float) $short['days_to_cover'], 1)) . ' days to cover' : '') ?>
     <?= $tile('dtc', 'Held at DTC', e($n($dtc['total'] ?? null)), 'the DTC Security Position Report', $dtc['position_date'] ?? null, '',
         $dtc !== null ? 'Retail ' . e(number_format((float) $side($dtc, 'retail'), 1)) . '% · institutional ' . e(number_format((float) $side($dtc, 'institutional'), 1)) . '% · top 5 ' . e($pct($dtc['top5_pct'] ?? null)) : '') ?>
-    <?= $tile('reconciliation', 'Reconciliation', $rec === null ? '—' : ($rec['tied'] ? '<i class="feather-check-circle me-1"></i>Ties' : '<i class="feather-alert-triangle me-1"></i>Does not tie'),
-        'the register and the SPR', $rec['as_of'] ?? null, $rec === null ? '' : ($rec['tied'] ? 'success' : 'danger'),
-        $rec !== null && !$rec['tied'] ? 'Register off by ' . e($n($rec['difference_registered'])) . ' · SPR off by ' . e($n($rec['difference_spr'])) : '') ?>
+    <?php $recIncomplete = $rec !== null && $rec['difference_registered'] === null && $rec['difference_spr'] === null; ?>
+    <?= $tile('reconciliation', 'Reconciliation', $rec === null ? '—' : ($recIncomplete ? '<span class="fs-6">Not enough to compare</span>' : ($rec['tied'] ? '<i class="feather-check-circle me-1"></i>Ties' : '<i class="feather-alert-triangle me-1"></i>Does not tie')),
+        'the register and the SPR', $rec['as_of'] ?? null, $rec === null || $recIncomplete ? '' : ($rec['tied'] ? 'success' : 'danger'),
+        $rec !== null && !$rec['tied'] && !$recIncomplete ? 'Register off by ' . e($n($rec['difference_registered'])) . ' · SPR off by ' . e($n($rec['difference_spr'])) : '') ?>
     <?= $tile('thirteen-f', '13F holders', e($n($f13['holders'] ?? null)), 'the SEC\'s 13F data set, quarter ending', $f13['period_end'] ?? null, '',
         $f13 !== null ? e($n($f13['shares'])) . ' shares · ' . e($pct($f13['pct_of_outstanding'] ?? null)) . ' of outstanding' : '') ?>
     <?= $tile('beneficial', '5% holders', e((string) count($bo)), 'Schedules 13D and 13G', $bo[0]['filed_on'] ?? null, '',

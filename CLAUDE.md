@@ -78,4 +78,8 @@ every number carries its source line (`shared/source-line.php`). **SLICE 1 BUILT
 database; `SI_LIVE=0` skips the live pulls): every fetcher goes through `app/si/fetch/source.php` → `si_run_source()` (the user-agent or no request,
 the pull row, the back-off in SQL) and the one client `app/si/fetch/http.php`; a connector is a function in `si_fetchers()`; the proofs read the
 public record from `tests/fetch/stub_server.php` (:8905) and once live (`tests/fetch/live.php`); `si_can_see_record()` (db/020) is the gate for a
-note or a tag on any record. **Next: slice 2 (the SPR, the first exemplar)**, then slices 3 and 7, then the Sonnet handoff.
+note or a tag on any record. **SLICE 2 BUILT 2026-10-10, THE FIRST EXEMPLAR** (`docs/build-specs/spr-positions.md` "Built"; `tests/phase3/slice2/run.sh`): an upload goes
+`upload_create()` → `upload_ingest()` (`app/features/uploads/write.php`): detect from the head (`app/si/parse/detect.php`, `SI_CONNECTORS` — a
+connector is a parser file and a function), check the CUSIP, store (`app/si/storage.php`), raw rows + the database's verb in ONE transaction, then
+`reconciliation_after()`. A parser throws `SiParseError` for a file it does not read; a bad cell is a row with its error. The real-files proof is the
+oracle (`tests/fixtures/load_real_spr.py`) against the database. **Next: slice 3 (the holders)**, then slice 7, then the Sonnet handoff.

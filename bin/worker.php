@@ -94,12 +94,42 @@ function worker_pass_fetch(PDO $pdo, int $limit, DateTimeImmutable $now): array
     }
     return $out + ['runs' => $lines];
 }
-/** SLICES 2, 3 — queued uploads parsed in one transaction each: the raw rows, the typed columns, the control totals tied or the difference named. */
-function worker_pass_uploads(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['parsed' => 0, 'tied' => 0, 'untied' => 0, 'stub' => true]; }
+/** SLICES 2, 3 — queued uploads (a file over 5 MB) parsed and loaded, one transaction each (upload_ingest); the uploader told it is done or does not tie. */
+function worker_pass_uploads(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/uploads/write.php';
+    $out = ['parsed' => 0, 'tied' => 0, 'untied' => 0, 'failed' => 0];
+    foreach ($pdo->query("SELECT id, created_by, issuer_id, file_name FROM imports WHERE status = 'queued' AND deleted_at IS NULL ORDER BY created_at LIMIT " . max(1, min(20, $limit)))->fetchAll() as $q) {
+        $r = upload_ingest($pdo, (int) $q['id']);
+        $out['parsed']++;
+        $key = $r['status'] === 'failed' ? 'failed' : ($r['tied'] ? 'tied' : 'untied');
+        $out[$key]++;
+        if ($q['created_by'] !== null) {
+            $pdo->prepare('SELECT si_notify(:m, :k, :t, :b, \'import\', :r, NULL, :i, NULL, :d)')->execute(['m' => (int) $q['created_by'], 'k' => $key === 'tied' ? 'upload_done' : 'upload_untied',
+                't' => ($key === 'tied' ? 'Read and tied: ' : ($key === 'failed' ? 'Could not be read: ' : 'Does not tie: ')) . $q['file_name'], 'b' => $key === 'tied' ? null : (string) $r['tie_note'],
+                'r' => (int) $q['id'], 'i' => (int) $q['issuer_id'], 'd' => 'upload:' . $q['id'] . ':' . $key]);
+        }
+    }
+    return $out;
+}
 /** SLICE 3 — the matcher: raw NOBO and register rows without a holder scored against holders; >= the threshold accepted and logged auto, below it a proposal. */
 function worker_pass_matcher(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['auto' => 0, 'proposed' => 0, 'stub' => true]; }
-/** SLICES 2, 3 — si_reconcile() for every security with a new share count, SPR date or register since the last run. */
-function worker_pass_reconciliation(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['ran' => 0, 'untied' => 0, 'stub' => true]; }
+/** SLICES 2, 3 — si_reconcile() as of today for every security whose positions, counts or register changed since its last run (an upload runs its own at once). */
+function worker_pass_reconciliation(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/uploads/write.php';
+    $due = $pdo->query("SELECT s.id FROM securities s
+                         WHERE GREATEST((SELECT max(finished_at) FROM imports i WHERE i.security_id = s.id), (SELECT max(recorded_at) FROM share_counts c WHERE c.security_id = s.id), (SELECT max(deleted_at) FROM imports i WHERE i.security_id = s.id))
+                               > COALESCE((SELECT max(ran_at) FROM share_reconciliations r WHERE r.security_id = s.id), '-infinity')
+                         ORDER BY s.id LIMIT " . max(1, min(200, $limit)))->fetchAll(PDO::FETCH_COLUMN);
+    $out = ['ran' => 0, 'tied' => 0, 'untied' => 0, 'incomplete' => 0];
+    foreach ($due as $sid) {
+        $rid = reconciliation_after($pdo, (int) $sid, $now->format('Y-m-d'), 'the worker');
+        $out['ran']++;
+        $out[reconciliation_state($pdo->query('SELECT * FROM share_reconciliations WHERE id = ' . $rid)->fetch())]++;
+    }
+    return $out;
+}
 /** SLICE 7 — si_rules_run() after every pull and upload: the enabled rules over their windows; one open signal per rule per security; expiries. */
 function worker_pass_rules(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['raised' => 0, 'expired' => 0, 'stub' => true]; }
 /** SLICE 1 — si_search_catch_up(): every record whose index row is older than its change (a participant the directory renamed, a holder, an event). */

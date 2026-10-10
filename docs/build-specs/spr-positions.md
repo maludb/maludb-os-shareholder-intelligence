@@ -56,5 +56,28 @@ dispatch to the Analyst (9).
 `position-reports.md` §6, plus: an Analyst uploads, a Viewer reads the same positions and is refused the upload (403); an agent's `upload_override` answers
 `pending_approval`; a deleted upload's positions are gone and come back on restore; 8 screens built, 6 actions, 2 approvals in step.
 
+## Built (2026-10-10) — what the build found and decided within this spec
+1. **The owner's folder holds 70 SPR CSVs but 60 distinct files** — ten are the same bytes under two names — and **seven are one-time
+   reports**, not one. The same file a second time is refused, naming the upload it already is; the proof uploads all 70 and expects the
+   ten refusals. Every one of the 60 ties to its own totals; on each of 339 file-dates the database's DTC total equals the Python oracle's.
+2. **Some weeks arrive in more than one file** (an auto-import and a manual download): the one loaded last owns the shared dates and the
+   other is marked overlapped (`superseded_by`); a delete reloads what it had overlapped (`upload_reclaim_superseded()`).
+3. **The owner's analysis workbook** (a firm per row, no participant numbers) is refused by the detector in words — upload DTC's own report.
+4. **A reconciliation with nothing to compare** (an SPR but no Cede figure from a register, a DTC letter or the transfer agent) is
+   `incomplete` and said so — "not enough to compare" — on the page and the home's tile, never "does not tie" (the generated `tied` reads
+   false there). The rules already ignore it.
+5. **The detector reads only the file's head** (60 rows) and a blank CSV row is kept as an empty row: a 5.5 MB report padded with blank lines
+   exhausted Apache's 256 MB memory limit when read whole (php -S has none) — found by the Apache run.
+6. **An empty control map is a JSON object** (a file with no Total row): `si_spr_load` iterates it.
+7. **The rules do not run after an upload yet** — slice 7 wires them (the call point is `upload_ingest`'s end); the dispatch to the Analyst
+   is slice 9's. The worker's `uploads` pass tells the uploader of a queued file (`upload_done` / `upload_untied`).
+8. **The security on the upload form** is a select of the current issuer's securities (one to four), not the record picker.
+9. **On a phone** the position table puts the change under the shares; the matrix is one date at a time; every table fits its card.
+
+Proof: `tests/phase3/slice2/run.sh` (each proof on a fresh scratch database) — the real files 17, the pipeline 48, the positions 28, the real
+reconciliation 17 (Cede & Co 3,397,800 on the transfer agent's extract of 2024-06-30 = the SPR total of 2024-06-28, to the share), JSON 7,
+browser 34 — under php -S and a real Apache; slice 1, Phase 2, the schema proof 180, the kit 73 and Phase 1's 60 re-run green; the registry
+24 screens and 24 actions built; the installer's plan clean.
+
 ## Open questions
 None.

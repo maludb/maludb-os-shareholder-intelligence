@@ -113,3 +113,101 @@ function svg_series(array $points, string $id, string $title, int $width = 720, 
     $svg .= '<text x="' . $padL . '" y="10" font-size="10" fill="var(--bs-secondary-color, #64748b)">' . e(number_format($hi)) . '</text></svg>';
     return $svg;
 }
+
+/**
+ * Bars stacked by category around a zero line — the flow by class (position-reports.md §3): $bars [{label, values => [category => v]}], each
+ * category's colour in $colours; positive values stack upward, negative downward; an optional line ($line [label => v], its own scale on the
+ * right) drawn over them (the retail side's cumulative net). '' when there is nothing to draw.
+ */
+function svg_stacked_bars(array $bars, array $colours, string $id, string $title, ?array $line = null, int $width = 720, int $height = 220): string
+{
+    if ($bars === []) {
+        return '';
+    }
+    $padL = 8; $padR = 8; $padT = 12; $padB = 22;
+    $hi = 0; $lo = 0;
+    foreach ($bars as $b) {
+        $pos = array_sum(array_filter($b['values'], static fn ($v) => $v > 0));
+        $neg = array_sum(array_filter($b['values'], static fn ($v) => $v < 0));
+        $hi = max($hi, $pos); $lo = min($lo, $neg);
+    }
+    if ($hi === $lo) { $hi = 1; }
+    $n = count($bars);
+    $slot = ($width - $padL - $padR) / $n;
+    $bw = max(2, min(36, $slot * 0.7));
+    $y = static fn (float $v): float => $padT + ($hi - $v) * ($height - $padT - $padB) / ($hi - $lo);
+    $svg = '<svg viewBox="0 0 ' . $width . ' ' . $height . '" class="si-chart w-100" role="img" aria-labelledby="' . e($id) . '-title" id="' . e($id) . '" preserveAspectRatio="none" style="height:' . $height . 'px">'
+        . '<title id="' . e($id) . '-title">' . e($title) . '</title>'
+        . '<line x1="' . $padL . '" x2="' . ($width - $padR) . '" y1="' . sprintf('%.1f', $y(0)) . '" y2="' . sprintf('%.1f', $y(0)) . '" stroke="var(--bs-border-color, #e5e7eb)" />';
+    foreach ($bars as $k => $b) {
+        $x = $padL + $k * $slot + ($slot - $bw) / 2;
+        $up = 0.0; $down = 0.0;
+        foreach ($b['values'] as $cat => $v) {
+            if ($v == 0) { continue; }
+            $from = $v > 0 ? $up : $down;
+            $to = $from + $v;
+            $top = $y(max($from, $to)); $bot = $y(min($from, $to));
+            $svg .= '<rect x="' . sprintf('%.1f', $x) . '" y="' . sprintf('%.1f', $top) . '" width="' . sprintf('%.1f', $bw) . '" height="' . sprintf('%.1f', max(0.5, $bot - $top)) . '" fill="' . e($colours[$cat] ?? '#94a3b8') . '">'
+                . '<title>' . e($b['label'] . ' · ' . $cat . ': ' . ($v > 0 ? '+' : '') . number_format($v)) . '</title></rect>';
+            if ($v > 0) { $up = $to; } else { $down = $to; }
+        }
+        if ($n <= 12 || $k % max(1, (int) ceil($n / 8)) === 0) {
+            $svg .= '<text x="' . sprintf('%.1f', $x + $bw / 2) . '" y="' . ($height - 6) . '" font-size="9" text-anchor="middle" fill="var(--bs-secondary-color, #64748b)">' . e(date('M j', strtotime((string) $b['label']))) . '</text>';
+        }
+    }
+    if ($line !== null && $line !== []) {
+        $lh = max(array_map('abs', $line)) ?: 1;
+        $ly = static fn (float $v): float => $padT + (1 - ($v + $lh) / (2 * $lh)) * ($height - $padT - $padB);
+        $pts = [];
+        foreach (array_values($line) as $k => $v) {
+            $pts[] = sprintf('%.1f,%.1f', $padL + $k * $slot + $slot / 2, $ly((float) $v));
+        }
+        $svg .= '<path d="M' . implode(' L', $pts) . '" fill="none" stroke="var(--bs-dark, #1f2937)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"><title>The retail side\'s cumulative net</title></path>';
+    }
+    $svg .= '<text x="' . $padL . '" y="10" font-size="10" fill="var(--bs-secondary-color, #64748b)">+' . e(number_format($hi)) . '</text>'
+        . '<text x="' . $padL . '" y="' . ($height - $padB - 3) . '" font-size="10" fill="var(--bs-secondary-color, #64748b)">' . e(number_format($lo)) . '</text></svg>';
+    return $svg;
+}
+
+/** Several lines over the same dates (the concentration's top-5/10/20): $lines [{label, colour, points => [date => v]}], 0–$max on the axis. */
+function svg_lines(array $lines, string $id, string $title, ?float $max = null, int $width = 720, int $height = 200): string
+{
+    $dates = [];
+    foreach ($lines as $l) { $dates = array_merge($dates, array_keys($l['points'])); }
+    $dates = array_values(array_unique($dates));
+    sort($dates);
+    if ($dates === []) {
+        return '';
+    }
+    $padL = 8; $padR = 8; $padT = 12; $padB = 18;
+    $t = static fn (string $d): int => (int) (strtotime($d . ' 00:00:00 UTC') / 86400);
+    $first = $t($dates[0]); $span = max(1, $t($dates[count($dates) - 1]) - $first);
+    $hi = $max ?? max(array_map(static fn ($l) => max($l['points'] ?: [0]), $lines));
+    $hi = $hi > 0 ? $hi : 1;
+    $x = static fn (string $d): float => count($dates) === 1 ? $width / 2 : $padL + ($t($d) - $first) * ($width - $padL - $padR) / $span;
+    $y = static fn (float $v): float => $padT + ($hi - $v) * ($height - $padT - $padB) / $hi;
+    $svg = '<svg viewBox="0 0 ' . $width . ' ' . $height . '" class="si-chart w-100" role="img" aria-labelledby="' . e($id) . '-title" id="' . e($id) . '" preserveAspectRatio="none" style="height:' . $height . 'px">'
+        . '<title id="' . e($id) . '-title">' . e($title) . '</title>'
+        . '<line x1="' . $padL . '" x2="' . ($width - $padR) . '" y1="' . sprintf('%.1f', $y(0)) . '" y2="' . sprintf('%.1f', $y(0)) . '" stroke="var(--bs-border-color, #e5e7eb)" />';
+    foreach ($lines as $l) {
+        $pts = [];
+        foreach ($l['points'] as $d => $v) { $pts[] = sprintf('%.1f,%.1f', $x((string) $d), $y((float) $v)); }
+        if (count($pts) > 1) {
+            $svg .= '<path d="M' . implode(' L', $pts) . '" fill="none" stroke="' . e($l['colour']) . '" stroke-width="2" vector-effect="non-scaling-stroke"><title>' . e($l['label']) . '</title></path>';
+        }
+        foreach ($l['points'] as $d => $v) {
+            $svg .= '<circle cx="' . sprintf('%.1f', $x((string) $d)) . '" cy="' . sprintf('%.1f', $y((float) $v)) . '" r="2.5" fill="' . e($l['colour']) . '"><title>' . e($l['label'] . ' · ' . date('M j', strtotime((string) $d)) . ': ' . $v) . '</title></circle>';
+        }
+    }
+    return $svg . '<text x="' . $padL . '" y="10" font-size="10" fill="var(--bs-secondary-color, #64748b)">' . e((string) $hi) . '</text></svg>';
+}
+
+/** The legend under a chart: one swatch per label. */
+function svg_legend(array $items, string $id): string
+{
+    $h = '<div class="d-flex flex-wrap gap-3 fs-11 mt-2" id="' . e($id) . '">';
+    foreach ($items as $label => $colour) {
+        $h .= '<span class="d-inline-flex align-items-center gap-1"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' . e($colour) . '"></span>' . e($label) . '</span>';
+    }
+    return $h . '</div>';
+}

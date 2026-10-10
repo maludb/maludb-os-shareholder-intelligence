@@ -929,6 +929,14 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-10 — SLICE 2 BUILT, THE FIRST EXEMPLAR (`docs/build-specs/spr-positions.md` "Built").** The upload pipeline (detect from the head,
+the CUSIP checked, the same file refused, kept whole in the store — a transfer agent's extract without its personal columns — parsed and loaded
+in one transaction, a large file queued for the worker); DTC's weekly and one-time reports as CSV or workbook; the upload's totals against the
+file's by date; the override, delete with the overlapped week reloaded, restore, read again; the position table, the movement matrix, the flow by
+class with its caveat, the concentration; the reconciliation with its two equations and "not enough to compare". **The owner's 60 distinct real
+files all tie** and the real reconciliation ties to the share through the screens. `tests/phase3/slice2/run.sh`: 17 + 48 + 28 + 17 + 7 + 34 checks,
+under php -S and Apache. **Next:** slice 3, the holders (NOBO, the register, the matcher, the PII wall).
+
 **2026-10-09, later — SLICE 1 BUILT (the CRUD exemplar; `docs/build-specs/issuers-participants.md` "Built").** Issuers set up from a ticker or a
 CIK through the SEC's ticker file and read from EDGAR at once (the entity, the blanks filled, never a person's value overwritten); securities with
 one primary; dated share counts with their sources; the restriction list through the record picker (the wall proven on the list, the page, the

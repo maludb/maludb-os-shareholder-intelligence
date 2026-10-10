@@ -108,3 +108,8 @@ html.app-skin-dark #record-picker .record-picker-search { background: #0f172a; }
 #header-search { min-width: 16rem; }
 /* A tile's number never breaks mid-figure: it shrinks with the screen (two tiles to a row at 375 px) and stays on one line. */
 .si-tile-value { font-size: clamp(1.05rem, 4.6vw, 1.6rem); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Slice 2 (position-reports.md §3): an absent day is hatched, never a zero; the matrix's participant column stays put while the dates scroll. */
+.si-absent { background-image: repeating-linear-gradient(45deg, rgba(100,116,139,.12) 0 4px, transparent 4px 8px); }
+.si-matrix .si-matrix-head { position: sticky; left: 0; z-index: 1; background: var(--bs-body-bg, #fff); }
+html.app-skin-dark .si-matrix .si-matrix-head { background: #1b2431; }
+.si-matrix td, .si-matrix th { white-space: nowrap; }

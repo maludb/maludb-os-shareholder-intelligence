@@ -84,6 +84,7 @@ sql("UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email 
   await page.click('#share-count-form-save-btn');
   await page.waitForSelector('#share-counts-table');
   ok((await page.locator('#share-counts-table').innerText()).includes('17,053,900'), 'a count recorded and listed');
+  await page.screenshot({ path: `${SHOTS}/phone-share-counts.png`, fullPage: true });
   await check(page, 'the share counts page');
   await page.click('#issuer-tab-access');
   await page.waitForSelector('#access-form');
