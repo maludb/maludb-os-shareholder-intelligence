@@ -121,6 +121,13 @@ function has_right(string $right): bool
     return $cache[$right] ??= db_bool(db(), 'SELECT si_has_right(:r)', ['r' => $right]);
 }
 
+/** THE PII WALL in PHP (D4): a natural person's name, address and registration lines are an Analyst's and above (si_sees_holder_pii()). */
+function si_sees_pii(): bool
+{
+    static $v = null;
+    return $v ??= db_bool(db(), 'SELECT si_sees_holder_pii()');
+}
+
 /** Someone who belongs here: active, admitted and not a guest (db/004) — the `everyone` principal reaches exactly these. */
 function is_member_here(): bool
 {

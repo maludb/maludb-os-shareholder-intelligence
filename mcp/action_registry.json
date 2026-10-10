@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-10T11:40:26+00:00",
+    "generated_at": "2026-10-10T13:51:25+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -285,8 +285,8 @@
                 "q",
                 "tag"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "holder-view": {
             "screen": "holder-view",
@@ -296,7 +296,7 @@
             "params": [
                 "tab"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holder-edit": {
@@ -305,7 +305,7 @@
             "section": "NOBO, the register and HOLDERS (slice 3)",
             "when": "to set a holder's kind, entity type, address, notes (PII roles)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holder-merge": {
@@ -316,7 +316,7 @@
             "params": [
                 "into"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-unmatched": {
@@ -328,7 +328,7 @@
                 "upload",
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-changes": {
@@ -342,7 +342,7 @@
                 "date_a",
                 "date_b"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-ranges": {
@@ -355,7 +355,7 @@
                 "channel",
                 "record_date"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-geography": {
@@ -368,7 +368,7 @@
                 "channel",
                 "record_date"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-custodians": {
@@ -380,7 +380,7 @@
                 "security",
                 "record_date"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "holders-register": {
@@ -392,7 +392,7 @@
                 "security",
                 "record_date"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "filing-list": {
@@ -1796,7 +1796,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "match_reject": {
             "action": "match_reject",
@@ -1817,7 +1817,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "match_new_holder": {
             "action": "match_new_holder",
@@ -1844,7 +1844,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "holder_match_propose": {
             "action": "holder_match_propose",
@@ -1883,7 +1883,7 @@
             "who": "matches.decide or pii",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "holder_kind_propose": {
             "action": "holder_kind_propose",
@@ -1922,7 +1922,7 @@
             "who": "pii",
             "agent": true,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "holder_kind_set": {
             "action": "holder_kind_set",
@@ -1955,7 +1955,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "holder_update": {
             "action": "holder_update",
@@ -2042,7 +2042,7 @@
             "who": "matches.decide",
             "agent": false,
             "record_id": "the holder",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "holders_merge": {
@@ -2070,7 +2070,7 @@
             "who": "holders.merge",
             "agent": true,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "holder_delete": {
             "action": "holder_delete",
@@ -2091,7 +2091,7 @@
             "who": "holders.merge",
             "agent": true,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "holder_restore": {
             "action": "holder_restore",
@@ -2112,7 +2112,7 @@
             "who": "holders.merge",
             "agent": true,
             "record_id": "the holder",
-            "built": false
+            "built": true
         },
         "matcher_run": {
             "action": "matcher_run",
@@ -2133,7 +2133,7 @@
             "who": "uploads.write",
             "agent": true,
             "record_id": "the upload",
-            "built": false
+            "built": true
         },
         "filing_fetch_text": {
             "action": "filing_fetch_text",

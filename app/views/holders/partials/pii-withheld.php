@@ -1,0 +1,1 @@
+<?php /** The PII wall's words on a holder a Viewer reads. */ ?><span class="text-muted" title="A natural person's name and address are an Analyst's"><i class="bi bi-shield-lock me-1"></i>Individual holder</span>

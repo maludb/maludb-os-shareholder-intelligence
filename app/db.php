@@ -35,11 +35,12 @@ function db_bool(PDO $pdo, string $sql, array $args = []): bool
     return (bool) $st->fetchColumn();
 }
 
-/** A database error in words a person can act on: only our own RAISE (P0001) is shown. */
+/** A database error in words a person can act on: only our own RAISE is shown (P0001, or a check_violation we raise — never the server's "violates check constraint"). */
 function db_message(Throwable $e, string $fallback): string
 {
     error_log('db error: ' . $e->getMessage());
-    if (!($e instanceof PDOException) || (string) $e->getCode() !== 'P0001') {
+    if (!($e instanceof PDOException) || !in_array((string) $e->getCode(), ['P0001', '23514'], true)
+        || ((string) $e->getCode() === '23514' && str_contains($e->getMessage(), 'violates check constraint'))) {
         return $fallback;
     }
     $text = $e->getMessage();

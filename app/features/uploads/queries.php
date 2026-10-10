@@ -93,3 +93,30 @@ function present_upload(array $u): array
             'tie_note' => $u['tie_note'], 'rows_made' => (int) $u['rows_made'], 'rows_failed' => (int) $u['rows_failed'], 'overridden' => $u['override_at'] !== null,
             'superseded_by' => $u['superseded_by'] === null ? null : (int) $u['superseded_by'], 'deleted' => (bool) $u['deleted'], 'created_at' => json_ts($u['created_at'])];
 }
+
+/**
+ * What the upload page shows of a NOBO list, a register or a share range (slice 3): the job's header facts and the Bank/Broker listing
+ * (brokers, never a person — a Viewer reads them), the rows that failed to type (the PII roles only: mcp_nobo_rows / mcp_register_rows answer
+ * nothing to a Viewer), the rows still waiting for an Analyst, a share range's two populations.
+ */
+function upload_holder_facts(PDO $pdo, array $u): array
+{
+    $id = (int) $u['import_id'];
+    $out = ['job' => null, 'clients' => [], 'failed' => [], 'waiting' => 0, 'ranges' => []];
+    if ($u['kind'] === 'nobo') {
+        $out['job'] = $pdo->query('SELECT * FROM mcp_nobo_jobs WHERE import_id = ' . $id)->fetch() ?: null;
+        if ($out['job']) {
+            $out['clients'] = $pdo->query('SELECT b.nobo_broker_row_id, b.client, b.participant_id, p.number, b.nobo_count, b.shares FROM mcp_nobo_broker_rows b LEFT JOIN participants p ON p.id = b.participant_id
+                                            WHERE b.nobo_job_id = ' . (int) $out['job']['nobo_job_id'] . ' ORDER BY b.shares DESC, b.nobo_broker_row_id')->fetchAll();
+        }
+        $out['failed'] = $pdo->query('SELECT row_no, shares, line1, line2, line3, error FROM mcp_nobo_rows WHERE import_id = ' . $id . ' AND error IS NOT NULL ORDER BY row_no LIMIT 50')->fetchAll();
+        $out['waiting'] = (int) one_value($pdo, 'SELECT count(*) FROM mcp_nobo_rows WHERE import_id = ' . $id . ' AND holder_id IS NULL AND error IS NULL');
+    } elseif ($u['kind'] === 'register') {
+        $out['failed'] = $pdo->query("SELECT row_no, shares, registration_name AS line1, position_type AS line2, NULL AS line3, error FROM mcp_register_rows WHERE import_id = $id AND error IS NOT NULL ORDER BY row_no LIMIT 50")->fetchAll();
+        $out['waiting'] = (int) one_value($pdo, "SELECT count(*) FROM mcp_register_rows WHERE import_id = $id AND holder_id IS NULL AND error IS NULL AND NOT is_cede");
+    } elseif ($u['kind'] === 'share_range') {
+        $out['ranges'] = $pdo->query('SELECT x.population, x.range_label, x.range_from, x.accounts, x.shares FROM mcp_share_range_rows x JOIN mcp_share_range_reports r ON r.share_range_report_id = x.share_range_report_id
+                                       WHERE r.import_id = ' . $id . ' ORDER BY x.range_from, x.population')->fetchAll();
+    }
+    return $out;
+}

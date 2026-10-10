@@ -1,0 +1,5 @@
+<?php /** A raw row as read: the lines (or the register's name and address), the shares, the account kind and custodian chips. Data: r */ ?>
+<div class="si-registration fs-12 text-break" id="queue-registration-<?= e($r['row_kind'] . '-' . (int) $r['row_id']) ?>"><?= nl2br(e(trim((string) $r['registration']))) ?><?= $r['address'] ? '<div>' . e((string) $r['address']) . '</div>' : '' ?></div>
+<div class="d-flex flex-wrap gap-1 mt-2"><span class="badge text-bg-light"><?= e(HOLDER_CHANNELS[$r['row_kind']] ?? $r['row_kind']) ?> · <?= e(format_date($r['record_date'])) ?></span><?= account_kind_chip((string) $r['account_kind']) ?>
+    <?= $r['custodian_name'] ? '<span class="badge bg-soft-secondary text-secondary">' . e((string) $r['custodian_name']) . '</span>' : '' ?></div>
+<div class="fs-12 mt-1"><span class="fw-semibold"><?= e(fmt_n($r['shares'])) ?></span> shares · row <?= (int) $r['row_no'] ?> of <?= hx_link('/uploads/' . (int) $r['import_id'], 'upload ' . (int) $r['import_id'], '') ?></div>

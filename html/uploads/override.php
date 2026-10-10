@@ -18,7 +18,10 @@ upload_override($pdo, (int) $u['import_id'], $note, (int) current_member_id());
 log_activity($pdo, 'upload.override', 'import', (int) $u['import_id'], ['issuer_id' => (int) $u['issuer_id'], 'security_id' => (int) $u['security_id'], 'import_id' => (int) $u['import_id'],
     'after' => ['tie_note' => mb_substr((string) $u['tie_note'], 0, 200), 'note_length' => mb_strlen($note)]]);
 $pdo->commit();
-if ($u['period_to'] !== null) {
+if (in_array($u['kind'], ['nobo', 'register'], true)) {
+    upload_match_or_queue($pdo, (int) $u['import_id']);                // an accepted list is matched as a tied one is (a long one by the worker)
+}
+if ($u['period_to'] !== null && $u['kind'] !== 'share_range') {
     reconciliation_after($pdo, (int) $u['security_id'], (string) $u['period_to'], 'after the override of upload ' . (int) $u['import_id']);
 }
 si_done('Accepted the upload with its difference on record', (int) $u['import_id'], si_land('/uploads/' . (int) $u['import_id'], 'overridden'), 'uploadChanged');

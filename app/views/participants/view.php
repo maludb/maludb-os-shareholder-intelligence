@@ -25,7 +25,13 @@ $sources = ['seeded' => 'seeded from DTCC\'s listing', 'directory_name' => 'from
                     </tbody></table></div></details>
                 <?php endif; ?>
             </div></div>
-            <div class="card mb-3" id="participant-nobo"><div class="card-body fs-12 text-muted">The NOBO count and shares on each record date, and the OBO remainder beside its SPR position, appear here once NOBO lists are uploaded (slice 3).</div></div>
+            <div class="card mb-3" id="participant-nobo"><div class="card-header"><h5 class="card-title mb-0">NOBOs and the OBO remainder</h5></div><div class="card-body p-0">
+                <?php if ($nobo === []): ?><div class="p-3 fs-12 text-muted" id="participant-nobo-empty">No NOBO list's Bank/Broker listing names this participant<?= $security !== null ? ' in ' . e($security['name']) : '' ?>.</div>
+                <?php else: ?><div class="table-responsive"><table class="table table-sm mb-0 fs-12" id="participant-nobo-table"><thead class="thead-light"><tr><th>Record date</th><th class="text-end">NOBOs</th><th class="text-end">NOBO shares</th><th class="text-end d-none d-sm-table-cell">On the SPR</th><th class="text-end">OBO remainder</th></tr></thead><tbody>
+                    <?php foreach ($nobo as $r): ?><tr><td><?= e(format_date($r['record_date'])) ?></td><td class="text-end"><?= e(fmt_n($r['nobo_count'])) ?></td><td class="text-end"><?= e(fmt_n($r['nobo_shares'])) ?></td><td class="text-end d-none d-sm-table-cell"><?= e(fmt_n($r['spr_shares'])) ?></td>
+                        <td class="text-end fw-semibold"><?= e(fmt_n($r['obo_remainder'])) ?></td></tr><?php endforeach; ?>
+                </tbody></table></div><div class="p-3"><?= view('shared/source-line.php', ['source' => 'the Bank/Broker listing of each NOBO list, against the SPR position at or before its record date', 'date' => $nobo[0]['record_date']]) ?></div><?php endif; ?>
+            </div></div>
             <div class="card mb-3" id="participant-notes"><div class="card-header"><h5 class="card-title mb-0">Notes</h5></div><div class="card-body"><?= view('shared/notes.php', ['kind' => 'participant', 'record' => $pid, 'notes' => $notes, 'here' => '/participants/' . $pid, 'tz' => $tz]) ?></div></div>
         </div>
         <div class="col-xl-4 order-1 order-xl-2">

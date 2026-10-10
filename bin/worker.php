@@ -112,8 +112,28 @@ function worker_pass_uploads(PDO $pdo, int $limit, DateTimeImmutable $now): arra
     }
     return $out;
 }
-/** SLICE 3 — the matcher: raw NOBO and register rows without a holder scored against holders; >= the threshold accepted and logged auto, below it a proposal. */
-function worker_pass_matcher(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['auto' => 0, 'proposed' => 0, 'stub' => true]; }
+/**
+ * SLICE 3 — the matcher: every usable NOBO list and register whose matching was queued (more than 200 rows waiting), oldest record date first —
+ * the order a holder is first seen in — scored against the holders (si_match_import: >= the threshold accepted and logged auto, below it a
+ * proposal); the uploader told how many wait for an Analyst.
+ */
+function worker_pass_matcher(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/uploads/write.php';
+    $out = ['uploads' => 0, 'auto' => 0, 'proposed' => 0, 'new' => 0, 'failed' => 0];
+    foreach ($pdo->query("SELECT id, created_by, issuer_id, file_name FROM imports WHERE kind IN ('nobo', 'register') AND status = 'done' AND deleted_at IS NULL AND (tied OR override_by IS NOT NULL)
+                            AND derived_totals -> 'matcher' ->> 'queued' = 'true' ORDER BY record_date, id LIMIT " . max(1, min(50, $limit)))->fetchAll() as $q) {
+        $m = upload_match($pdo, (int) $q['id']);
+        $out['uploads']++;
+        foreach (['auto', 'proposed', 'new', 'failed'] as $k) { $out[$k] += $m[$k]; }
+        if ($q['created_by'] !== null) {
+            $pdo->prepare('SELECT si_notify(:m, \'upload_done\', :t, :b, \'import\', :r, NULL, :i, NULL, :d)')->execute(['m' => (int) $q['created_by'],
+                't' => 'Matched to holders: ' . $q['file_name'], 'b' => $m['proposed'] > 0 ? $m['proposed'] . ' row(s) wait for an Analyst.' : null,
+                'r' => (int) $q['id'], 'i' => (int) $q['issuer_id'], 'd' => 'upload:' . $q['id'] . ':matched']);
+        }
+    }
+    return $out;
+}
 /** SLICES 2, 3 — si_reconcile() as of today for every security whose positions, counts or register changed since its last run (an upload runs its own at once). */
 function worker_pass_reconciliation(PDO $pdo, int $limit, DateTimeImmutable $now): array
 {

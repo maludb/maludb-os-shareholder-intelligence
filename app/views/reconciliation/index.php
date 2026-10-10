@@ -20,7 +20,7 @@ $badge = static fn (?bool $t): string => $t === null ? '<span class="badge text-
                 <tr><td class="ps-3">Plan</td><td class="text-end"><?= e($n($r['plan'])) ?></td></tr><tr><td class="ps-3">Other registered</td><td class="text-end"><?= e($n($r['registered_other'])) ?></td></tr>
                 <tr class="fw-semibold"><td>Difference</td><td class="text-end <?= $r['tied_registered'] === false ? 'text-danger' : '' ?>" id="recon-difference-registered"><?= e($n($r['difference_registered'])) ?></td></tr>
             </tbody></table>
-            <?= view('shared/source-line.php', ['source' => $r['register_date'] !== null ? 'the register of ' . format_date($r['register_date']) : 'no register uploaded yet (slice 3)', 'extra' => 'tolerance ' . number_format((int) $r['tolerance']) . ' shares']) ?>
+            <?= view('shared/source-line.php', ['source' => $r['register_date'] !== null ? 'the register of ' . format_date($r['register_date']) : 'no register uploaded yet', 'extra' => 'tolerance ' . number_format((int) $r['tolerance']) . ' shares']) ?>
         </div></div></div>
         <div class="col-xl-6"><div class="card h-100 mb-0" id="recon-spr"><div class="card-header d-flex align-items-center"><h5 class="card-title mb-0">Cede &amp; Co = the SPR total</h5><span class="ms-auto"><?= $badge($r['tied_spr']) ?></span></div><div class="card-body fs-12">
             <table class="table table-sm mb-2"><tbody>

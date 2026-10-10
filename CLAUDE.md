@@ -82,4 +82,9 @@ note or a tag on any record. **SLICE 2 BUILT 2026-10-10, THE FIRST EXEMPLAR** (`
 `upload_create()` → `upload_ingest()` (`app/features/uploads/write.php`): detect from the head (`app/si/parse/detect.php`, `SI_CONNECTORS` — a
 connector is a parser file and a function), check the CUSIP, store (`app/si/storage.php`), raw rows + the database's verb in ONE transaction, then
 `reconciliation_after()`. A parser throws `SiParseError` for a file it does not read; a bad cell is a row with its error. The real-files proof is the
-oracle (`tests/fixtures/load_real_spr.py`) against the database. **Next: slice 3 (the holders)**, then slice 7, then the Sonnet handoff.
+oracle (`tests/fixtures/load_real_spr.py`) against the database. **SLICE 3 BUILT 2026-10-10** (`docs/build-specs/holders.md` "Built"; `tests/phase3/slice3/run.sh` — its runner turns pgaudit off for the
+scratch database and DROPS it at the end): the loaders are `app/features/uploads/load.php` (one upload of a kind per security and record date; the
+matcher in the request for ≤ 200 waiting rows, else the worker's `matcher` pass); holders in `app/features/holders/`; the parsers in `app/si/parse/`,
+old Excel in `app/si/xls.php`. **Every holder read goes through `mcp_holders` / `mcp_holder_accounts` / the `si_holders_*` functions; those functions
+have no wall of their own — prove the security visible first.** The real-files proof prints counts only and compares names in memory. **Next:
+slice 4 (EDGAR)**, then slices 5–6, slice 7 (the second exemplar), then the Sonnet handoff.

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/si/parse/detect.php';
 require_once dirname(__DIR__, 2) . '/si/storage.php';
+require_once __DIR__ . '/load.php';
 
 const UPLOAD_KINDS = ['spr' => 'DTC position report', 'nobo' => 'NOBO list', 'register' => 'Register', 'share_range' => 'Share range analysis', 'prices_csv' => 'Prices'];
 /** Files at or under this size are parsed in the upload's own request; larger ones are queued for the worker. */
@@ -32,6 +33,9 @@ function upload_create(PDO $pdo, array $f): array
     if ($c === null) {
         throw new DomainException('Unknown connector ' . $connector . '.');
     }
+    if ($kind === '') {
+        $kind = $c[0];                                                     // "detect from the file"
+    }
     if ($c[0] !== $kind) {
         throw new DomainException('This file is ' . $what . ', not a ' . strtolower(UPLOAD_KINDS[$kind] ?? $kind) . '. Choose ' . (UPLOAD_KINDS[$c[0]] ?? $c[0]) . ' as its kind.');
     }
@@ -47,21 +51,29 @@ function upload_create(PDO $pdo, array $f): array
     }
     $big = strlen((string) $f['bytes']) > UPLOAD_INLINE_BYTES;
     $parsed = null;
+    $rd = $f['record_date'] ?? null;
     if (!$big) {
         try {
             $parsed = si_parse_file($connector, (string) $f['bytes']);
         } catch (SiParseError $e) {
             throw new DomainException($e->getMessage());
         }
-        upload_check_cusip($parsed['cusip'] ?? null, $f['security']);
+        upload_check_cusip($parsed['cusip'] ?? null, $f['security'], $parsed['cusip6'] ?? null);
+        if ($kind !== 'spr') {
+            $rd = upload_record_date($parsed['record_date'] ?? null, $f['record_date'] ?? null, (string) $f['filename']);
+            if ($rd === null) {
+                throw new DomainException('The file does not say its record date: give it (the date the list or the register is as of).');
+            }
+            upload_check_same_date($pdo, $kind, (int) $f['security']['security_id'], $rd);
+        }
     }
-    $stored = si_store_bytes((string) $f['bytes']);
+    $stored = si_store_bytes(upload_bytes_to_store($pdo, $connector, (string) $f['bytes']));
     $pdo->beginTransaction();
     try {
         $st = $pdo->prepare('INSERT INTO imports (kind, file_name, status, created_by, issuer_id, security_id, connector, record_date, control_totals)
                              VALUES (:k, :fn, \'queued\', :by, :i, :s, :c, :rd, CAST(:ct AS jsonb)) RETURNING id');
         $st->execute(['k' => $kind, 'fn' => mb_substr((string) $f['filename'], 0, 200), 'by' => $f['by'], 'i' => (int) $f['security']['issuer_id'], 's' => (int) $f['security']['security_id'],
-                      'c' => $connector, 'rd' => $f['record_date'] ?? null, 'ct' => json_encode(['original_sha256' => $sha])]);
+                      'c' => $connector, 'rd' => $rd, 'ct' => json_encode(['original_sha256' => $sha])]);
         $id = (int) $st->fetchColumn();
         $st = $pdo->prepare('INSERT INTO attachments (record_type, record_id, filename, mime_type, byte_size, sha256, storage_path, uploaded_by) VALUES (\'import\', :r, :fn, :m, :b, :h, :p, :by) RETURNING id');
         $st->execute(['r' => $id, 'fn' => mb_substr((string) $f['filename'], 0, 200), 'm' => (string) ($f['mime'] ?? 'application/octet-stream'), 'b' => $stored['bytes'], 'h' => $stored['sha256'], 'p' => $stored['path'], 'by' => $f['by']]);
@@ -76,9 +88,15 @@ function upload_create(PDO $pdo, array $f): array
     return ['import_id' => $id, 'queued' => $big, 'result' => $big ? null : upload_ingest($pdo, $id, (string) $f['bytes'], $parsed)];
 }
 
-/** The file's CUSIP must be the security's (an SPR for the preferred uploaded against the common is refused, both named). */
-function upload_check_cusip(?string $fileCusip, array $security): void
+/** The file's CUSIP must be the security's (an SPR for the preferred uploaded against the common is refused, both named); a Share Range Analysis names six characters. */
+function upload_check_cusip(?string $fileCusip, array $security, ?string $cusip6 = null): void
 {
+    if ($fileCusip === null && $cusip6 !== null && $security['cusip'] !== null && $security['cusip'] !== '') {
+        if (strtoupper(substr((string) $security['cusip'], 0, 6)) !== strtoupper($cusip6)) {
+            throw new DomainException('The file is for CUSIP ' . $cusip6 . '…, but ' . $security['name'] . ' is ' . $security['cusip'] . '. Upload it to the security it is for.');
+        }
+        return;
+    }
     if ($fileCusip === null) {
         return;
     }
@@ -87,6 +105,16 @@ function upload_check_cusip(?string $fileCusip, array $security): void
     }
     if (strtoupper((string) $security['cusip']) !== $fileCusip) {
         throw new DomainException('The file is for CUSIP ' . $fileCusip . ', but ' . $security['name'] . ' is ' . $security['cusip'] . '. Upload it to the security it is for.');
+    }
+}
+
+/** One NOBO list, register or share range per security and record date: a second is refused, naming the first. */
+function upload_check_same_date(PDO $pdo, string $kind, int $security, string $rd, int $except = 0): void
+{
+    $other = one_value($pdo, 'SELECT id FROM imports WHERE kind = :k AND security_id = :s AND record_date = :d AND deleted_at IS NULL AND id <> :x ORDER BY id LIMIT 1',
+        ['k' => $kind, 's' => $security, 'd' => $rd, 'x' => $except]);
+    if ($other !== null && $other !== false) {
+        throw new DomainException('A ' . strtolower(UPLOAD_KINDS[$kind] ?? $kind) . ' for ' . $rd . ' is already loaded (upload ' . $other . '): delete it first to load this one in its place.|' . $other);
     }
 }
 
@@ -105,7 +133,14 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
     try {
         $bytes ??= si_stored_bytes((string) $im['storage_path']);
         $parsed ??= si_parse_file((string) $im['connector'], $bytes);
-        upload_check_cusip($parsed['cusip'] ?? null, ['cusip' => $im['cusip'], 'name' => $im['security_name']]);
+        upload_check_cusip($parsed['cusip'] ?? null, ['cusip' => $im['cusip'], 'name' => $im['security_name']], $parsed['cusip6'] ?? null);
+        if ($im['kind'] !== 'spr') {
+            $rd = upload_record_date($parsed['record_date'] ?? null, $im['record_date'], (string) $im['file_name']);
+            if ($rd === null) {
+                throw new DomainException('The file does not say its record date: delete this upload and upload it again with its record date.');
+            }
+            upload_check_same_date($pdo, (string) $im['kind'], (int) $im['security_id'], $rd, $id);
+        }
     } catch (SiParseError | DomainException | SiStoreError $e) {
         $pdo->prepare("UPDATE imports SET status = 'failed', finished_at = now(), log = :l, tied = NULL WHERE id = :i")->execute(['l' => mb_substr($e->getMessage(), 0, 500), 'i' => $id]);
         log_activity($pdo, 'upload.parse', 'import', $id, $ids + ['after' => ['status' => 'failed']]);
@@ -120,7 +155,25 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
         $pdo->prepare("UPDATE imports SET status = 'running', control_totals = CAST(:ct AS jsonb) || jsonb_build_object('original_sha256', control_totals ->> 'original_sha256') WHERE id = :i")
             ->execute(['ct' => json_encode($ctrl), 'i' => $id]);
         if ($im['kind'] !== 'spr') {
-            throw new DomainException('Only SPR uploads are loaded in this build.');
+            [$made, $failedRows] = match ($im['kind']) {
+                'nobo' => upload_load_nobo($pdo, $id, $im, $parsed, $rd),
+                'register' => upload_load_register($pdo, $id, $im, $parsed, $rd),
+                'share_range' => upload_load_share_range($pdo, $id, $im, $parsed, $rd),
+                default => throw new DomainException('This kind of upload is read from a later slice.'),
+            };
+            $tied = (bool) $parsed['tie'][0];
+            log_activity($pdo, 'upload.parse', 'import', $id, $ids + ['after' => ['status' => 'done', 'rows' => $made, 'failed' => $failedRows, 'record_date' => $rd]]);
+            log_activity($pdo, $tied ? 'upload.tie' : 'upload.untie', 'import', $id, $ids + ['after' => ['tied' => $tied, 'record_date' => $rd]]);
+            $pdo->commit();
+            try {                                                           // the load stands; the matcher and the reconciliation can be run again
+                $match = $tied ? upload_match_or_queue($pdo, $id) : null;
+                $rec = $tied && $im['kind'] !== 'share_range' ? reconciliation_after($pdo, (int) $im['security_id'], $rd, 'after upload ' . $id) : null;
+            } catch (Throwable $e) {
+                error_log('upload_ingest ' . $id . ' after the load: ' . $e->getMessage());
+                [$match, $rec] = [null, null];
+            }
+            return ['status' => 'done', 'tied' => $tied, 'tie_note' => $parsed['tie'][1], 'positions' => 0, 'rows' => $made, 'failed' => $failedRows, 'participants_new' => 0,
+                    'period' => [$rd, $rd], 'record_date' => $rd, 'matcher' => $match, 'matching' => $tied && $match === null && $im['kind'] !== 'share_range', 'reconciliation_id' => $rec];
         }
         $pdo->prepare('DELETE FROM spr_rows WHERE import_id = :i')->execute(['i' => $id]);
         $ins = $pdo->prepare('INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares, raw, error) VALUES (:i, :r, :n, :name, :d, :s, CAST(:raw AS jsonb), :e)
@@ -143,7 +196,9 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
         log_activity($pdo, 'position.load', 'import', $id, $ids + ['after' => ['positions' => (int) $load['positions'], 'participants_new' => (int) $load['participants_new'], 'from' => $period['period_from'], 'to' => $period['period_to']]]);
         $pdo->commit();
     } catch (Throwable $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         $msg = $e instanceof DomainException ? $e->getMessage() : 'The file could not be loaded; the server log has why.';
         if (!$e instanceof DomainException) { error_log('upload_ingest ' . $id . ': ' . $e->getMessage()); }
         $pdo->prepare("UPDATE imports SET status = 'failed', finished_at = now(), log = :l WHERE id = :i")->execute(['l' => $msg, 'i' => $id]);

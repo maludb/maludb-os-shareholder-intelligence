@@ -21,7 +21,7 @@ foreach ($source['roles'] as $right) {
 }
 if (!$allowed) {
     http_response_code(403);
-    echo view('shared/picker-rows.php', ['error' => 'You do not have permission to choose from this list.']);
+    echo view('shared/picker-rows.php', ['error' => (string) ($source['refusal'] ?? 'You do not have permission to choose from this list.')]);
     exit;
 }
 $q = mb_substr(trim(request_string('q', '')), 0, 80);

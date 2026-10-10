@@ -929,6 +929,15 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-10 — SLICE 3 BUILT: NOBO lists, the register, holders (`docs/build-specs/holders.md` "Built").** Broadridge's NOBO job file (CSV and
+workbook) and names export, the transfer agent's Shareholder Extract and STC's position detail, Broadridge's Share Range Analysis (old Excel,
+read without a library) on slice 2's pipeline, each tied to what the file says of itself; the matcher (in the request for a short list, by the
+worker's new `matcher` pass for a long one); the queue, the holder's page, the edit, the merge, kinds; the changes, ranges with the OBO
+population, geography, custodians with the OBO remainder, the register; the reconciliation's register half. **The owner's 106 real files of these
+kinds all tie, and the real reconciliation ties on both halves.** db/021: the matcher through the trigram index (it scanned every holder for every
+row), the wall closer (an entity's ATTN/C/O/FBO line and every registration line withheld from a Viewer). **Next:** slice 4, EDGAR — the index, the
+text, the watch.
+
 **2026-10-10 — SLICE 2 BUILT, THE FIRST EXEMPLAR (`docs/build-specs/spr-positions.md` "Built").** The upload pipeline (detect from the head,
 the CUSIP checked, the same file refused, kept whole in the store — a transfer agent's extract without its personal columns — parsed and loaded
 in one transaction, a large file queued for the worker); DTC's weekly and one-time reports as CSV or workbook; the upload's totals against the

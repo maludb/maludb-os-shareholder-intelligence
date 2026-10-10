@@ -26,7 +26,7 @@ ok($refused(page($j, '/issuers/99999/edit')) && $refused(page($j, '/issuers/9999
 ok(page($j, '/admin/agents')['code'] === 200 && page($j, '/admin/sources')['code'] === 403, '/admin/agents and /admin/sources resolve (an IR Manager: Agents yes, Sources no — by the right)');
 ok(page($j, '/signals/1')['code'] === 404 && page($j, '/holders/1')['code'] === 404 && page($j, '/filings/1')['code'] === 404,
     '/signals/{id}, /holders/{id} and /filings/{id} are rewritten to view.php, which their slices build: 404 until then');
-ok(page($j, '/filings/search')['code'] === 404 && page($j, '/holders/unmatched')['code'] === 404, 'a record\'s page and a screen beside a list are 404 until their slices');
+ok(page($j, '/filings/search')['code'] === 404 && page($j, '/signals/history')['code'] === 404 && page($j, '/events/12')['code'] === 404, 'a record\'s page and a screen beside a list are 404 until their slices');
 ok(req('GET', '/exports/1')['code'] === 404, '/exports/{id} is rewritten to exports/download.php: 404 until slice 8');
 ok(req('GET', '/nosuchscreen', ['jar' => $j])['code'] === 404, 'an unknown path: 404');
 $h = req('GET', '/api/v1/health');

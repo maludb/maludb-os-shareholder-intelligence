@@ -9,8 +9,9 @@ declare(strict_types=1);
  *           'label'  => fn(PDO, int $id): ?string]
  * `search` reads the same view the feature's screens read (the walls in SQL), never a second rule; `label` names the chosen record.
  *
- * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag. Later: template (2); holder — an
- * Analyst's only — and institution (3, 5); filing, instrument (4); reporting_owner (5); signal, rule, event (7); report (8).
+ * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
+ * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution. Later: filing, instrument (4); reporting_owner (5); signal, rule,
+ * event (7); report (8).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
 
@@ -74,5 +75,22 @@ return [
         'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
             "SELECT tag_id AS id, label, usage_count || ' in use' AS detail, NULL AS badge FROM mcp_tags WHERE label ILIKE :q OR slug ILIKE :q ORDER BY usage_count DESC, label", $q, $page),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT label FROM mcp_tags WHERE tag_id = :id', $id),
+    ],
+    // slice 3: a holder (mcp_holders — the PII wall: the roles admit only holders.read; `issuer` narrows it) and an institution (13F / 13D filers, slice 5 fills them)
+    'holder' => [
+        'title' => 'Holders', 'noun' => 'holder', 'roles' => ['holders.read'], 'params' => ['issuer'], 'refusal' => 'Holders are an Analyst\'s.',
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT holder_id AS id, display_name AS label, NULLIF(concat_ws(' · ', concat_ws(' ', city, state), CASE WHEN last_shares IS NOT NULL THEN to_char(last_shares, 'FM999,999,999,999') || ' shares' END), '') AS detail,
+                    CASE kind WHEN 'entity' THEN 'entity' WHEN 'custodian_account' THEN 'custodian' END AS badge
+               FROM mcp_holders WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (display_name ILIKE :q OR coalesce(city, '') ILIKE :q OR coalesce(zip, '') ILIKE :q)
+              ORDER BY last_shares DESC NULLS LAST, display_name", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT display_name FROM mcp_holders WHERE holder_id = :id', $id),
+    ],
+    'institution' => [
+        'title' => 'Institutions', 'noun' => 'institution', 'roles' => ['institutions.read'], 'params' => [],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT institution_id AS id, name AS label, NULLIF(concat_ws(' · ', kind, CASE WHEN cik IS NOT NULL THEN 'CIK ' || ltrim(cik, '0') END), '') AS detail, CASE WHEN is_activist THEN 'activist' END AS badge
+               FROM mcp_institutions WHERE name ILIKE :q OR coalesce(cik, '') ILIKE :q OR EXISTS (SELECT 1 FROM unnest(aliases) a WHERE a ILIKE :q) ORDER BY name", $q, $page),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT name FROM mcp_institutions WHERE institution_id = :id', $id),
     ],
 ];

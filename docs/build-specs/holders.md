@@ -65,5 +65,52 @@ The insiders' link to the register (5), the holders export's handler (8), the pr
 `holder-identity.md` §6, plus: the register upload lights the reconciliation's register half (tied on the fixture); a Viewer's holder list renders "Individual holder" for every
 person and the entity by name, the queue answers 403, the aggregates render; an agent's `holders_merge` answers `pending_approval`; 10 screens built, 11 actions, 2 approvals in step.
 
+## Built (2026-10-10) — what the build found and decided within this spec
+1. **The parsers are `si_parse_<connector>()`**, one file each in `app/si/parse/`, registered in `SI_CONNECTORS` (slice 2's detector), not
+   `parse_broadridge_nobo()` in a `parse_upload()`. Old Excel is read by `app/si/xls.php` (BIFF8 without a library; equal cell for cell to
+   PhpSpreadsheet on all 48 workbooks).
+2. **One upload of a kind per security and record date**: a second NOBO list, register or share range of a date is refused naming the first
+   (a holder's position on a date is the sum of its rows on that date's list — two lists would count it twice). The owner's folder holds two.
+3. **The matcher runs in the request for 200 waiting rows or fewer; a longer list is queued for the worker's `matcher` pass** (oldest record
+   date first — the order a holder is first seen in), the upload page polls and the uploader is told. A first match costs about 10 ms a row:
+   an issuer with 20,000 NOBOs would outlive any request.
+4. **db/021** (additive): `si_match_row` keeps a custodian the row carries (the names export's own column); `si_match_candidates` finds its
+   candidates through the trigram index (it compared every holder for every row — 449,605 similarity calls for one list of 670 rows) with
+   `enable_seqscan` off inside it; `si_row_attach` and the auto path touch the holder only when a date or an empty address moves; the search
+   trigger on holders names its columns; indexes on the rows' account; `si_holder_positions_rebuild()` — a restore sums an account's rows.
+5. **Fractional shares** (a fractional-share broker's 39.86928 on another issuer's list): tied exactly in hundred-thousandths of a share,
+   stored rounded to the whole share (the columns are whole numbers); the count of fractional rows is in the control.
+6. **Broadridge's names export is stored as a CSV of its kept columns**: Work/Personal email, the phones and the social profiles never reach
+   the store (`si_names_export_kept()`), as the extract's tax ids, birth dates, phones and emails do not. Neither carries a record date: the
+   upload's, else the file name's (06-30-24).
+7. **STC's position detail carries no total**: tied to its own rows (as DTC's one-time report); its summary's counts are shown, not compared;
+   every section is loaded with its title (the preferred classes too — a register per class is Extended).
+8. **The Share Range Analysis names six characters of CUSIP**: checked against the security's first six; one footer writes "11 /19/ 2024".
+9. **A trust is a person for the wall** (db/008's rule: a trustee's name is a person's); an LLC, Inc, Ltd, fund or corporation is an entity.
+   §2 of holder-identity.md listed trusts among entities — the safer side of the wall was kept.
+10. **A row whose only candidate was rejected becomes its own holder** when the upload is matched again — the rejection is remembered, never
+    re-proposed.
+11. **A Bank/Broker client is matched to a participant by name, alias, the name without punctuation, or the custodian words — never guessed**;
+    the others are listed "not in the directory" (a manager adds the name as an alias; the list read again attributes them). With DTCC's
+    full directory most match; the scratch database holds 37 participants.
+12. **"Set kind" lives on the holder's page** (the queue's candidate links there), not as a fourth button on the queue's card.
+13. **Our own `check_violation` sentences reach the person** (`db_message`, `si_guard`): "A person is not merged with an entity".
+14. **THE WALL, CLOSER (db/021 replaces `mcp_holders` and `mcp_holder_accounts`, the same columns)**: on the owner's lists a corporation's address
+    read "ATTN: <a person>" and an entity's registration can carry "FBO <a person>" — a Viewer now reads an entity's address only without an
+    ATTN / C/O / FBO line and no account's registration lines at all (the entity's name, kind, city and state stay). An entity's own name is
+    shown as D4 says, even when it holds a person's ("<name> LLC").
+15. **This host audits every function call** (`pgaudit.log = function`, the owner's setting; `/var/log/postgresql` at 24 GB): the proofs turn
+    auditing off for the scratch database alone.
+
+Proof: `tests/phase3/slice3/run.sh` (each proof on a fresh scratch database, dropped at the end with the store) — NOBO 30, the register 22, the
+share range 9, **the owner's real files 18** (106 files of slice 3's kinds load and tie to their own statements — 47 NOBO job CSVs, 4 job
+workbooks, the names export, 8 extracts, 46 Share Range Analyses; 3 files uploaded twice and 2 second lists of a record date refused in words; the
+password-protected workbook, the comparison, the PDF and the SPR analysis refused in words; the worker matched 60 lists and registers: 1,560 holders
+of Bitmine, 1,498 persons and 62 entities, 546 of them on twenty or more lists; **THE REAL RECONCILIATION TIES ON BOTH HALVES** — outstanding
+49,912,607 = Cede & Co 3,397,800 + the rest of the register of 2024-06-30, and Cede = the SPR total of 2024-06-28; no person's name in the activity
+log, the server log or a Viewer's pages; the stored extracts and names export without their never-stored columns), the queue 23, the merge 22, the
+PII wall 21, JSON 3, browser 82 — under php -S and a real Apache; slices 1 and 2, Phase 2 (made independent of slice 3), the schema proof 180, the
+kit 73 and Phase 1's 60 re-run green; the registry 34 screens and 35 actions built; the installer's plan clean (50 steps).
+
 ## Open questions
 None.
