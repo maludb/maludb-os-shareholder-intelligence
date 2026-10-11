@@ -209,10 +209,62 @@ function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $no
 {
     return ['indexed' => (int) one_value($pdo, 'SELECT si_search_catch_up(:n)', ['n' => max(1, $limit)])];
 }
-/** SLICE 8 — the pack's draft on pack_day (a dispatch to the Analyst) and queued renders (HTML, PDF when SI_WKHTMLTOPDF). */
-function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['drafted' => 0, 'rendered' => 0, 'stub' => true]; }
-/** SLICE 8 — queued exports built (CSV; a holders export logged with its row count); expired exports' files removed. */
-function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['built' => 0, 'expired' => 0, 'stub' => true]; }
+/**
+ * SLICE 8 — the packs: an APPROVED pack that has no rendering (the renderer was missing, the file was lost, the approval pre-dated it) is rendered as its approver, and the PDF
+ * made when SI_WKHTMLTOPDF names a binary. A draft is rendered by a person, never here. The Friday draft on pack_day (a dispatch to the Analyst) is slice 9's.
+ */
+function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/reports/screen.php';
+    $out = ['rendered' => 0, 'failed' => 0];
+    $st = $pdo->query("SELECT id, approved_by FROM reports WHERE status IN ('approved', 'published') AND rendered_path IS NULL AND deleted_at IS NULL AND approved_by IS NOT NULL ORDER BY id LIMIT " . max(1, min(20, $limit)));
+    foreach ($st->fetchAll() as $r) {
+        try {
+            as_member($pdo, (int) $r['approved_by'], static function () use ($pdo, $r): void {
+                $pdo->beginTransaction();
+                report_render($pdo, (int) $r['id'], true);
+                $pdo->commit();
+            });
+            $out['rendered']++;
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            error_log('worker packs ' . $r['id'] . ': ' . $e->getMessage());
+            $out['failed']++;
+        }
+    }
+    return $out;
+}
+/**
+ * SLICE 8 — exports: what was left queued is built as the person who asked (the database's acting member set to them, so the walls read as them; they are told it is ready), and
+ * an export past its seven days has its file removed (the row stays as the trail's record; the download answers that it expired).
+ */
+function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/reports/screen.php';
+    require_once dirname(__DIR__) . '/app/features/exports/write.php';
+    $out = ['built' => 0, 'failed' => 0, 'expired' => 0];
+    foreach ($pdo->query("SELECT x.id, x.created_by, x.kind, x.issuer_id, (m.status = 'active') AS active FROM exports x LEFT JOIN members m ON m.id = x.created_by WHERE x.status = 'queued' ORDER BY x.id LIMIT " . max(1, min(50, $limit)))->fetchAll() as $q) {
+        if ($q['created_by'] === null || !$q['active']) {
+            $pdo->prepare("UPDATE exports SET status = 'failed', finished_at = now(), log = 'The person who asked is no longer active.' WHERE id = :id AND status = 'queued'")->execute(['id' => $q['id']]);
+            $out['failed']++;
+            continue;
+        }
+        $x = as_member($pdo, (int) $q['created_by'], static fn (): array => export_build($pdo, (int) $q['id']));
+        if ($x['status'] === 'done') {
+            $out['built']++;
+            $pdo->prepare("SELECT si_notify(:m, 'export_ready', :t, NULL, 'export', :r, NULL, :i, NULL, :d)")->execute(['m' => (int) $q['created_by'], 't' => 'Your export is ready: ' . (EXPORT_KINDS[$q['kind']] ?? $q['kind']),
+                'r' => (int) $q['id'], 'i' => $q['issuer_id'] === null ? null : (int) $q['issuer_id'], 'd' => 'export_ready:' . $q['id']]);
+        } else {
+            $out['failed']++;
+        }
+    }
+    foreach ($pdo->query("SELECT id, storage_path FROM exports WHERE status = 'done' AND storage_path IS NOT NULL AND expires_at < now() ORDER BY id LIMIT " . max(1, min(200, $limit)))->fetchAll() as $e) {
+        si_unlink_named((string) $e['storage_path']);
+        $pdo->prepare('UPDATE exports SET storage_path = NULL WHERE id = :id')->execute(['id' => $e['id']]);
+        $out['expired']++;
+    }
+    return $out;
+}
 /** SLICE 9 — the outbox: email through MaluMail (malumail_send), texts to members through the kernel (kernel_send_text), retries with backoff. */
 function worker_pass_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sent' => 0, 'skipped' => 0, 'retried' => 0, 'failed' => 0, 'stub' => true]; }
 /** SLICE 9 — agent dispatches: a new 13D, a high signal, an upload finished, a filing of a watched form → one chat turn, at most three attempts. */

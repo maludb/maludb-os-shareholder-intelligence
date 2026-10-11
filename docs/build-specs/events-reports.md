@@ -64,3 +64,35 @@ paused; an address outside the members refused); a holders export by an Analyst 
 
 ## Open questions
 None.
+
+## Built (2026-10-11) — what the build found and decided within this spec
+1. **MaluMail's send API takes no attachment** (the plugin's `malumail-send`: "No attachments/inline images, no cc/bcc"), so "sent … with the PDF attached" cannot be. `report_send` mails one message a
+   recipient — the sender's words, the narrative as written and a link to `/reports/{id}` inside the application — and the PDF/HTML is downloaded after sign-in (`/reports/{id}/file?format=`). The log's `pdf`
+   says whether a PDF existed. A recipient is an active human member admitted here who may see the issuer; an EXTERNAL member only when the issuer's list names them; one bad recipient refuses the whole
+   send before any mail; an address (not a member id) is refused in words; a suppressed address is counted `failed`, and a send nobody accepted is a 422 that changes nothing. The pack is `published` once a
+   message is accepted. "Send to…" is three member pickers (the picker is one record at a time); the action takes any number (≤ 25).
+2. **Approval keeps the numbers it was approved on.** `report_approve` approves (db/014's function, the narrative trigger) and renders the pack at once, replacing the draft's file; an approved pack's
+   `report_render` is refused ("kept as approved") unless it has no rendering, and the page shows the stored sections of an approved pack ("as rendered when approved") but a draft's drawn from today's data.
+   The stored file is a stand-alone document (inline CSS) served with `Content-Security-Policy: default-src 'none'; … sandbox`. Edits to an approved pack — any field — are a 422 in PHP (the database only freezes
+   the narrative); the way to correct one is a new draft.
+3. **The pack is aggregates and the public record**: the holders sections are counts and ranges, never a name, so a pack rendered by an Analyst reads the same to a Viewer. Thirteen section partials
+   (`app/views/reports/partials/section-<key>.php`) draw `pack_section_data()` — each calls the screens' own query function, for the issuer's primary security. The Markdown renderer
+   (`markdown_html()`, `app/features/events/present.php`) escapes first, then headings, lists, bold, italic, code and http(s) links only.
+4. **Exports are built in the request**, as the person who asked, and the row is `queued` only for an instant: `export_create()` inserts and calls `export_build()` (which claims the row `queued → running`
+   atomically); the worker's `exports` pass builds whatever was left queued with `as_member()` (the database's acting member set to the creator, so the walls read as them), fails one with no active creator,
+   tells the creator (`export_ready`) and removes the file of an export past its seven days (the row stays; the download answers 410). **`has_right()` and `si_sees_pii()` cache per request — the build asks the
+   database each time** (`export_pii_allowed()`), because the worker builds for several people in one pass. A holders export needs `holders.read` as well as `export.own`, carries a natural person's name only
+   when `pii_in_exports` admits the creator (analyst / admin / nobody; otherwise "Individual holder", no street, city or full zip) and sets `includes_pii` only when a name is actually in it; a cell that could be a
+   formula gets an apostrophe. An export's download is its creator's or `export.shared`'s (mcp_exports) and refused with names in it to anyone who may not see names. Cut at 100,000 rows, said in its log.
+5. **The worker's `packs` pass** renders an APPROVED pack that has no rendering (as its approver); a draft is a person's to render. The Friday draft on pack_day stays slice 9's. A pack an agent drafts tells the IR
+   Managers (`pack_drafted`); an approval tells the drafter (`pack_approved`) — both through `si_notify()`, which keeps the issuer wall.
+6. **The calendar's computed days**: FINRA's publication is the 7th market day after each settlement date (the 15th and the month's last, each moved back to a market day — `si_market_days()`), the 13F
+   deadline 45 days after each quarter end moved on to a market day; a dilution instrument's `expires_on` is a coming chip. None is stored; `events_upcoming()` returns the same rows (source `computed` /
+   `instrument`). The grid is Monday-first, server-rendered; at 575 px and under a day shows dots and a day number that is a 44 px target, the agenda beneath carrying the words.
+7. **Events**: a title is shown in the trail (it is a label, not a body); the body, a link and the tags' words are not. A filing-kind event is unique per filing (db/009's index) — the form says so before the
+   database does; a restore that would collide is refused in words. After a delete the list offers "Undo the delete". `event.update` logs only what changed (kind, severity, date, filing, security).
+8. **Smaller**: the pickers gain `report`; `html/exports/download.php` is `/exports/{id}` (the vhost's named rewrite, both vhosts); `render_nav_stub`'s placeholders for events, reports and calendar are gone, the
+   registry marks 72 screens and 66 actions built; activity words added for the new log events; `app/si/storage.php` gains `si_store_named()` / `si_stored_named()` / `si_unlink_named()` (reports/ and exports/).
+   `si_report_approve()` raises `insufficient_privilege` for a caller without the right — unreachable (the handler checks the right first), noted in case a future caller does not.
+9. **Tests**: `tests/phase3/slice8/run.sh` — events 40, calendar 22, reports 67, exports 31, json 14, browser 134 — under php -S and under Apache (the same counts). The PDF is proved with a stand-in script
+   named by `SI_WKHTMLTOPDF`; no renderer is installed on this machine and none was installed. Phase 2's placeholder checks move to `/proposals` (slice 9's).

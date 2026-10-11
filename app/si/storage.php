@@ -79,3 +79,47 @@ function si_strip_csv_columns(string $bytes, array $drop): string
     fclose($fh);
     return $out;
 }
+
+/**
+ * A rendered pack or a built export (slice 8), kept under SI_STORAGE_DIR/reports or exports as <id>-<8 hex>.<html|pdf|csv> (mode 640, outside the web root).
+ *   si_store_named(string $dir, int $id, string $ext, string $bytes): string   — the path relative to the store
+ *   si_stored_named(string $rel): ?string                                     — its bytes, or null when the file is gone (an expired export)
+ *   si_unlink_named(string $rel): void
+ */
+const SI_NAMED_PATH = '~^(reports|exports)/[0-9]+-[0-9a-f]{8}\.(html|pdf|csv)$~';
+
+function si_store_named(string $dir, int $id, string $ext, string $bytes): string
+{
+    if (!in_array($dir, ['reports', 'exports'], true) || !in_array($ext, ['html', 'pdf', 'csv'], true)) {
+        throw new SiStoreError('Not a place for that file.');
+    }
+    $root = si_store_root();
+    if (!is_dir($root . '/' . $dir) && !@mkdir($root . '/' . $dir, 0750, true)) {
+        throw new SiStoreError('The ' . $dir . ' store cannot be written.');
+    }
+    $rel = $dir . '/' . $id . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $abs = $root . '/' . $rel;
+    $tmp = $abs . '.part';
+    if (@file_put_contents($tmp, $bytes, LOCK_EX) !== strlen($bytes) || !@rename($tmp, $abs)) {
+        @unlink($tmp);
+        throw new SiStoreError('The file could not be written to the store.');
+    }
+    @chmod($abs, 0640);
+    return $rel;
+}
+
+function si_stored_named(string $rel): ?string
+{
+    if (!preg_match(SI_NAMED_PATH, $rel)) {
+        throw new SiStoreError('Not a stored file.');
+    }
+    $b = @file_get_contents(si_store_root() . '/' . $rel);
+    return $b === false ? null : $b;
+}
+
+function si_unlink_named(string $rel): void
+{
+    if (preg_match(SI_NAMED_PATH, $rel)) {
+        @unlink(si_store_root() . '/' . $rel);
+    }
+}

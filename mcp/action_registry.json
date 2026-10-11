@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-11T09:56:29+00:00",
+    "generated_at": "2026-10-11T11:31:57+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -741,8 +741,8 @@
                 "to",
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "event-view": {
             "screen": "event-view",
@@ -750,7 +750,7 @@
             "section": "Events, the calendar, reports and the pack (slice 8)",
             "when": "one event with its filing, the signals it explains, notes, tags",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "event-add": {
@@ -763,7 +763,7 @@
                 "kind",
                 "filing"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "event-edit": {
@@ -772,7 +772,7 @@
             "section": "Events, the calendar, reports and the pack (slice 8)",
             "when": "to change an event",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "calendar": {
@@ -784,8 +784,8 @@
                 "at",
                 "kinds"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "report-list": {
             "screen": "report-list",
@@ -796,8 +796,8 @@
                 "kind",
                 "status"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "report-view": {
             "screen": "report-view",
@@ -805,7 +805,7 @@
             "section": "Events, the calendar, reports and the pack (slice 8)",
             "when": "one pack: the narrative (the agent's draft or the person's edit), the sections toggled, the rendered preview, Approve, Download PDF, Send to… (members)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "report-add": {
@@ -818,7 +818,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "report-edit": {
@@ -827,7 +827,7 @@
             "section": "Events, the calendar, reports and the pack (slice 8)",
             "when": "to edit a draft's narrative and sections (frozen once approved)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "export-list": {
@@ -838,7 +838,7 @@
             "params": [
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "proposals": {
@@ -2964,7 +2964,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the event",
-            "built": false
+            "built": true
         },
         "event_update": {
             "action": "event_update",
@@ -3045,7 +3045,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the event",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "event_delete": {
@@ -3067,7 +3067,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the event",
-            "built": false
+            "built": true
         },
         "event_restore": {
             "action": "event_restore",
@@ -3088,7 +3088,7 @@
             "who": "events.write",
             "agent": true,
             "record_id": "the event",
-            "built": false
+            "built": true
         },
         "report_draft": {
             "action": "report_draft",
@@ -3145,7 +3145,7 @@
             "who": "reports.run",
             "agent": true,
             "record_id": "the report",
-            "built": false
+            "built": true
         },
         "report_update": {
             "action": "report_update",
@@ -3208,7 +3208,7 @@
             "who": "reports.run",
             "agent": true,
             "record_id": "the report",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "report_render": {
@@ -3230,7 +3230,7 @@
             "who": "reports.run",
             "agent": true,
             "record_id": "the report",
-            "built": false
+            "built": true
         },
         "report_approve": {
             "action": "report_approve",
@@ -3251,7 +3251,7 @@
             "who": "reports.approve",
             "agent": true,
             "record_id": "the report",
-            "built": false
+            "built": true
         },
         "report_send": {
             "action": "report_send",
@@ -3284,7 +3284,7 @@
             "who": "reports.approve",
             "agent": true,
             "record_id": "the report",
-            "built": false
+            "built": true
         },
         "report_delete": {
             "action": "report_delete",
@@ -3305,7 +3305,7 @@
             "who": "reports.approve",
             "agent": true,
             "record_id": "the report",
-            "built": false
+            "built": true
         },
         "export_create": {
             "action": "export_create",
@@ -3356,7 +3356,7 @@
             "who": "export.own",
             "agent": true,
             "record_id": "the export",
-            "built": false
+            "built": true
         },
         "notification": {
             "action": "notification",

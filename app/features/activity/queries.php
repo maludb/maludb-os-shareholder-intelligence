@@ -98,6 +98,8 @@ function activity_sentence(array $r): string
         'match.auto' => 'matched a holder', 'match.accept' => 'accepted a holder match', 'match.reject' => 'rejected a holder match', 'match.new_holder' => 'made a holder', 'holder.merge' => 'merged holders',
         'signal.raise' => 'raised a signal', 'signal.acknowledge' => 'acknowledged a signal', 'signal.dismiss' => 'dismissed a signal', 'signal.escalate' => 'escalated a signal', 'signal.propose' => 'proposed a disposition',
         'event.create' => 'recorded an event', 'report.draft' => 'drafted a pack', 'report.approve' => 'approved a pack', 'report.send' => 'sent a pack', 'export.create' => 'exported',
+        'event.update' => 'changed an event', 'event.delete' => 'deleted an event', 'event.restore' => 'restored an event', 'report.update' => 'changed a pack', 'report.render' => 'rendered a pack', 'report.delete' => 'deleted a pack',
+        'export.build' => 'built an export', 'export.download' => 'downloaded an export',
         'source.pull_done' => 'pulled a source', 'source.pull_fail' => 'failed to pull a source', 'source.pull_blocked' => 'was refused by a source',
         'key.mint' => 'minted a key', 'key.rotate' => 'rotated a key', 'key.revoke' => 'revoked a key', 'share.read' => 'read a share', 'api.call' => 'called the API',
         'settings.save' => 'changed the settings', 'worker.pass' => 'the worker ran', 'notification.send' => 'sent a notice',
