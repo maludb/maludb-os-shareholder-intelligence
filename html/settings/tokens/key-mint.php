@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /**
  * Action `key_mint` (log `key.mint`: the label, never the key; tokens.own; PEOPLE; an agent's would pause — other): **label** (what will use the key). A key acts as its person, sees what they see, is limited
- * to the settings' calls a minute and a day, and is shown ONCE — here, to the person at the screen. `member` (tokens.manage only) mints one for another person. Through the kernel's relay
+ * to the settings' calls a minute and a day, and is shown ONCE — here, to the person at the screen. `member` (tokens.manage only) mints one for a VIEWER — who cannot mint — and for no one else. Through the kernel's relay
  * (an action token) the key is not minted: a model must never hold it. record_id = the key.
  */
 require_once dirname(__DIR__, 3) . '/app/bootstrap.php';
@@ -21,7 +21,12 @@ if ($label === '' || mb_strlen($label) > 80) {
 }
 $for = request_integer('member') ?? $me;
 if ($for !== $me) {
+    // An admin mints for another person ONLY for a Viewer (who holds no tokens.own and so cannot mint): a Viewer's key reads and never writes, so
+    // the admin never holds a key that acts in another person's name (the planning model's restriction at merge, 2026-10-11).
     require_right('tokens.manage');
+    if (!db_bool($pdo, 'SELECT si_member_is_viewer(:m)', ['m' => $for])) {
+        refuse(403, 'A key acts as its person: an Analyst or a manager mints their own. An admin mints one for a Viewer only.');
+    }
 }
 $minted = si_guard($pdo, static function () use ($pdo, $for, $label): array {
     $pdo->beginTransaction();

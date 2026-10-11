@@ -47,7 +47,10 @@ ok($r['code'] === 403, 'an Analyst may not mint for another person (tokens.manag
 $kv = mint_key($jA, 'Ann\'s read key', 29);
 ok($kv['code'] === 200 && (int) one('SELECT member_id FROM mcp_access_tokens WHERE id = :i', ['i' => $kv['id']]) === 29, 'an administrator mints one for Ann, a Viewer — acting as Ann');
 $r = post_json($jA, '/settings/tokens/key-mint.php', ['label' => 'For the Expert', 'member' => 40]);
-ok($r['code'] === 422 && str_contains($r['body'], 'acts as a person'), 'never for an agent: 422');
+ok($r['code'] === 403 && (int) one("SELECT count(*) FROM mcp_access_tokens WHERE label = 'For the Expert'") === 0, 'never for an agent: 403, nothing minted');
+$r = post_json($jA, '/settings/tokens/key-mint.php', ['label' => 'For Priya', 'member' => 26]);
+ok($r['code'] === 403 && str_contains($r['body'], 'for a Viewer only') && (int) one("SELECT count(*) FROM mcp_access_tokens WHERE label = 'For Priya'") === 0,
+    'never for an Analyst or a manager — the admin would hold a key that writes in their name: 403, nothing minted');
 $r = req('POST', '/settings/tokens/key-mint.php', ['headers' => ['Accept: application/json', 'X-Action-Token: ' . person_token(26)], 'form' => ['label' => 'Through the relay']]);
 ok($r['code'] === 422 && str_contains($r['body'], 'shown once, to you, on the Tokens screen') && (int) one("SELECT count(*) FROM mcp_access_tokens WHERE label = 'Through the relay'") === 0, 'through the kernel\'s relay (an action token): refused, nothing minted — a model must not hold a key');
 $agent = agent_headers(42, 953);
