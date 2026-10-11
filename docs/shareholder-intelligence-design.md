@@ -938,6 +938,11 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 - Alpha Vantage the default price source (D13, above); the key is the owner's to add.
 ## 16. State
 
+**2026-10-11 — PHASE 4 COMPLETE; ready for Phase 5.** Merged (f98e087); after the merge Phase 4 (444 php -S / 447 Apache), Phase 0 (73), Phase 1 (60),
+slices 1, 6, 7 and 9 green, the installer's plan 49 steps. Two install fixes: `tests/setup_dev.sh` never resets the installed roles' passwords
+from a worktree (it reuses the install's, or aborts), and `deploy/ROOT_STEPS.sh` step 0 generates `SI_SECRETS_KEY` with the ports (the installer
+leaves it empty) and names `/admin/settings` and the Alpha Vantage credential door. **Next:** the owner's install.
+
 **2026-10-11, night — PHASE 4 BUILT by a Sonnet 5.5 worker (`phase4-mcp`; `docs/shareholder-intelligence-mcp-tool-surface.md` "Built").** The records MCP server (95 tools: 88 for the questions, `app_roles`, `records_search`, the five
 K7 shares — the kernel's alone) and the activity MCP server (7 tools), on Inventory's kit with K26's headers. Every SECURITY DEFINER read function is handed a security only after `mcp_securities` has shown it; the PII wall is the views'
 (a Viewer's person is "Individual holder", the raw rows and the queue answer `pii_withheld`). **db/028** (the one migration): `mcp_key_usage`, `mcp_spr_rows`, `mcp_signal_rule_overrides`, `si_log_mcp_read()` (the share log and the

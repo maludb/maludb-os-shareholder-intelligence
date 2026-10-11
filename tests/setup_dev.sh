@@ -18,6 +18,16 @@ UPTO=${SI_DEV_UPTO:-999}      # SI_DEV_UPTO=005 applies db/001–005 only (the k
 for f in "$ROOT"/db/0*.sql; do n=$(basename "$f" | cut -c1-3); [ "$n" -le "$UPTO" ] 2>/dev/null || continue; $PSQL -d "$DB" -f "$f" >/dev/null || { echo "FAILED: $f"; exit 1; }; done
 LIVEENV="$ROOT/config/.env"
 lv() { grep -m1 "^$1=" "$LIVEENV" | cut -d= -f2-; }
+# A worktree (or a second clone) of an INSTALLED Shareholder Intelligence has no config/.env of its own but shares the cluster's three roles
+# with the install: reuse the install's passwords (SI_LIVE_ENV names its config/.env; /srv/apps/shareholder_intelligence is the install
+# path), NEVER reset them — a reset takes the live application down. An install whose config/.env cannot be read stops this script.
+if ! { [ -f "$LIVEENV" ] && [ -n "$(lv DB_PASSWORD)" ]; }; then
+  for cand in "${SI_LIVE_ENV:-}" /srv/apps/shareholder_intelligence/config/.env; do
+    [ -n "$cand" ] && [ -e "$cand" ] || continue
+    if [ ! -r "$cand" ]; then echo "ABORT: $cand exists but cannot be read — the installed roles' passwords would be reset"; exit 2; fi
+    if grep -q '^DB_PASSWORD=.' "$cand"; then LIVEENV=$cand; break; fi
+  done
+fi
 if [ -f "$LIVEENV" ] && [ -n "$(lv DB_PASSWORD)" ] && [ -n "$(lv MCP_RECORDS_DB_PASSWORD)" ] && [ -n "$(lv MCP_ACTIVITY_DB_PASSWORD)" ]; then
   PW_RW=$(lv DB_PASSWORD); PW_REC=$(lv MCP_RECORDS_DB_PASSWORD); PW_ACT=$(lv MCP_ACTIVITY_DB_PASSWORD)
 else

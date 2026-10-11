@@ -130,4 +130,8 @@ direct SELECT on `signals`, `signal_outcomes`, `signal_rule_overrides`, `search_
 enum `source` became `origin` (the handlers read `origin`, then the forms' `source`) and `class` left the security entity's aliases; a `share.read` is the kernel's alone.
 **`generic_mapped` BUILT 2026-10-11** (`docs/build-specs/position-reports.md` §7): an import template the person picks reads a position report, a NOBO
 list or a register in any layout (`app/si/parse/generic_mapped.php`); **the store keeps only the mapped columns** as a canonical `#si-generic/1` CSV,
-and `SI_GENERIC_NEVER_MAPPED` refuses a tax id / birth date / phone / email column at save and at read. **Next:** Phase 5, the owner's apply.
+and `SI_GENERIC_NEVER_MAPPED` refuses a tax id / birth date / phone / email column at save and at read. **PHASE 4 COMPLETE 2026-10-11** (merged f98e087; after the merge Phase 4 444/447, Phases 0–1, slices 1, 6, 7, 9 green; the plan 49 steps).
+**Before the install (2026-10-11):** `tests/setup_dev.sh` reuses the INSTALL's role passwords from a worktree (`SI_LIVE_ENV`, else
+`/srv/apps/shareholder_intelligence/config/.env`) and aborts when that file exists unreadable — the scratch databases share the cluster's three roles,
+and a reset would take the live application down; after the install every proof runs from a worktree (the clone's own `run.sh` aborts on an installed
+`config/.env`). `deploy/ROOT_STEPS.sh` step 0 writes the three ports AND `SI_SECRETS_KEY` (the installer leaves it empty). **Next:** Phase 5, the owner's apply.
