@@ -93,5 +93,10 @@ EDGAR — slice 1's runner does); `SiHttp::API_HOSTS` are not robots-governed. *
 2026-10-10** (`docs/build-specs/ownership-forms.md` "Built"; `tests/phase3/slice5/run.sh`, samples by `tests/fetch/make_ownership_samples.py`): the four ownership
 connectors `app/si/fetch/edgar_{13f_dataset,13dg,ownership,144}.php`; the 13D/G, Forms 3/4/5 and 144 are read from the issuer's index (`structured_at`), and
 **a document whose subject is another company is set aside** — the index also carries what the issuer itself filed; the 13F set is never read in a request
-(fetch_now queues it). `/ownership/144` and `/ownership/13f/changes` are named rewrites (the registry knows them). **Next: slice 6 (the short side)**, then slice 7
-(the second exemplar), then the Sonnet handoff.
+(fetch_now queues it). `/ownership/144` and `/ownership/13f/changes` are named rewrites (the registry knows them). **SLICE 6 BUILT 2026-10-11**
+(`docs/build-specs/short-side.md` "Built"; `tests/phase3/slice6/run.sh` — the stub derives every short-side answer from `tests/fixtures/`' CSV/TSV files; the
+proofs' clock is 2024-04-04 23:30 New York with Good Friday a holiday): the connectors `app/si/fetch/{finra_short_interest,finra_daily_short_volume,sec_ftd,threshold,prices}.php`
+(the securities a source serves: `si_tracked_securities()`; a connector's bookkeeping — files read, securities back-filled — in its source's settings); FINRA's
+dataset is `consolidatedShortInterest`; **the threshold calendar is `threshold_list_days`** (db/023 — never count list days on `threshold_listings`' dates);
+`sec_ftd` sends the SEC's declared user-agent; **stooq refuses machines and is paused** — prices are a keyed provider or an upload; a source's key is opened
+only in `app/si/fetch/credentials.php`. **Next: slice 7 (the signals, the second exemplar)**, then the Sonnet handoff.

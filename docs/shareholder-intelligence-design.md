@@ -929,12 +929,20 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-11 — SLICE 6 BUILT: the short side (`docs/build-specs/short-side.md` "Built").** FINRA's short interest from the Query API's
+`consolidatedShortInterest` (keyless; a revision a new row), FINRA's daily off-exchange short volume a file a market day (fractional volumes kept to the
+share; the caveat on every screen and answer), the SEC's fails from its half-month zips each checked against its own trailer, the three Reg SHO threshold
+lists (Nasdaq, NYSE's three markets, FINRA's OTC `thresholdList`), prices, typed borrow observations, the short-side page with its one chart of two panels
+and five tables. **db/023 fixes a defect of db/011**: consecutive threshold days were counted on the dates that have a row, so a day off the list merged two
+runs — every list file read is now a day of the calendar. **stooq refuses machines** (robots.txt and a JavaScript proof-of-work): paused; prices come from
+Alpha Vantage or Polygon with a key, or an upload — **D13's default is the owner's to choose again.** **Next:** slice 7, the signals (the second exemplar).
+
 **2026-10-10 — SLICE 5 BUILT: the ownership forms (`docs/build-specs/ownership-forms.md` "Built").** The SEC's 13F data sets (the page read for its zips,
 only the tracked CUSIPs kept, a restatement replacing, the quarter's changes and summary), Schedules 13D and 13G in both 2024 XML layouts and the older HTML
 covers, Forms 3/4/5 into the insider ledger with the register's holder proposed by name (EDGAR's "SMITH ROBERT A", db/022) and confirmed by a person, Forms 144;
 institutions with pages and kinds; the six ownership screens. A document the issuer itself filed about another company is set aside (found on Bitmine's 13D on
 Eightco). Live: Bitmine's 89 insider rows, 9 schedules, 8 notices; one real 13F set — 511 filers, 254,830,686 shares at 2026-06-30. Open for the owner: a
-security's former CUSIPs (a 13F row under the pre-split CUSIP is not read). **Next:** slice 6, the short side (FINRA short interest and volume, fails, Reg SHO).
+security's former CUSIPs (a 13F row under the pre-split CUSIP is not read).
 
 **2026-10-10 — SLICE 4 BUILT: EDGAR, the index, the text and the watch (`docs/build-specs/edgar-filings.md` "Built").** The issuers' filing index twice a
 market day (the older pages once), the watched forms' text on arrival (HTML with its paragraphs and tables, XML safely, PDF through pdftotext), the cover

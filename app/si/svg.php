@@ -211,3 +211,122 @@ function svg_legend(array $items, string $id): string
     }
     return $h . '</div>';
 }
+
+/**
+ * THE SHORT SIDE'S ONE CHART (short-side.md "Screens"): two panels on one date axis in one SVG, so an event's line crosses both. Above: the close
+ * as a line (a gap of more than five calendar days is not joined) over the volume as light bars. Below, each series on its own scale named in
+ * the legend: the threshold-list days as shaded bands, the fails as bars, the 5-day off-exchange short-volume ratio as a line (0–100%), short
+ * interest as a share of the float as points on its settlement dates, the borrow fee as diamonds. $points: si_short_side_overlay() rows;
+ * $events [{event_id, on_date, kind, title, severity}]. Answers ['svg', 'scales' => the legend's maxima] — svg '' without a price.
+ */
+function svg_short_overlay(array $points, array $events, string $id, string $from, string $to, int $width = 720): array
+{
+    $scales = ['close' => null, 'fails' => null, 'si' => null, 'fee' => null];
+    if ($points === []) {
+        return ['svg' => '', 'scales' => $scales];
+    }
+    $padL = 8; $padR = 8; $top = 14; $h1 = 190; $gap = 18; $h2 = 150; $padB = 22;
+    $height = $top + $h1 + $gap + $h2 + $padB;
+    $t = static fn (string $d): int => (int) (strtotime($d . ' 00:00:00 UTC') / 86400);
+    $first = $t($from); $last = $t($to);
+    $span = max(1, $last - $first);
+    $x = static fn (string $d): float => $padL + ($t($d) - $first) * ($width - $padL - $padR) / $span;
+    $dayW = max(1.5, ($width - $padL - $padR) / $span * 0.7);
+    $f = static fn (float $v): string => sprintf('%.1f', $v);
+    $vals = static fn (string $k): array => array_values(array_filter(array_map(static fn ($p) => $p[$k] === null ? null : (float) $p[$k], $points), static fn ($v) => $v !== null));
+    $closes = $vals('close'); $vols = $vals('volume'); $fails = $vals('fails'); $sis = $vals('short_pct_float'); $fees = $vals('borrow_fee');
+    $lo = min($closes); $hi = max($closes);
+    if ($hi - $lo < 1e-9) { $lo -= 1; $hi += 1; }
+    $vmax = $vols === [] ? 1 : max(max($vols), 1);
+    $fmax = $fails === [] ? 1 : max(max($fails), 1);
+    $smax = $sis === [] ? 1 : max(max($sis), 0.01);
+    $bmax = $fees === [] ? 1 : max(max($fees), 0.01);
+    $scales = ['close' => [$lo, $hi], 'fails' => $fails === [] ? null : $fmax, 'si' => $sis === [] ? null : $smax, 'fee' => $fees === [] ? null : $bmax, 'volume' => $vols === [] ? null : $vmax];
+    $y1 = static fn (float $v): float => $top + ($hi - $v) * ($h1 * 0.78) / ($hi - $lo);              // the close in the panel's upper 78%
+    $b2 = $top + $h1 + $gap + $h2;                                                                       // the lower panel's baseline
+    $muted = 'var(--bs-secondary-color, #64748b)';
+    $svg = '<svg viewBox="0 0 ' . $width . ' ' . $height . '" class="si-chart w-100" role="img" aria-labelledby="' . e($id) . '-title" id="' . e($id) . '-svg" preserveAspectRatio="none" style="height:' . $height . 'px">'
+        . '<title id="' . e($id) . '-title">The close and volume, and below them short interest, fails, the off-exchange short ratio, threshold days and borrow, ' . e($from) . ' to ' . e($to) . '</title>'
+        . '<line x1="' . $padL . '" x2="' . ($width - $padR) . '" y1="' . ($top + $h1) . '" y2="' . ($top + $h1) . '" stroke="var(--bs-border-color, #e5e7eb)" />'
+        . '<line x1="' . $padL . '" x2="' . ($width - $padR) . '" y1="' . $b2 . '" y2="' . $b2 . '" stroke="var(--bs-border-color, #e5e7eb)" />';
+    // the threshold days: bands across the lower panel
+    $svg .= '<g id="' . e($id) . '-threshold">';
+    foreach ($points as $p) {
+        if ($p['on_threshold']) {
+            $svg .= '<rect x="' . $f($x((string) $p['d']) - $dayW / 2) . '" y="' . ($top + $h1 + $gap) . '" width="' . $f($dayW + 1) . '" height="' . $h2 . '" fill="var(--bs-danger-bg-subtle, #fde2e2)"><title>' . e(date('M j', strtotime((string) $p['d']))) . ': on a threshold list</title></rect>';
+        }
+    }
+    $svg .= '</g><g id="' . e($id) . '-volume">';
+    foreach ($points as $p) {
+        if ($p['volume'] !== null) {
+            $bh = (float) $p['volume'] / $vmax * $h1 * 0.2;
+            $svg .= '<rect x="' . $f($x((string) $p['d']) - $dayW / 2) . '" y="' . $f($top + $h1 - $bh) . '" width="' . $f($dayW) . '" height="' . $f(max(0.5, $bh)) . '" fill="var(--bs-gray-400, #cbd5e1)"><title>' . e(date('M j', strtotime((string) $p['d'])) . ' volume ' . number_format((float) $p['volume'])) . '</title></rect>';
+        }
+    }
+    $svg .= '</g><g id="' . e($id) . '-fails">';
+    foreach ($points as $p) {
+        if ($p['fails'] !== null) {
+            $bh = (float) $p['fails'] / $fmax * $h2 * 0.85;
+            $svg .= '<rect x="' . $f($x((string) $p['d']) - $dayW / 2) . '" y="' . $f($b2 - $bh) . '" width="' . $f($dayW) . '" height="' . $f(max(0.5, $bh)) . '" fill="' . SI_PALETTE[5] . '"><title>' . e(date('M j', strtotime((string) $p['d'])) . ' fails ' . number_format((float) $p['fails'])) . '</title></rect>';
+        }
+    }
+    $svg .= '</g>';
+    // the close: a line, gaps kept
+    $segs = []; $seg = []; $prev = null;
+    foreach ($points as $p) {
+        if ($p['close'] === null) { continue; }
+        $day = $t((string) $p['d']);
+        if ($prev !== null && $day - $prev > 5 && $seg !== []) { $segs[] = $seg; $seg = []; }
+        $seg[] = $f($x((string) $p['d'])) . ',' . $f($y1((float) $p['close']));
+        $prev = $day;
+    }
+    $segs[] = $seg;
+    $svg .= '<g id="' . e($id) . '-price">';
+    foreach ($segs as $s) {
+        if (count($s) > 1) { $svg .= '<path d="M' . implode(' L', $s) . '" fill="none" stroke="var(--bs-primary, #3454d1)" stroke-width="2" vector-effect="non-scaling-stroke" />'; }
+    }
+    $svg .= '</g>';
+    // the 5-day ratio: a line on 0–100% of the lower panel
+    $segs = []; $seg = []; $prev = null;
+    foreach ($points as $p) {
+        if ($p['short_volume_ratio_5'] === null) { continue; }
+        $day = $t((string) $p['d']);
+        if ($prev !== null && $day - $prev > 5 && $seg !== []) { $segs[] = $seg; $seg = []; }
+        $seg[] = $f($x((string) $p['d'])) . ',' . $f($b2 - (float) $p['short_volume_ratio_5'] * $h2 * 0.95);
+        $prev = $day;
+    }
+    $segs[] = $seg;
+    $svg .= '<g id="' . e($id) . '-ratio">';
+    foreach ($segs as $s) {
+        if (count($s) > 1) { $svg .= '<path d="M' . implode(' L', $s) . '" fill="none" stroke="' . SI_PALETTE[1] . '" stroke-width="1.5" vector-effect="non-scaling-stroke"><title>The 5-day off-exchange short-volume ratio (FINRA; not short interest)</title></path>'; }
+    }
+    $svg .= '</g><g id="' . e($id) . '-si">';
+    foreach ($points as $p) {
+        if ($p['short_pct_float'] !== null) {
+            $cy = $b2 - (float) $p['short_pct_float'] / $smax * $h2 * 0.9;
+            $svg .= '<circle cx="' . $f($x((string) $p['d'])) . '" cy="' . $f($cy) . '" r="4" fill="' . SI_PALETTE[3] . '" stroke="var(--bs-body-bg, #fff)" stroke-width="1"><title>' . e(date('M j', strtotime((string) $p['d'])) . ' settlement: short interest ' . number_format((float) $p['short_pct_float'], 2) . '% of the float' . ($p['days_to_cover'] !== null ? ', ' . number_format((float) $p['days_to_cover'], 2) . ' days to cover' : '')) . '</title></circle>';
+        }
+    }
+    $svg .= '</g><g id="' . e($id) . '-borrow">';
+    foreach ($points as $p) {
+        if ($p['borrow_fee'] !== null) {
+            $cx = $x((string) $p['d']); $cy = $b2 - (float) $p['borrow_fee'] / $bmax * $h2 * 0.9;
+            $svg .= '<path d="M' . $f($cx) . ',' . $f($cy - 5) . ' L' . $f($cx + 5) . ',' . $f($cy) . ' L' . $f($cx) . ',' . $f($cy + 5) . ' L' . $f($cx - 5) . ',' . $f($cy) . 'Z" fill="' . SI_PALETTE[2] . '"><title>' . e(date('M j', strtotime((string) $p['d'])) . ' borrow fee ' . number_format((float) $p['borrow_fee'], 2) . '% (indicative)') . '</title></path>';
+        }
+    }
+    $svg .= '</g><g id="' . e($id) . '-events">';
+    foreach ($events as $ev) {
+        $ex = $f($x((string) $ev['on_date']));
+        $c = svg_severity_colour((string) $ev['severity']);
+        $svg .= '<g class="si-event" id="' . e($id) . '-event-' . (int) $ev['event_id'] . '"><title>' . e(date('M j', strtotime((string) $ev['on_date'])) . ' · ' . $ev['title']) . '</title>'
+            . '<line x1="' . $ex . '" x2="' . $ex . '" y1="' . $top . '" y2="' . $b2 . '" stroke="' . $c . '" stroke-dasharray="3 3" stroke-width="1" />'
+            . '<circle cx="' . $ex . '" cy="' . ($b2 + 7) . '" r="4" fill="' . $c . '" /></g>';
+    }
+    $svg .= '</g>';
+    $svg .= '<text x="' . $padL . '" y="10" font-size="10" fill="' . $muted . '">' . e(number_format($hi, 2)) . '</text>'
+        . '<text x="' . $padL . '" y="' . $f($y1($lo) - 3) . '" font-size="10" fill="' . $muted . '">' . e(number_format($lo, 2)) . '</text>'
+        . '<text x="' . ($width - $padR) . '" y="' . ($top + $h1 + $gap - 4) . '" font-size="10" text-anchor="end" fill="' . $muted . '">the short side, each on its own scale (the legend)</text>'
+        . '<text x="' . $padL . '" y="' . ($height - 3) . '" font-size="9" fill="' . $muted . '">' . e(date('M j, Y', strtotime($from))) . '</text>'
+        . '<text x="' . ($width - $padR) . '" y="' . ($height - 3) . '" font-size="9" text-anchor="end" fill="' . $muted . '">' . e(date('M j, Y', strtotime($to))) . '</text></svg>';
+    return ['svg' => $svg, 'scales' => $scales];
+}

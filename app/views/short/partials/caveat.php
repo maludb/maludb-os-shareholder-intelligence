@@ -1,0 +1,3 @@
+<?php /** FINRA's caveat on its daily short-sale volume — wherever the ratio is shown. Data: compact? (a line instead of the callout) */ ?>
+<?php if (!empty($compact)): ?><div class="fs-11 text-muted" id="short-caveat"><i class="bi bi-info-circle me-1"></i><?= e(SI_SHORT_VOLUME_CAVEAT) ?></div>
+<?php else: ?><div class="alert alert-secondary d-flex gap-2 align-items-start fs-12" role="note" id="short-caveat"><i class="bi bi-info-circle mt-1"></i><div><span class="fw-semibold">FINRA's daily short volume is not short interest.</span> <?= e(SI_SHORT_VOLUME_CAVEAT) ?> A market maker selling short to fill a buyer's order is counted; the buy that covers it is not.</div></div><?php endif; ?>

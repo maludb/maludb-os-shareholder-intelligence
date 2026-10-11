@@ -232,3 +232,19 @@ function upload_match(PDO $pdo, int $id): array
     }
     return $counts;
 }
+
+/**
+ * A price file (slice 6, `prices_csv`) into `prices` under the source `prices_manual`: the bars upserted by date — an untied file (a line
+ * that did not read) still writes the bars that did, the tie note naming the rest. Answers [made, failed].
+ */
+function upload_load_prices(PDO $pdo, int $id, array $im, array $parsed, string $rd): array
+{
+    require_once dirname(__DIR__, 2) . '/si/fetch/prices.php';
+    $src = one_value($pdo, "SELECT id FROM sources WHERE connector = 'prices_manual' ORDER BY id LIMIT 1");
+    [$new, $changed] = si_prices_upsert($pdo, (int) $im['security_id'], (int) $im['issuer_id'], $src === false || $src === null ? null : (int) $src, $parsed['bars']);
+    $pdo->prepare("UPDATE imports SET status = 'done', finished_at = now(), tied = :t, tie_note = :n, rows_made = :m, rows_failed = :f, record_date = :rd, period_from = :a, period_to = :rd,
+                          derived_totals = CAST(:d AS jsonb) || jsonb_build_object('new', CAST(:new AS integer), 'changed', CAST(:ch AS integer)) WHERE id = :i")
+        ->execute(['t' => $parsed['tie'][0] ? 'true' : 'false', 'n' => $parsed['tie'][1], 'm' => count($parsed['bars']), 'f' => (int) $parsed['derived']['rows_failed'], 'rd' => $rd,
+                   'a' => $parsed['period'][0], 'd' => json_encode($parsed['derived']), 'new' => $new, 'ch' => $changed, 'i' => $id]);
+    return [count($parsed['bars']), (int) $parsed['derived']['rows_failed']];
+}

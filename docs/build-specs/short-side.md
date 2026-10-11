@@ -62,3 +62,43 @@ the live pulls of §5 (one FINRA query, one daily file, one fails half, three th
 
 ## Open questions
 None.
+
+## Built (2026-10-11) — what the build found and decided within this spec
+1. **FINRA's short interest is the Query API's `consolidatedShortInterest`** (group otcMarket, every market, keyless — the first live call, divergence 1):
+   `equityShortInterest` is the OTC-only dataset with other field names. One POST a pull with the tracked tickers as a domain filter returns every settlement
+   FINRA keeps (Bitmine: 76 since 2022), so a missed publication is caught by the next; db/023 corrects the seeded URL. **A revision is a new row** when any
+   figure differs from the date's latest observation (`revision_flag` FINRA's flag or an earlier observation); `short.load` / `short.revise` with the figures;
+   `published_on` only when FINRA sends a date (the screen shows the day first read). Calendar: market days from 17:00 in the window of the sixth to ninth
+   market day after each settlement (the 15th or before, the month's last market day), and any time for a source never read.
+2. **FINRA's daily files are read a market day a file** (`<MARKET>shvolYYYYMMDD.txt`, CNMS and FORF): every day after the last file read (`done`), and the last
+   `backfill_days` (60) for a security never loaded; a 404 is a day without a file (a holiday, or before FINRA posts at about 18:00), never a failure. **FINRA
+   writes fractional volumes since 2026** (3,493,384.390661): kept to the whole share. `cdn.finra.org` is an S3 bucket whose robots.txt answers S3's 403 for a
+   missing object — RFC 9309 reads a 4xx robots answer as no rules; it joins `SiHttp::API_HOSTS` (found by the live pull).
+3. **The SEC's fails are its half-month zips listed on the fails page** (`listing_url`, like the 13F data sets; `loaded`, `backfill_halves` 24 — a year), and
+   **each file ends with its own trailer** — the record count and the total quantity: a file that does not tie is refused in words and nothing written. The
+   fails host is the SEC's, so `sec_ftd` sends the SEC's declared user-agent and is refused before any request without the contact email, as EDGAR is.
+4. **The threshold lists: a DEFECT of db/011 fixed in db/023.** `si_threshold_status()` counted consecutive days among the dates that have a ROW, but a row is
+   written only for a tracked security on a list — a day off every list left no date, and two runs merged (the proof: five days where three are true). Every
+   list file read is now a `threshold_list_days` row (its entry count, tracked or not), the calendar per list; `si_threshold_runs()` answers every run. Nasdaq's
+   file a day; NYSE's three markets a request each (NYSE answers 406 to `Accept: text/plain` alone — `*/*` added); FINRA's OTC list is the Query API's
+   `thresholdList` (Reg SHO's list, or Rule 4320's for a non-reporting OTC security — `flag` 'Y' or 'R4320'); the days after the last read, from 22:00 the
+   same day; an empty Nasdaq or OTC answer is not published yet, an empty NYSE market a real day. `threshold.list` / `threshold.delist` per change.
+5. **stooq refuses machines** (found live 2026-10-10): its robots.txt disallows every agent but Google's and Bing's, and its pages answer a JavaScript
+   proof-of-work. Under the policy no machine reads it: db/023 pauses the source with that reason, the client reads the proof-of-work page as a bot wall
+   (`bot_wall:js_challenge`), and the live check proves the CSV is never asked. **Prices now come from Alpha Vantage or Polygon with a key** (seeded, paused
+   "Needs a key"; Alpha Vantage's free plan answers `compact` — 100 days — and refuses `full` as premium; Polygon's key as a bearer header) **or an upload**
+   (`prices_csv` on slice 2's pipeline under the source `prices_manual`; tied when every line reads). D13 named stooq the keyless default — **the owner's
+   decision: which keyed provider, or uploads.**
+6. **`app/si/fetch/credentials.php` opens a source's credential** (secretbox under SI_SECRETS_KEY; slice 10 builds the form on `si_credential_seal()`); the
+   keys never reach a pull's policy, an error, the trail or the log (proven).
+7. **The client's Imperva rule was too broad** (Inventory's, ported verbatim): `_Incapsula_Resource` is injected into EVERY page of an Imperva site, so
+   Nasdaq's ordinary "Page Not Available" (its robots.txt) read as a wall; now a challenge is "Pardon Our Interruption", an incident id, or a page under 8 KB
+   carrying only the script. **Inventory's `app/sources/http.php` has the same line.** Live, Nasdaq served the list file to the first probe, then
+   challenged this host after a handful of requests (the client answered blocked, backed off an hour, told the admin) and cleared within the hour.
+9. **Live, 2026-10-11, for Bitmine (BMNR, CUSIP 09175A206)**: FINRA's 76 settlements (the latest Sep 30: 34,721,295 short, 1.00 day to cover, NYSE); the
+   CNMS file of Oct 9 (3,493,384 short of 8,808,583 off-exchange); the fails half-month 2026-09a tied to its trailer (three days, the most 23,875); the
+   lists of Oct 9 — Nasdaq 72 securities, NYSE 2, NYSE American 1, NYSE Arca 17, FINRA OTC 17, Bitmine on none; stooq blocked without asking the CSV.
+   **Tests**: `tests/phase3/slice6/run.sh` — finra 21, ftd 11, threshold 15, prices 16, overlay 28, json 7, browser 110 — under php -S and Apache, then the
+   live pulls 13. The schema proof's source counts follow db/023 (eighteen sources, fourteen due); Phase 2's HTMX placeholder check moved to `/signals`.
+8. **The one chart is one SVG of two panels on one date axis** (`svg_short_overlay()` in `app/si/svg.php`), each lower series on its own scale named in the
+   legend; the window 180 days, 90 on a phone (the page asks once by its width). `app/features/short/screen.php` is the screens' prelude (as slice 5's).

@@ -1,0 +1,3 @@
+<?php /** The revision chip of a short-interest row: "revised", the earlier observation on hover. Data: r (a short_interest() row) */ ?>
+<?php if ((bool) $r['revision_flag'] || (int) ($r['observations'] ?? 1) > 1): ?><span class="badge text-bg-warning ms-1" id="revision-chip-<?= e((string) $r['settlement_date']) ?>" tabindex="0"
+    title="<?= e($r['earlier_short_shares'] !== null ? 'Revised: FINRA first said ' . number_format((float) $r['earlier_short_shares']) . ' shares' . ($r['earlier_days_to_cover'] !== null ? ' (' . number_format((float) $r['earlier_days_to_cover'], 2) . ' days to cover)' : '') . ', read ' . format_date(substr((string) $r['earlier_observed_at'], 0, 10)) : 'FINRA flagged this settlement as revised') ?>">revised</span><?php endif; ?>

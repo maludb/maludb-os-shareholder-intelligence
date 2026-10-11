@@ -30,7 +30,57 @@ function si_fetchers(): array
         'edgar_13dg' => [__DIR__ . '/edgar_13dg.php', 'si_fetch_edgar_13dg'],
         'edgar_ownership' => [__DIR__ . '/edgar_ownership.php', 'si_fetch_edgar_ownership'],
         'edgar_144' => [__DIR__ . '/edgar_144.php', 'si_fetch_edgar_144'],
+        'finra_short_interest' => [__DIR__ . '/finra_short_interest.php', 'si_fetch_finra_short_interest'],
+        'finra_daily_short_volume' => [__DIR__ . '/finra_daily_short_volume.php', 'si_fetch_finra_daily_short_volume'],
+        'sec_ftd' => [__DIR__ . '/sec_ftd.php', 'si_fetch_sec_ftd'],
+        'threshold_nasdaq' => [__DIR__ . '/threshold.php', 'si_fetch_threshold_nasdaq'],
+        'threshold_nyse' => [__DIR__ . '/threshold.php', 'si_fetch_threshold_nyse'],
+        'threshold_otc' => [__DIR__ . '/threshold.php', 'si_fetch_threshold_otc'],
+        'prices_stooq' => [__DIR__ . '/prices.php', 'si_fetch_prices_stooq'],
+        'prices_alphavantage' => [__DIR__ . '/prices.php', 'si_fetch_prices_alphavantage'],
+        'prices_polygon' => [__DIR__ . '/prices.php', 'si_fetch_prices_polygon'],
     ];
+}
+
+/**
+ * The securities a short-side or price source serves (slice 6): the active securities of the issuers the application tracks — the source's
+ * `settings.issuers` when set, or the one issuer of a manual pull — with the field the connector matches on (`ticker` or `cusip`) present.
+ * A restricted issuer is fetched like any other (the wall is on reading). Answers [{security_id, issuer_id, ticker, cusip, rows}], `rows`
+ * the count of the connector's table for the security (0 = never loaded: the connector back-fills it).
+ */
+function si_tracked_securities(PDO $pdo, array $source, array $ctx, string $field, ?string $table = null): array
+{
+    $settings = json_decode((string) $source['settings'], true) ?: [];
+    $only = array_map('intval', (array) ($settings['issuers'] ?? []));
+    $field = $field === 'cusip' ? 'cusip' : 'ticker';
+    $count = $table === null ? '0' : '(SELECT count(*) FROM ' . preg_replace('~[^a-z_]~', '', $table) . ' t WHERE t.security_id = s.id)';
+    $sql = "SELECT s.id AS security_id, s.issuer_id, s.ticker, s.cusip, $count AS rows FROM securities s JOIN issuers i ON i.id = s.issuer_id
+             WHERE i.deleted_at IS NULL AND s.active AND s.$field IS NOT NULL";
+    $args = [];
+    if (($ctx['issuer'] ?? null) !== null) {
+        $sql .= ' AND i.id = :one';
+        $args['one'] = (int) $ctx['issuer'];
+    } elseif ($only !== []) {
+        $sql .= ' AND i.id = ANY (CAST(:only AS bigint[]))';
+        $args['only'] = '{' . implode(',', $only) . '}';
+    }
+    $st = $pdo->prepare($sql . ' ORDER BY s.id');
+    $st->execute($args);
+    return array_map(static fn (array $r): array => ['security_id' => (int) $r['security_id'], 'issuer_id' => (int) $r['issuer_id'], 'ticker' => $r['ticker'], 'cusip' => $r['cusip'], 'rows' => (int) $r['rows']], $st->fetchAll());
+}
+
+/** The market days from $from to $to inclusive, oldest first (si_is_market_day: weekdays not in the exchange's holidays). */
+function si_market_days(PDO $pdo, string $from, string $to): array
+{
+    $st = $pdo->prepare("SELECT d::date FROM generate_series(CAST(:a AS date), CAST(:b AS date), interval '1 day') d WHERE si_is_market_day(d::date) ORDER BY 1");
+    $st->execute(['a' => $from, 'b' => $to]);
+    return $st->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/** A source's settings with keys merged in (the connectors' bookkeeping: the files read, the securities back-filled). */
+function si_source_settings_merge(PDO $pdo, int $source, array $merge): void
+{
+    $pdo->prepare('UPDATE sources SET settings = settings || CAST(:m AS jsonb) WHERE id = :id')->execute(['m' => json_encode($merge), 'id' => $source]);
 }
 
 function si_source(PDO $pdo, int $id): ?array
@@ -51,14 +101,14 @@ function si_source_by_connector(PDO $pdo, string $connector): ?array
 }
 
 /**
- * The user-agent a source must send: an EDGAR connector the SEC's "<business name> <contact email>" (si_edgar_user_agent()) — NULL when the
- * settings lack it, and then nothing is fetched; any other the source's own, else "<business> Shareholder Intelligence (+contact)".
+ * The user-agent a source must send: an EDGAR or SEC connector (`edgar_*`, `sec_ftd`) the SEC's "<business name> <contact email>"
+ * (si_edgar_user_agent()) — NULL when the settings lack it, and then nothing is fetched; any other the source's own, else "<business> Shareholder Intelligence (+contact)".
  */
 function si_fetch_user_agent(PDO $pdo, array $source): ?string
 {
     $edgar = (string) one_value($pdo, 'SELECT si_edgar_user_agent()');
-    if (str_starts_with((string) $source['connector'], 'edgar_')) {
-        return $edgar !== '' ? $edgar : null;
+    if (str_starts_with((string) $source['connector'], 'edgar_') || str_starts_with((string) $source['connector'], 'sec_')) {
+        return $edgar !== '' ? $edgar : null;                           // the SEC's fair-access rule covers www.sec.gov too (the fails)
     }
     if (trim((string) ($source['user_agent'] ?? '')) !== '') {
         return trim((string) $source['user_agent']);

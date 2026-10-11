@@ -18,7 +18,7 @@ const SI_CONNECTORS = [
     'broadridge_share_range_xls'  => ['share_range', 3, 'broadridge_share_range.php', 'si_parse_broadridge_share_range_xls'],
     'ta_extract_csv'              => ['register', 3, 'ta_extract.php', 'si_parse_ta_extract_csv'],
     'stc_position_detail'         => ['register', 3, 'stc_position_detail.php', 'si_parse_stc_position_detail'],
-    'prices_csv'                  => ['prices_csv', 6, null, null],
+    'prices_csv'                  => ['prices_csv', 6, 'prices_csv.php', 'si_parse_prices_csv'],
 ];
 
 function si_detect_connector(string $bytes, string $filename): array
@@ -65,6 +65,9 @@ function si_detect_connector(string $bytes, string $filename): array
     }
     if (str_contains($u, 'RANGE,ACCTS,SHARES') && str_contains($u, 'RECORD DATE')) {
         return ['broadridge_share_range_xls', 'Broadridge\'s Share Range Analysis'];
+    }
+    if (preg_match('~^\W*DATE,(OPEN,HIGH,LOW,)?CLOSE\b~', $u) || preg_match('~^\W*DATE,OPEN,HIGH,LOW,CLOSE~', $u)) {
+        return ['prices_csv', 'a daily price file'];
     }
     if (preg_match('~(^|\n)DATE,SHARES,SHARE CHA~', $u)) {
         return [null, 'This looks like a comparison made from NOBO lists (a date and a share change per holder). Upload Broadridge\'s own NOBO list.'];

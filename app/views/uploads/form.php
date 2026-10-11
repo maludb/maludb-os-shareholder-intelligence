@@ -7,10 +7,10 @@
         <div class="card-body">
             <div class="mb-3"><label class="form-label d-block">What the file is</label>
                 <div class="d-flex flex-column gap-2" id="upload-form-kinds">
-                <?php foreach (['' => 'Detect it from the file'] + UPLOAD_KINDS as $k => $l): $on = $k !== 'prices_csv'; ?>
+                <?php foreach (['' => 'Detect it from the file'] + UPLOAD_KINDS as $k => $l): $on = true; ?>
                     <label class="btn btn-light btn-touch text-start<?= $on ? '' : ' disabled opacity-50' ?>" for="upload-form-kind-<?= e($k ?: 'detect') ?>"><input type="radio" class="form-check-input me-2" name="kind" value="<?= e($k) ?>" id="upload-form-kind-<?= e($k ?: 'detect') ?>" <?= $kind === $k ? 'checked' : '' ?> <?= $on ? '' : 'disabled' ?>>
                         <span class="fw-semibold"><?= e($l) ?></span> <span class="fs-11 text-muted d-block d-sm-inline"><?= e(match ($k) { '' => 'the layout names itself', 'spr' => 'DTC\'s weekly or one-time Security Position Report', 'nobo' => 'Broadridge\'s NOBO list (the job file or the names export)',
-                            'register' => 'the transfer agent\'s Shareholder Extract or STC\'s position detail', 'share_range' => 'Broadridge\'s Share Range Analysis (.xls)', default => 'from slice 6' }) ?></span></label>
+                            'register' => 'the transfer agent\'s Shareholder Extract or STC\'s position detail', 'share_range' => 'Broadridge\'s Share Range Analysis (.xls)', default => 'a daily series: Date, Open, High, Low, Close, Volume' }) ?></span></label>
                 <?php endforeach; ?></div></div>
             <div class="mb-3"><label class="form-label" for="upload-form-field-security">Security</label>
                 <?php if (count($securities) <= 1): ?><input type="hidden" name="security" value="<?= (int) ($security['security_id'] ?? 0) ?>"><div class="form-control-plaintext fw-semibold" id="upload-form-field-security"><?= e(($security['name'] ?? '—') . ' · ' . ($security['cusip'] ?? 'no CUSIP')) ?></div>

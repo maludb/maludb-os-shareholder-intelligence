@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-10T21:07:41+00:00",
+    "generated_at": "2026-10-10T23:51:47+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -591,8 +591,8 @@
                 "from",
                 "to"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "short-interest": {
             "screen": "short-interest",
@@ -604,7 +604,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "short-volume": {
@@ -618,7 +618,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "short-fails": {
@@ -631,7 +631,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "short-threshold": {
@@ -642,7 +642,7 @@
             "params": [
                 "security"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "short-borrow": {
@@ -655,7 +655,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "borrow-add": {
@@ -666,7 +666,7 @@
             "params": [
                 "security"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "signal-list": {
@@ -2565,7 +2565,7 @@
             "who": "borrow.write",
             "agent": true,
             "record_id": "the observation",
-            "built": false
+            "built": true
         },
         "borrow_observation_delete": {
             "action": "borrow_observation_delete",
@@ -2586,7 +2586,7 @@
             "who": "borrow.write",
             "agent": true,
             "record_id": "the observation",
-            "built": false
+            "built": true
         },
         "signal_acknowledge": {
             "action": "signal_acknowledge",

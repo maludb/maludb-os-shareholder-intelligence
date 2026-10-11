@@ -227,11 +227,12 @@ SELECT pg_temp.check((SELECT tied_registered IS NULL AND NOT tied_spr AND differ
 SELECT pg_temp.check((si_reconciliation_latest(pg_temp.i('sec'))).id = pg_temp.i('rec2'), 'si_reconciliation_latest is the latest as_of');
 
 -- ---------------------------------------------------------------- THE PUBLIC RECORD: sources, filings, events, dilution (§6.5)
-SELECT pg_temp.check((SELECT count(*) FROM sources) = 15 AND (SELECT count(*) FROM si_sources_due()) = 15, 'fifteen v1 sources seeded, every one due at first');
+-- db/023 (slice 6) seeds Alpha Vantage, Polygon (paused until a key) and the price upload's source (no schedule), and pauses stooq (it refuses machines)
+SELECT pg_temp.check((SELECT count(*) FROM sources) = 18 AND (SELECT count(*) FROM si_sources_due()) = 14, 'eighteen sources seeded, the fourteen scheduled and unpaused due at first');
 SELECT pg_temp.keep('src_edgar', (SELECT id FROM sources WHERE connector = 'edgar_submissions'));
 INSERT INTO source_pulls (source_id, kind) VALUES (pg_temp.i('src_edgar'), 'scheduled') RETURNING pg_temp.keep('pull', id);
 SELECT si_pull_finish(pg_temp.i('pull'), 'ok', NULL, 5, 5, 0, 1, 20480, '{"user_agent": "SMOKE Co ir@example.invalid", "rate": 2, "if_modified_since": true}');
-SELECT pg_temp.check((SELECT last_ok_at IS NOT NULL AND consecutive_failures = 0 AND last_pull_id = pg_temp.i('pull') FROM sources WHERE id = pg_temp.i('src_edgar')) AND (SELECT count(*) FROM si_sources_due()) = 14, 'a pull that ends ok stamps the source and takes it off the due list');
+SELECT pg_temp.check((SELECT last_ok_at IS NOT NULL AND consecutive_failures = 0 AND last_pull_id = pg_temp.i('pull') FROM sources WHERE id = pg_temp.i('src_edgar')) AND (SELECT count(*) FROM si_sources_due()) = 13, 'a pull that ends ok stamps the source and takes it off the due list');
 INSERT INTO source_pulls (source_id, kind) VALUES (pg_temp.i('src_edgar'), 'scheduled') RETURNING pg_temp.keep('pull2', id);
 SELECT si_pull_finish(pg_temp.i('pull2'), 'blocked', 'HTTP 403: Undeclared Automated Tool', 0, 0, 0, 1, 0, '{}');
 SELECT pg_temp.check((SELECT backoff_until > now() + interval '55 minutes' AND consecutive_failures = 1 FROM sources WHERE id = pg_temp.i('src_edgar')) AND NOT EXISTS (SELECT 1 FROM si_sources_due() WHERE id = pg_temp.i('src_edgar')), 'a 403 backs the source off an hour');
@@ -503,8 +504,8 @@ SELECT pg_temp.as_member(27);
 UPDATE events SET deleted_at = now(), deleted_by = 27 WHERE id = pg_temp.i('ev_short');
 SELECT pg_temp.check((SELECT count(*) FROM si_tombstones() WHERE kind = 'event' AND record_id = pg_temp.i('ev_short')) = 1, 'a manager reads the tombstones with their purge date');
 UPDATE events SET deleted_at = NULL, deleted_by = NULL WHERE id = pg_temp.i('ev_short');
-SELECT pg_temp.check((SELECT count(*) FROM si_source_health()) = 15 AND (SELECT bool_and(user_agent_set) FROM si_source_health() WHERE needs_user_agent) AND (SELECT consecutive_failures FROM si_source_health() WHERE connector = 'edgar_submissions') = 2,
-    'si_source_health: fifteen sources, the EDGAR user-agent set, the submissions source''s two failures');
+SELECT pg_temp.check((SELECT count(*) FROM si_source_health()) = 18 AND (SELECT bool_and(user_agent_set) FROM si_source_health() WHERE needs_user_agent) AND (SELECT consecutive_failures FROM si_source_health() WHERE connector = 'edgar_submissions') = 2,
+    'si_source_health: eighteen sources, the EDGAR user-agent set, the submissions source''s two failures');
 UPDATE agent_dispatches SET status = 'cancelled' WHERE id = (SELECT min(id) FROM agent_dispatches);
 SELECT pg_temp.check((SELECT count(*) FROM agent_dispatches WHERE status = 'cancelled') = 1, 'a dispatch may be cancelled');
 

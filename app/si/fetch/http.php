@@ -122,8 +122,12 @@ final class SiHttp
     }
 
     /** Does robots.txt let us fetch this URL? */
-    /** The hosts that are APIs, not sites: robots.txt does not govern them (edgar-and-finra-fetchers.md §1 — efts.sec.gov answers its robots.txt 403). */
-    public const API_HOSTS = ['data.sec.gov', 'efts.sec.gov', 'api.finra.org'];
+    /**
+     * The hosts that are APIs or file stores for machines, not sites: robots.txt does not govern them (edgar-and-finra-fetchers.md §1 — efts.sec.gov
+     * answers its robots.txt 403; cdn.finra.org, FINRA's Reg SHO daily files, is an S3 bucket whose robots.txt answers S3's "AccessDenied" 403 for a
+     * file that does not exist — RFC 9309 reads a 4xx robots answer as no rules, found by slice 6's live pull 2026-10-11).
+     */
+    public const API_HOSTS = ['data.sec.gov', 'efts.sec.gov', 'api.finra.org', 'cdn.finra.org'];
 
     public function allows(string $url): bool
     {
@@ -429,14 +433,18 @@ function si_http_blocked_reason(int $status, array $headers, string $body): ?str
         'bot_wall:cloudflare' => '~<title>\s*Just a moment\.{0,3}\s*</title>|cf-browser-verification|cf_chl_|challenge-platform|Checking your browser before accessing|cf-challenge~i',
         'bot_wall:perimeterx' => '~px-captcha|_pxhd|perimeterx|Press (&amp;|&) Hold to confirm you are~i',
         'bot_wall:akamai' => '~errors\.edgesuite\.net|Reference&#32;&#35;|<title>\s*Access Denied\s*</title>~i',
-        'bot_wall:imperva' => '~Pardon Our Interruption|Incapsula incident|_Incapsula_Resource~i',
+        'bot_wall:imperva' => '~Pardon Our Interruption|Incapsula incident~i',   // _Incapsula_Resource alone is on every page of an Imperva site (below)
         'bot_wall:datadome' => '~datadome|captcha-delivery\.com~i',
+        'bot_wall:js_challenge' => '~requires JavaScript to verify your browser|crypto\.subtle\.digest[^<]{0,400}/__verify~i',   // a proof-of-work page (stooq, 2026-10-10)
         'bot_wall:captcha' => '~<title>[^<]*(Access denied|Verify you are human|Are you a robot|Bot Verification|Security Check)[^<]*</title>|(g-recaptcha|h-captcha)[^<]{0,200}(verify|human|robot)~i',
     ];
     foreach ($patterns as $name => $re) {
         if (preg_match($re, $head)) {
             return $name;
         }
+    }
+    if (strlen($body) < 8192 && stripos($head, '_Incapsula_Resource') !== false) {
+        return 'bot_wall:imperva';                                      // a challenge is a near-empty page carrying only Imperva's script (Nasdaq's ordinary pages carry it too, 2026-10-11)
     }
     if ($status === 503 && preg_match('~cloudflare~i', $head)) {
         return 'bot_wall:cloudflare';

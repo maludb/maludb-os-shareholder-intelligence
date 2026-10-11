@@ -64,7 +64,9 @@ function upload_create(PDO $pdo, array $f): array
             if ($rd === null) {
                 throw new DomainException('The file does not say its record date: give it (the date the list or the register is as of).');
             }
-            upload_check_same_date($pdo, $kind, (int) $f['security']['security_id'], $rd);
+            if ($kind !== 'prices_csv') {                                 // prices are upserted by date: a second file of the same days is welcome
+                upload_check_same_date($pdo, $kind, (int) $f['security']['security_id'], $rd);
+            }
         }
     }
     $stored = si_store_bytes(upload_bytes_to_store($pdo, $connector, (string) $f['bytes']));
@@ -139,7 +141,9 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
             if ($rd === null) {
                 throw new DomainException('The file does not say its record date: delete this upload and upload it again with its record date.');
             }
-            upload_check_same_date($pdo, (string) $im['kind'], (int) $im['security_id'], $rd, $id);
+            if ($im['kind'] !== 'prices_csv') {
+                upload_check_same_date($pdo, (string) $im['kind'], (int) $im['security_id'], $rd, $id);
+            }
         }
     } catch (SiParseError | DomainException | SiStoreError $e) {
         $pdo->prepare("UPDATE imports SET status = 'failed', finished_at = now(), log = :l, tied = NULL WHERE id = :i")->execute(['l' => mb_substr($e->getMessage(), 0, 500), 'i' => $id]);
@@ -159,6 +163,7 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
                 'nobo' => upload_load_nobo($pdo, $id, $im, $parsed, $rd),
                 'register' => upload_load_register($pdo, $id, $im, $parsed, $rd),
                 'share_range' => upload_load_share_range($pdo, $id, $im, $parsed, $rd),
+                'prices_csv' => upload_load_prices($pdo, $id, $im, $parsed, $rd),
                 default => throw new DomainException('This kind of upload is read from a later slice.'),
             };
             $tied = (bool) $parsed['tie'][0];
@@ -166,14 +171,14 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
             log_activity($pdo, $tied ? 'upload.tie' : 'upload.untie', 'import', $id, $ids + ['after' => ['tied' => $tied, 'record_date' => $rd]]);
             $pdo->commit();
             try {                                                           // the load stands; the matcher and the reconciliation can be run again
-                $match = $tied ? upload_match_or_queue($pdo, $id) : null;
-                $rec = $tied && $im['kind'] !== 'share_range' ? reconciliation_after($pdo, (int) $im['security_id'], $rd, 'after upload ' . $id) : null;
+                $match = $tied && $im['kind'] !== 'prices_csv' ? upload_match_or_queue($pdo, $id) : null;
+                $rec = $tied && !in_array($im['kind'], ['share_range', 'prices_csv'], true) ? reconciliation_after($pdo, (int) $im['security_id'], $rd, 'after upload ' . $id) : null;
             } catch (Throwable $e) {
                 error_log('upload_ingest ' . $id . ' after the load: ' . $e->getMessage());
                 [$match, $rec] = [null, null];
             }
             return ['status' => 'done', 'tied' => $tied, 'tie_note' => $parsed['tie'][1], 'positions' => 0, 'rows' => $made, 'failed' => $failedRows, 'participants_new' => 0,
-                    'period' => [$rd, $rd], 'record_date' => $rd, 'matcher' => $match, 'matching' => $tied && $match === null && $im['kind'] !== 'share_range', 'reconciliation_id' => $rec];
+                    'period' => [$rd, $rd], 'record_date' => $rd, 'matcher' => $match, 'matching' => $tied && $match === null && !in_array($im['kind'], ['share_range', 'prices_csv'], true), 'reconciliation_id' => $rec];
         }
         $pdo->prepare('DELETE FROM spr_rows WHERE import_id = :i')->execute(['i' => $id]);
         $ins = $pdo->prepare('INSERT INTO spr_rows (import_id, row_no, participant_number, participant_name, position_date, shares, raw, error) VALUES (:i, :r, :n, :name, :d, :s, CAST(:raw AS jsonb), :e)
