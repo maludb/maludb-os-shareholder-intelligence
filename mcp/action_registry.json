@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-11T09:56:29+00:00",
+    "generated_at": "2026-10-11T11:14:23+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -897,7 +897,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "to set or rotate the source's credential (never shown back)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-participant-classes": {
@@ -3707,7 +3707,7 @@
             "who": "credentials.manage",
             "agent": false,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "participant_class_set": {
             "action": "participant_class_set",

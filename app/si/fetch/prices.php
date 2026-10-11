@@ -8,8 +8,10 @@ declare(strict_types=1);
  *     robots.txt disallows every agent but Google's and Bing's and its pages answer a JavaScript proof-of-work** — the client never asks a
  *     disallowed path and reads a proof-of-work page as a bot wall, so the pull answers blocked and nothing is read; db/023 pauses the source
  *     with that reason. The connector stays for a host that opens again.
- *   - `prices_alphavantage`: TIME_SERIES_DAILY (`outputsize=full` for a security never loaded, `compact` — 100 days — after; a key whose plan
- *     refuses `full` is asked `compact`), the key from the source's credential (credentials.php), never in a log or an error.
+ *   - `prices_alphavantage` — THE DEFAULT (db/025): TIME_SERIES_DAILY (`outputsize=full` for a security never loaded, `compact` — 100 days —
+ *     after; a key whose plan refuses `full` is asked `compact`), the key from the source's credential (credentials.php), never in a log or an
+ *     error; the free plan's 25 requests a day counted per market day (`settings.used`), the rest deferred (`settings.deferred`), an unknown
+ *     ticker skipped (`settings.unknown_tickers`).
  *   - `prices_polygon`: /v2/aggs/ticker/<T>/range/1/day/<from>/<to> unadjusted, the key as a bearer header; five years for a security never
  *     loaded, else from ten days before its last price.
  * A price upload (`prices_csv`) is the fourth door: the upload pipeline (app/si/parse/prices_csv.php), the source `prices_manual`.
@@ -41,36 +43,80 @@ function si_fetch_prices_alphavantage(PDO $pdo, array $source, SiHttp $client, a
 {
     $key = si_prices_key($pdo, $source, 'Alpha Vantage');
     $base = (string) ($source['base_url'] ?: 'https://www.alphavantage.co/query');
-    return si_prices_each($pdo, $source, $ctx, static function (array $s) use ($client, $base, $key): array {
-        foreach ($s['rows'] === 0 ? ['full', 'compact'] : ['compact'] as $size) {
-            $r = $client->get($base . '?function=TIME_SERIES_DAILY&symbol=' . rawurlencode((string) $s['ticker']) . '&outputsize=' . $size . '&datatype=json&apikey=' . rawurlencode($key), ['accept' => 'application/json', 'no_cache' => true]);
-            if ($r['blocked']) {
-                throw new SiPricesBlocked('Alpha Vantage refused us (' . $r['status'] . ').');
-            }
-            if (!$r['ok']) {
-                throw new SiFetchError('Alpha Vantage answered ' . $r['status'] . ' for ' . $s['ticker'] . '.');
-            }
-            $doc = json_decode($r['body'], true) ?: [];
-            if (isset($doc['Time Series (Daily)']) && is_array($doc['Time Series (Daily)'])) {
-                $out = [];
-                foreach ($doc['Time Series (Daily)'] as $d => $bar) {
-                    if (preg_match('~^\d{4}-\d{2}-\d{2}$~', (string) $d) && is_numeric($bar['4. close'] ?? null)) {
-                        $out[] = [$d, $bar['1. open'] ?? null, $bar['2. high'] ?? null, $bar['3. low'] ?? null, $bar['4. close'], $bar['5. volume'] ?? null];
-                    }
+    $settings = json_decode((string) $source['settings'], true) ?: [];
+    $cap = max(1, (int) ($settings['daily_requests'] ?? 25));
+    $day = ($ctx['now'] ?? new DateTimeImmutable('now'))->setTimezone(si_market_tz($pdo))->format('Y-m-d');
+    $used = ($settings['used']['on'] ?? null) === $day ? (int) ($settings['used']['n'] ?? 0) : 0;
+    $skipped = [];
+    $res = null;
+    try {
+        return $res = si_prices_each($pdo, $source, $ctx, static function (array $s) use ($client, $base, $key, $cap, &$used, &$skipped): array {
+            foreach ($s['rows'] === 0 ? ['full', 'compact'] : ['compact'] as $size) {
+                if ($used >= $cap) {
+                    throw new SiPricesDeferred('The day\'s ' . $cap . ' Alpha Vantage requests are used; the rest wait for the next market day.');
                 }
-                return $out;
+                $used++;
+                // the documented URL exactly (JSON and compact are the defaults): the public `demo` key answers nothing else (found live 2026-10-11)
+                $r = $client->get($base . '?function=TIME_SERIES_DAILY&symbol=' . rawurlencode((string) $s['ticker']) . ($size === 'full' ? '&outputsize=full' : '') . '&apikey=' . rawurlencode($key), ['accept' => 'application/json', 'no_cache' => true]);
+                if ($r['blocked']) {
+                    throw new SiPricesBlocked('Alpha Vantage refused us (' . $r['status'] . ').');
+                }
+                if (!$r['ok']) {
+                    throw new SiFetchError('Alpha Vantage answered ' . $r['status'] . ' for ' . $s['ticker'] . '.');
+                }
+                $doc = json_decode($r['body'], true) ?: [];
+                if (isset($doc['Time Series (Daily)']) && is_array($doc['Time Series (Daily)'])) {
+                    $out = [];
+                    foreach ($doc['Time Series (Daily)'] as $d => $bar) {
+                        if (preg_match('~^\d{4}-\d{2}-\d{2}$~', (string) $d) && is_numeric($bar['4. close'] ?? null)) {
+                            $out[] = [$d, $bar['1. open'] ?? null, $bar['2. high'] ?? null, $bar['3. low'] ?? null, $bar['4. close'], $bar['5. volume'] ?? null];
+                        }
+                    }
+                    return $out;
+                }
+                [$kind, $words] = si_alphavantage_refusal($doc, $key);
+                if ($kind === 'premium' && $size === 'full') {
+                    continue;                                                   // the free plan answers compact only (the last 100 trading days)
+                }
+                if ($kind === 'limit') {
+                    $used = $cap;
+                    throw new SiPricesDeferred('Alpha Vantage\'s daily limit is reached (' . $words . '); the rest wait for the next market day.');
+                }
+                if ($kind === 'key') {
+                    throw new SiPricesBlocked('Alpha Vantage refused the key: ' . $words);
+                }
+                if ($kind === 'symbol') {
+                    $skipped[] = (string) $s['ticker'];                         // Alpha Vantage does not know the ticker: the others are read
+                    return [];
+                }
+                throw new SiFetchError('Alpha Vantage for ' . $s['ticker'] . ': ' . $words);
             }
-            $words = (string) ($doc['Error Message'] ?? $doc['Note'] ?? $doc['Information'] ?? 'an answer without a series');
-            if ($size === 'full' && stripos($words, 'premium') !== false) {
-                continue;                                                   // the free plan answers compact only
-            }
-            if (isset($doc['Note']) || stripos($words, 'rate limit') !== false || stripos($words, 'requests per') !== false) {
-                throw new SiPricesBlocked('Alpha Vantage\'s limit: ' . mb_substr($words, 0, 120));
-            }
-            throw new SiFetchError('Alpha Vantage for ' . $s['ticker'] . ': ' . mb_substr(str_replace($key, '…', $words), 0, 140));
-        }
-        return [];
-    });
+            return [];
+        });
+    } finally {
+        si_source_settings_merge($pdo, (int) $source['id'], ['used' => ['on' => $day, 'n' => $used], 'unknown_tickers' => $skipped,
+            'deferred' => isset($res['detail']['deferred']) ? ['on' => $day, 'why' => $res['detail']['deferred']] : null]);
+    }
+}
+
+/**
+ * What an Alpha Vantage answer without a series means (its words as the live host gave them, 2026-10-11): ['key' | 'limit' | 'premium' | 'symbol' |
+ * 'other', the words without the key] — classified on the host's own words, then the key taken out. "the parameter apikey is invalid or missing" and "The **demo** API key is for demo purposes only" are the key;
+ * "rate limit … requests per day" the day's limit (checked before "premium", which the limit's answer also names); "Invalid API call" an unknown symbol.
+ */
+function si_alphavantage_refusal(array $doc, string $key): array
+{
+    $words = (string) ($doc['Error Message'] ?? $doc['Note'] ?? $doc['Information'] ?? 'an answer without a series');
+    $kind = match (true) {
+        stripos($words, 'apikey is invalid') !== false || stripos($words, 'demo purposes') !== false => 'key',
+        isset($doc['Note']) || stripos($words, 'rate limit') !== false || stripos($words, 'requests per day') !== false => 'limit',
+        stripos($words, 'premium') !== false => 'premium',
+        stripos($words, 'Invalid API call') !== false => 'symbol',
+        default => 'other',
+    };
+    // the host's words may name the key ("We have detected your API key as …"): it is taken out — a real key is 16 characters; a word-length one
+    // (the documented `demo`) would only mangle the sentence
+    return [$kind, mb_substr(strlen($key) >= 8 ? str_replace($key, '…', $words) : $words, 0, 160)];
 }
 
 function si_fetch_prices_polygon(PDO $pdo, array $source, SiHttp $client, array $ctx): array
@@ -100,8 +146,10 @@ function si_fetch_prices_polygon(PDO $pdo, array $source, SiHttp $client, array 
     });
 }
 
-/** A keyed provider refused us or its limit is reached (the pull answers blocked). */
+/** A keyed provider refused us (the pull answers blocked). */
 final class SiPricesBlocked extends RuntimeException {}
+/** A provider's daily allowance is spent: the securities not read wait for the next day (the pull is ok; nothing is told to the admin). */
+final class SiPricesDeferred extends RuntimeException {}
 
 function si_prices_key(PDO $pdo, array $source, string $who): string
 {
@@ -170,6 +218,8 @@ function si_prices_each(PDO $pdo, array $source, array $ctx, callable $fetch): a
             $bars = $fetch($s);
         } catch (SiPricesBlocked $e) {
             return ['status' => 'blocked', 'seen' => $seen, 'new' => $new, 'changed' => $changed, 'error' => $e->getMessage(), 'detail' => $detail];
+        } catch (SiPricesDeferred $e) {
+            return ['seen' => $seen, 'new' => $new, 'changed' => $changed, 'detail' => $detail + ['deferred' => $e->getMessage()]];
         }
         $seen += count($bars);
         $pdo->beginTransaction();

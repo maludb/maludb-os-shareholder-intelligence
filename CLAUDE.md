@@ -60,6 +60,9 @@ events, and the **signals** rules raise for a person to judge (the owner's brief
 - The kernel's rules copied here: activity `source` is `web` for the UI, `api` for a key, `agent` under a run token, `cron` for
   the worker; `action` is `entity.verb`; `mcp_*` views are the only thing the read roles see; the shared-schema rule — survey the
   siblings before any `CREATE TABLE`, reuse verbatim, extend by appending, record every table as read / reuse / new (design §6.8).
+- **The proofs share one machine's ports (8901–8907)** and `tests/phase2/servers.sh stop` kills any `php -S` on 8901–8903: when more than one session or
+  worker may run proofs, run every suite under the shared lock — `flock /tmp/si-proofs.lock tests/phase3/sliceN/run.sh` (never inside a run.sh: a nested
+  flock on the same file deadlocks).
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
@@ -98,7 +101,8 @@ connectors `app/si/fetch/edgar_{13f_dataset,13dg,ownership,144}.php`; the 13D/G,
 proofs' clock is 2024-04-04 23:30 New York with Good Friday a holiday): the connectors `app/si/fetch/{finra_short_interest,finra_daily_short_volume,sec_ftd,threshold,prices}.php`
 (the securities a source serves: `si_tracked_securities()`; a connector's bookkeeping — files read, securities back-filled — in its source's settings); FINRA's
 dataset is `consolidatedShortInterest`; **the threshold calendar is `threshold_list_days`** (db/023 — never count list days on `threshold_listings`' dates);
-`sec_ftd` sends the SEC's declared user-agent; **stooq refuses machines and is paused** — prices are a keyed provider or an upload; a source's key is opened
+`sec_ftd` sends the SEC's declared user-agent; **stooq refuses machines and is paused — Alpha Vantage is the default price source** (db/025,
+the owner 2026-10-11; paused until its key is set at `/admin/sources/{id}/credential`, the door built ahead of slice 10); a source's key is opened
 only in `app/si/fetch/credentials.php`. **SLICE 7 BUILT 2026-10-11, THE SECOND EXEMPLAR** (`docs/build-specs/signals-rules.md` "Built";
 `tests/phase3/slice7/run.sh` — `seed.sql` crafts the Phase 0 fixtures so all nineteen rules fire as of 2024-04-05): **`rules_run()`
 (`app/features/signals/write.php`) is the one runner** — the worker's `rules` pass (`si_rules_due()` and the 06:45 market-day run, db/024 `rule_runs`) and the

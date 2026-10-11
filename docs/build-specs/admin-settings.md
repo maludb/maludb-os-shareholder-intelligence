@@ -64,3 +64,11 @@ every admin POST (403); 375 and 1280; JSON mode.
 
 ## Open questions
 None.
+
+## Built ahead (2026-10-11, the planning model) — the credential door
+For Alpha Vantage's key (the owner: added later), `admin-source-credential` and `credential_set` are built: `html/admin/sources/credential.php` (GET the
+screen, POST the action — one file, as the Files list has it), `app/features/admin/{queries,write,present}.php` with `find_source()`, `credential_set()`
+and `present_source_credential()`, `app/views/admin/credential.php`, proven by `tests/phase3/slice6/alphavantage.php`. **Slice 10 extends these files**
+(adds the other functions beside them; keeps `credential_set`'s behaviour: one credential a source, a rotation replaces the ciphertext and stamps
+`rotated_at`, `credential.set|rotate` logged with `{source_id, kind, label, last4}`, and a source paused for want of a key — `settings.paused_for_key`,
+db/025 — resumes when the key arrives, logged `source.resume`). Its `tests/phase3/slice10/credentials.php` may re-prove the door through the sources screens.

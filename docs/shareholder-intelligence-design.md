@@ -918,7 +918,7 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 | D10 | **The free public record**: FINRA short interest with revisions as rows, daily short volume with the caveat, the SEC's fails, the three threshold lists; borrow typed until a licensed key; Form SHO and SLATE tables empty now | §6.5; slice 6 |
 | D11 | **Nineteen SQL rules with an evidence class on every signal**, one open per rule per security, a person's disposition with a reason; `signal_outcomes`; no composite score, no model | §6.6; `docs/build-specs/signals.md` |
 | D12 | **The reconciliation** as a dated row with a tolerance; untied is a data-defect signal first | §6.4 |
-| D13 | **Prices through a connector**: stooq keyless by default, Alpha Vantage and Polygon with a key, manual CSV | §6.5 |
+| D13 | **Prices through a connector**: stooq keyless by default, Alpha Vantage and Polygon with a key, manual CSV — **re-decided by the owner 2026-10-11: Alpha Vantage is the default (a key added later); stooq refuses machines** | §6.5; db/025 |
 | D14 | **Expert and Surveillance Analyst hired on install**; the Analyst 07:00 ET on market days, proposals only, the Friday pack as a draft | §5; `agents[]` |
 | D15 | **On request, not a default; the repository private** until the owner says | §12; the org |
 | D16 | **Ports 8192 / 8845 / 8846**, scratch 8901–8907; **the Spaces division** — the planning model builds K34, Phases 0–2, slice 1 and the exemplars (slice 2 the SPR, slice 3 the holders, slice 7 the signals); Sonnet 5.5 the remaining slices and Phases 4–5 | §14; `CLAUDE.md` |
@@ -928,6 +928,15 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 | (d) | **Holder PII exports: Analyst and above, every export logged with its row count**; a setting may tighten it to admin-only later | §3.3; `si_settings.pii_in_exports` |
 
 ## 16. State
+
+**2026-10-11, later still — ALPHA VANTAGE THE DEFAULT PRICE SOURCE (the owner: "Build capabilities for Vantage and we will add a key later"; D13
+re-decided).** db/025 names it the default, paused for want of a key (`settings.paused_for_key`), 25 requests a day, one each five seconds. **The credential
+door is built ahead of slice 10** (`/admin/sources/{id}/credential`, `credential_set`, `app/features/admin/`): the key sealed under SI_SECRETS_KEY, shown
+back as its label and last four, never logged; a person's (an agent is refused); its arrival resumes a source paused for want of it; the empty short-side
+chart shows an admin "Set the Alpha Vantage key". The connector speaks the free plan as the live host answers (checked 2026-10-11): `compact` (100
+trading days; `full` premium), the day's 25 requests counted per market day and the rest deferred — the pull ok, no back-off, nobody told — an unknown
+ticker skipped and named, a refused key blocked in the host's words; it sends the documented URL exactly, since the public `demo` key answers nothing
+else. Live with the demo key: IBM's 6,776 days read; Bitmine refused in the host's words. `tests/phase3/slice6/alphavantage.php` 26 checks.
 
 **2026-10-11, later — SLICE 7 BUILT: the signals, THE SECOND EXEMPLAR (`docs/build-specs/signals-rules.md` "Built").** The nineteen rules run by the
 worker after every change to a security's inputs and at 06:45 on market days (db/024: `rule_runs`, `si_rules_due()`), and on demand (`rules_run`); signals

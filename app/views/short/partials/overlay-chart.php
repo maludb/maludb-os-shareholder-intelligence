@@ -6,13 +6,14 @@
 $c = svg_short_overlay($ov['points'], $ov['events'], 'short-chart', $from, $to);
 $s = $c['scales'];
 $pulled = $sources['pulled'] ?? [];
-$paused = static fn (string $k): string => isset($pulled[$k]) && $pulled[$k]['paused_at'] !== null ? 'paused' : '';
 ?>
 <div class="card" id="short-chart">
     <div class="card-body">
         <?php if ($c['svg'] === ''): ?>
-            <div class="text-muted" id="short-chart-empty">No price is loaded for these days: the chart is drawn on the trading days of the price series. <?= $paused('prices_stooq') !== '' && empty($sources['prices']) ? 'stooq refuses machines; an admin sets an Alpha Vantage or Polygon key, or someone uploads a price file.' : '' ?>
-                <?= hx_link('/uploads/new?kind=prices_csv', 'Upload prices', 'btn btn-light btn-touch btn-sm ms-1', 'id="short-chart-upload-btn"') ?></div>
+            <div class="text-muted" id="short-chart-empty">No price is loaded for these days: the chart is drawn on the trading days of the price series. <?php $av = $pulled['prices_alphavantage'] ?? null; ?>
+                <?= $av !== null && !$av['has_key'] ? 'Prices come from Alpha Vantage once an admin sets its key — or from a price file uploaded.' : '' ?>
+                <?= hx_link('/uploads/new?kind=prices_csv', 'Upload prices', 'btn btn-light btn-touch btn-sm ms-1', 'id="short-chart-upload-btn"') ?>
+                <?= $av !== null && !$av['has_key'] && has_right('credentials.manage') ? hx_link('/admin/sources/' . (int) $av['id'] . '/credential', 'Set the Alpha Vantage key', 'btn btn-primary btn-touch btn-sm ms-1', 'id="short-chart-key-btn"') : '' ?></div>
         <?php else: ?>
             <div class="fs-12 fw-semibold mb-1">The close and the volume</div>
             <?= $c['svg'] ?>

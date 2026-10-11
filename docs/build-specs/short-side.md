@@ -102,3 +102,9 @@ None.
    live pulls 13. The schema proof's source counts follow db/023 (eighteen sources, fourteen due); Phase 2's HTMX placeholder check moved to `/signals`.
 8. **The one chart is one SVG of two panels on one date axis** (`svg_short_overlay()` in `app/si/svg.php`), each lower series on its own scale named in the
    legend; the window 180 days, 90 on a phone (the page asks once by its width). `app/features/short/screen.php` is the screens' prelude (as slice 5's).
+10. **Alpha Vantage became the default price source (the owner, 2026-10-11; db/025)** — paused until the admin sets its key through the credential door
+   built ahead of slice 10 (`/admin/sources/{id}/credential`; the key's arrival resumes the source). The connector counts the free plan's 25 requests a
+   market day (`settings.used`) and defers the rest (`settings.deferred`; the pull ok, no back-off), treats the host's "rate limit … per day" the same way,
+   skips an unknown ticker (`settings.unknown_tickers`), answers blocked on a refused key, and sends the documented URL exactly — the public `demo` key
+   answers only that (live: IBM's 6,776 days with `demo`; Bitmine refused in the host's words). `tests/phase3/slice6/alphavantage.php` 26 checks;
+   `run.sh live` runs the live pulls alone.

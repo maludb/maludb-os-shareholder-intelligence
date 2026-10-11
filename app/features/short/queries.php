@@ -92,7 +92,7 @@ function short_sources(PDO $pdo, int $security): array
         return $st->fetchColumn() ?: null;
     };
     $pulled = [];
-    foreach ($pdo->query("SELECT connector, last_ok_at, paused_at, paused_reason FROM sources WHERE connector IN ('finra_short_interest', 'finra_daily_short_volume', 'sec_ftd', 'threshold_nasdaq', 'threshold_nyse', 'threshold_otc', 'prices_stooq', 'prices_alphavantage', 'prices_polygon')")->fetchAll() as $r) {
+    foreach ($pdo->query("SELECT id, connector, last_ok_at, paused_at, paused_reason, credential_id IS NOT NULL AS has_key FROM sources WHERE connector IN ('finra_short_interest', 'finra_daily_short_volume', 'sec_ftd', 'threshold_nasdaq', 'threshold_nyse', 'threshold_otc', 'prices_stooq', 'prices_alphavantage', 'prices_polygon')")->fetchAll() as $r) {
         $pulled[$r['connector']] = $r;
     }
     return [

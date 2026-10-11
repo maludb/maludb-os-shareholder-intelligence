@@ -25,7 +25,8 @@ $real = ['edgar_submissions' => ['https://data.sec.gov/submissions/', 2], 'dtcc_
          'edgar_13f_dataset' => ['https://www.sec.gov/files/structureddata/data/form-13f-data-sets/', 1],
          'finra_short_interest' => ['https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest', 1], 'finra_daily_short_volume' => ['https://cdn.finra.org/equity/regsho/daily/', 1],
          'sec_ftd' => [null, 1], 'threshold_nasdaq' => ['https://www.nasdaqtrader.com/dynamic/symdir/regsho/', 1], 'threshold_nyse' => ['https://www.nyse.com/api/regulatory/threshold-securities/download', 1],
-         'threshold_otc' => ['https://api.finra.org/data/group/otcMarket/name/thresholdList', 1], 'prices_stooq' => ['https://stooq.com/q/d/l/', 1]];
+         'threshold_otc' => ['https://api.finra.org/data/group/otcMarket/name/thresholdList', 1], 'prices_stooq' => ['https://stooq.com/q/d/l/', 1],
+         'prices_alphavantage' => ['https://www.alphavantage.co/query', 0.2]];
 // slice 6: one file each — the newest market day's CNMS file, the newest fails half-month, the last market day's lists; stooq unpaused to show it refuses machines
 $pdo->exec("UPDATE sources SET settings = (settings - 'done' - 'backfilled') || '{\"backfill_days\": 1, \"markets\": [\"CNMS\"]}' WHERE connector = 'finra_daily_short_volume'");
 $pdo->exec("UPDATE sources SET settings = (settings - 'loaded' - 'backfilled' - 'listing_url') || '{\"backfill_halves\": 1}' WHERE connector = 'sec_ftd'");
@@ -42,6 +43,33 @@ foreach (array_slice($argv, 1) as $connector) {
     $pdo->prepare("UPDATE sources SET base_url = COALESCE(:u, base_url), rate_per_second = :r, settings = settings - 'tickers_url', backoff_until = NULL, consecutive_failures = 0 WHERE connector = :c")
         ->execute(['u' => $real[$connector][0], 'r' => $real[$connector][1], 'c' => $connector]);
     $src = si_source_by_connector($pdo, $connector);
+    if ($connector === 'prices_alphavantage') {
+        // Alpha Vantage's documented public key `demo` answers only IBM (found 2026-10-11): IBM's series read with it, and Bitmine's refused in the host's
+        // words — the two answers the connector must tell apart. The owner's own key is set later through the credential door.
+        require_once dirname(__DIR__, 2) . '/app/features/admin/write.php';
+        $pdo->exec("INSERT INTO issuers (name, cik, ticker) SELECT 'INTERNATIONAL BUSINESS MACHINES CORP', '0000051143', 'IBM' WHERE NOT EXISTS (SELECT 1 FROM issuers WHERE cik = '0000051143')");
+        $ibm = (int) one_value($pdo, "SELECT id FROM issuers WHERE cik = '0000051143'");
+        $pdo->exec("INSERT INTO securities (issuer_id, name, cusip, ticker, is_primary) SELECT $ibm, 'Common Stock', '459200101', 'IBM', true WHERE NOT EXISTS (SELECT 1 FROM securities WHERE cusip = '459200101')");
+        $pdo->beginTransaction();
+        credential_set($pdo, (int) $src['id'], ['kind' => 'api_key', 'label' => 'Alpha Vantage demo key', 'secret' => 'demo'], 1);
+        $pdo->commit();
+        $src = si_source_by_connector($pdo, $connector);
+        $t0 = microtime(true);
+        $r = si_run_source($pdo, $src, ['kind' => 'manual', 'issuer' => $ibm]);
+        $n = (int) one_value($pdo, "SELECT count(*) FROM prices p JOIN securities s ON s.id = p.security_id WHERE s.cusip = '459200101'");
+        $last = $pdo->query("SELECT p.trade_date, p.close FROM prices p JOIN securities s ON s.id = p.security_id WHERE s.cusip = '459200101' ORDER BY p.trade_date DESC LIMIT 1")->fetch();
+        $ok($r['status'] === 'ok' && $n >= 100, sprintf('prices_alphavantage live (the demo key, IBM): %s — %d days, the latest %s at %s; %.1f s%s', $r['status'], $n, $last['trade_date'] ?? '?', $last['close'] ?? '?', microtime(true) - $t0, $r['error'] ? ' — ' . $r['error'] : ''));
+        $bm = (int) (one_value($pdo, "SELECT id FROM issuers WHERE cik = '0001829311'") ?: 0);
+        if ($bm === 0) {
+            $pdo->exec("INSERT INTO issuers (name, cik) VALUES ('BITMINE IMMERSION TECHNOLOGIES, INC.', '0001829311')");
+            $bm = (int) one_value($pdo, "SELECT id FROM issuers WHERE cik = '0001829311'");
+            $pdo->exec("INSERT INTO securities (issuer_id, name, cusip, ticker, is_primary) VALUES ($bm, 'Common Stock', '09175A206', 'BMNR', true)");
+        }
+        $pdo->exec("UPDATE sources SET backoff_until = NULL, consecutive_failures = 0 WHERE connector = 'prices_alphavantage'");
+        $r = si_run_source($pdo, si_source_by_connector($pdo, $connector), ['kind' => 'manual', 'issuer' => $bm]);
+        $ok($r['status'] === 'blocked' && str_contains((string) $r['error'], 'demo purposes'), sprintf('  BMNR with the demo key: %s — "%s"', $r['status'], mb_substr((string) $r['error'], 0, 110)));
+        continue;
+    }
     $issuer = null;
     if ($connector !== 'dtcc_participants' && $connector !== 'edgar_13f_dataset') {
         $issuer = (int) (one_value($pdo, "SELECT id FROM issuers WHERE cik = '0001829311'") ?: 0);

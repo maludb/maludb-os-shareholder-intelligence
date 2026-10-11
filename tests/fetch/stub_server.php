@@ -169,8 +169,11 @@ if ($path === '/q/d/l/') {
     strtolower((string) ($_GET['s'] ?? '')) === 'smok.us' ? $send(200, (string) file_get_contents($fx . '/prices_stooq.csv'), 'text/csv') : $send(200, 'No data', 'text/plain');
 }
 if ($path === '/query') {
-    if (($_GET['apikey'] ?? '') !== 'SMOKE-AV-KEY') { $send(200, json_encode(['Error Message' => 'Invalid API call. Please retry or visit the documentation.']), 'application/json'); }
-    if (($_GET['outputsize'] ?? '') === 'full') { $send(200, json_encode(['Information' => 'Thank you for using Alpha Vantage! The outputsize=full parameter value is a premium feature.']), 'application/json'); }
+    // the answers' words as the live host gave them (2026-10-11): a missing or wrong key, the day's limit, full as premium, an unknown symbol
+    if (($_GET['apikey'] ?? '') !== 'SMOKE-AV-KEY') { $send(200, json_encode(['Error Message' => 'the parameter apikey is invalid or missing. Please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds.']), 'application/json'); }
+    if (in_array('av_limit', $variant, true)) { $send(200, json_encode(['Information' => 'We have detected your API key as SMOKE-AV-KEY and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.']), 'application/json'); }
+    if (($_GET['outputsize'] ?? '') === 'full') { $send(200, json_encode(['Information' => 'Thank you for using Alpha Vantage! The outputsize=full parameter value is a premium feature for the TIME_SERIES_DAILY endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium features']), 'application/json'); }
+    if (!in_array(strtoupper((string) ($_GET['symbol'] ?? '')), ['SMOK', 'IBM'], true)) { $send(200, json_encode(['Error Message' => 'Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY.']), 'application/json'); }
     $ts = [];
     foreach (array_reverse($bars()) as [$d, $o, $h, $l, $c, $v]) { $ts[$d] = ['1. open' => $o, '2. high' => $h, '3. low' => $l, '4. close' => $c, '5. volume' => $v]; }
     $send(200, json_encode(['Meta Data' => ['2. Symbol' => $_GET['symbol'] ?? ''], 'Time Series (Daily)' => $ts]), 'application/json');
