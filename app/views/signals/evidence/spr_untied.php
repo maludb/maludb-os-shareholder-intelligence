@@ -1,0 +1,3 @@
+<?php /** spr_untied: the reconciliation's two sides and the difference (no chart: the equation as rows). Data: ev, s */ ?>
+<?= evidence_table([["Cede & Co.'s registered position", sig_n($ev["cede_registered"] ?? null)], ["The SPR total", sig_n($ev["spr_total"] ?? null) . " (" . sig_d($ev["spr_date"] ?? null) . ")"], ["The difference", sig_n($ev["difference"] ?? null)]]) ?>
+<?php if (!empty($ev["reconciliation_id"])): ?><p class="fs-12 mt-2 mb-0"><?= hx_link("/reconciliation?security=" . (int) $s["security_id"], "The reconciliation", "fw-semibold", "id=\"signal-reconciliation-link\"") ?> — a data question before anything else.</p><?php endif; ?>

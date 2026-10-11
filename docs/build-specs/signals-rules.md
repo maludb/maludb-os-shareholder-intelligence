@@ -52,3 +52,34 @@ The proposals screen across kinds and the Analyst's dispatch turn (9); the pack 
 
 ## Open questions
 None.
+
+## Built (2026-10-11) — what the build found and decided within this spec
+1. **The worker's rules pass needs a memory of its runs**: db/024 adds `rule_runs` (one row a security: the last run, its day and counts, `daily_on` —
+   the market day whose 06:45 run covered it) and `si_rules_due(limit)` — the securities whose inputs changed since their last run (an upload finished,
+   tombstoned or overridden, short interest, volume, fails, a threshold listing or a list file read, prices, filings, 13D/G, 13F, Forms 4 and 144, borrow,
+   events, share counts, a dilution instrument, a reconciliation). The pass runs those as of today in market time, and from 06:45 on a market day every
+   security not yet run that day (a changed security's run after 06:45 IS its run of the day — no double refresh), then `si_signal_outcomes_update()`
+   (`outcomes.update`). A holiday, a weekend and the hours before 06:45 have no daily run. `rules_run()` (`app/features/signals/write.php`) is the one
+   runner for the worker and the action: `si_rules_run()`, then a `signal.raise|refresh|expire` row a signal (`{rule, severity, value, security_id}`),
+   the `rule_runs` row, and the members who asked told.
+2. **Who is told**: a high signal — the escalation member and the Analyst's dispatch (db/014's trigger, unchanged); a new signal — every member whose
+   preferences carry the kind `signal` at or below its severity (`signals_min_severity`, `issuer_ids`), through `si_notify()`, so never a member who may
+   not see the issuer (proven both ways); an escalation — every IR Manager (role `manager`) and the escalation member, kind `signal_high`, the note as its
+   body, never the one escalating.
+3. **The manifest's `signal_delete` lacked its reason** (the write's signature and signals.md §4 log one): the row gained `**reason**`, the registry rebuilt.
+   The approvals in step are **three**, not four: `signal_delete` (deletion), `rule_save` and `rule_override_save` (other).
+4. **"Not this"** is no action of its own (the manifest has none): it opens the disposition form (`/signals/{id}#signal-dispose`); the proposal stays on the
+   signal and the history calls it **not taken** when the person disposed otherwise (`proposal_fate()`: taken, not taken, waiting, lapsed with the signal).
+   The disposition's log row records the fate. An escalated signal is still a person's to acknowledge or dismiss; only an open one is escalated.
+5. **The explaining event** is one of the issuer's events from two weeks before the window to a week after it (or after the day raised) — the picker's
+   `event` source with `signal=` offers exactly these and the handlers refuse any other. The pickers gained `signal`, `rule` and `event`.
+6. **The status filter's default is `live`** — open and escalated, what still needs a person; the history defaults to every status of the last 90 days.
+   A rule's thresholds are its seeded keys only, each a number ≥ 0 (`params[key]` from the form, or a JSON object from an agent); an override emptied of
+   thresholds and switch is removed.
+7. **The proofs' fixtures** (`tests/phase3/slice7/seed.sql`, the Phase 0 fixtures and the anonymised register) raise all nineteen rules as of 2024-04-05:
+   seventeen on the SMOKE security (nine February one-day SPR files with the top five halved give `concentration_shift` its twenty position dates;
+   Schwab's NOBO broker rows halved between record dates give `nobo_drain`) and `spr_untied` and `price_volume_anomaly` on a second issuer. `spr_weekly.xlsx`
+   is not a DTC layout the detector reads; the fixture fortnight is uploaded as DTC's two weekly CSVs (`fortnight_csvs()`). The dilution instrument's page
+   now lists the signals that name it.
+8. **Tests**: `tests/phase3/slice7/run.sh` — rules 46, dispositions 32, proposals 19, outcomes 12, json 14, browser 79 — under php -S and Apache. Phase 2's
+   placeholder checks move to `/events` (slice 8's).

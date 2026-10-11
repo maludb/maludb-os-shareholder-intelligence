@@ -70,17 +70,17 @@ foreach ($ph as $id => [$url, $slice, $title]) {
     if (!(str_contains($b, 'id="' . $id . '-coming"') && str_contains($b, $title . ' is not built yet') && str_contains($b, $slice . ' builds this screen') && str_contains($b, '<title>' . $title . ' · Shareholder Intelligence</title>'))) { $bad[] = $url; }
 }
 ok($bad === [], 'every placeholder: the shell, the header and one card saying which slice builds it' . ($bad ? ' — wrong: ' . implode(', ', $bad) : ''));
-$r = page($jAdmin, '/signals', $json);
+$r = page($jAdmin, '/events', $json);
 ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') === 'not_built', 'a JSON caller on a placeholder: 501 not_built');
-$r = req('POST', '/signals', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
-ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 7.'), 'a POST to a placeholder: 501, in words');
+$r = req('POST', '/events', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
+ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 8.'), 'a POST to a placeholder: 501, in words');
 $since = last_activity_id();
-$r = page($jAdmin, '/signals', ['headers' => ['HX-Request: true']]);                  // slice 6 built /short; the signals are slice 7's
-ok($r['code'] === 200 && str_contains($r['body'], 'id="signals-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Signals(%20| )/mi', $r['headers']) === 1
-    && preg_match('/^X-Screen: signal-list\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: signals\r?$/mi', $r['headers']) === 1,
+$r = page($jAdmin, '/events', ['headers' => ['HX-Request: true']]);                  // slice 7 built /signals; the events are slice 8's
+ok($r['code'] === 200 && str_contains($r['body'], 'id="events-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Events(%20| )/mi', $r['headers']) === 1
+    && preg_match('/^X-Screen: event-list\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: events\r?$/mi', $r['headers']) === 1,
     'over HTMX a placeholder is the partial with HX-Title, X-Screen (the manifest\'s id) and X-Nav, so the highlight and the command bar follow');
 $v = activity('screen.view', $since);
-ok($v !== [] && end($v)['screen'] === 'signal-list', 'opening a placeholder logs screen.view under the manifest\'s screen id');
+ok($v !== [] && end($v)['screen'] === 'event-list', 'opening a placeholder logs screen.view under the manifest\'s screen id');
 $built = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true);
 $stubIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['stub'])));
 $builtIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['built'])));

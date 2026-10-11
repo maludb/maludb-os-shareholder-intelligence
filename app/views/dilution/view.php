@@ -1,4 +1,4 @@
-<?php /** One instrument (screen `dilution-view`). Data: d, notes, tz, back, notice */
+<?php /** One instrument (screen `dilution-view`). Data: d, notes, signals, tz, back, notice */
 $did = (int) $d['instrument_id'];
 $money = static fn ($v, string $c): string => $v === null ? '—' : ($c === 'USD' ? '$' : $c . ' ') . number_format((float) $v, 0);
 $human = (current_member()['member_kind'] ?? '') === 'human';
@@ -21,7 +21,11 @@ $human = (current_member()['member_kind'] ?? '') === 'human';
             <?php if ($d['notes']): ?><dt class="col-5 col-md-3 text-muted fw-normal">About</dt><dd class="col-7 col-md-9 text-break"><?= nl2br(e((string) $d['notes'])) ?></dd><?php endif; ?>
         </dl></div></div>
         <div class="card mb-3" id="dilution-notes"><div class="card-header"><h5 class="card-title mb-0">Notes</h5></div><div class="card-body"><?= view('shared/notes.php', ['kind' => 'dilution_instrument', 'record' => $did, 'notes' => $notes, 'here' => '/dilution/' . $did, 'tz' => $tz]) ?></div></div></div>
-        <div class="col-xl-4"><div class="card mb-3" id="dilution-signals"><div class="card-body fs-12 text-muted">The signals that name this instrument appear here once the rules run (slice 7).</div></div>
+        <div class="col-xl-4"><div class="card mb-3" id="dilution-signals"><div class="card-header"><h5 class="card-title mb-0">Signals</h5></div><div class="card-body fs-12">
+            <?php if ($signals === []): ?><div class="text-muted" id="dilution-signals-empty">No signal names this instrument. The rule <code>dilution_overlap</code> raises one when an active floating-price instrument meets an open short-side signal.</div>
+            <?php else: foreach ($signals as $g): ?><div class="mb-2" id="dilution-signal-<?= (int) $g['signal_id'] ?>"><span class="badge <?= e(['high' => 'bg-danger', 'watch' => 'bg-warning text-dark'][$g['severity']] ?? 'bg-info') ?>"><?= e((string) $g['severity']) ?></span>
+                <?= hx_link('/signals/' . (int) $g['signal_id'], e((string) $g['rule_name']), 'fw-semibold') ?> <span class="text-muted"><?= e(format_date((string) $g['raised_on'])) ?> · <?= e((string) $g['status']) ?></span></div><?php endforeach; endif; ?>
+        </div></div>
             <?php if (has_right('events.write')): ?><form method="post" action="/dilution/delete.php" hx-post="/dilution/delete.php" hx-target="#flash" hx-confirm="Delete this instrument? It is gone for good."><?= csrf_field() ?><input type="hidden" name="instrument" value="<?= $did ?>">
                 <button type="submit" class="btn btn-outline-danger btn-touch w-100" id="dilution-delete-btn">Delete</button></form><?php endif; ?></div>
     </div>

@@ -280,7 +280,7 @@ Actions (base `/signals/`):
 | `signal_escalate` | `escalate.php` | **signal**, note (to the IR Manager) | — | | | `signal.escalate` | signals.work | people | the signal |
 | `signal_propose` | `propose.php` | **signal**, **reason** (known or watching or explained_by_event or data_defect or false_positive or escalate), explaining_event, note (one sentence of why) | — | | | `signal.propose` | signals.work | yes | the signal |
 | `signal_note` | `note.php` | **signal**, **body** | — | | | `signal.note` | notes.write | yes | the signal |
-| `signal_delete` | `delete.php` | **signal** (a signal raised on data since corrected) | — | ✔ | deletion | `signal.delete` | rules.manage | yes | the signal |
+| `signal_delete` | `delete.php` | **signal** (a signal raised on data since corrected), **reason** (which data was corrected) | — | ✔ | deletion | `signal.delete` | rules.manage | yes | the signal |
 | `rules_run` | `run.php` | **security** (every enabled rule now), as_of (a date — today when omitted) | — | | | `rules.run` | signals.work | yes | the security |
 | `rule_save` | `/rules/save.php` | **rule**, params (the thresholds as an object), enabled (yes or no), severity_default (info or watch or high), window_days | restore prior | | other | `rule.save` | rules.manage | yes | the rule |
 | `rule_override_save` | `/rules/override.php` | **rule**, **issuer**, params (the issuer's thresholds), enabled (yes or no or blank for the rule's) | restore prior | | other | `rule.override` | rules.manage | yes | the rule |

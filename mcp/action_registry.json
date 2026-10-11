@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-10T23:51:47+00:00",
+    "generated_at": "2026-10-11T09:56:29+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -681,8 +681,8 @@
                 "security",
                 "class"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "signal-view": {
             "screen": "signal-view",
@@ -690,7 +690,7 @@
             "section": "SIGNALS — THE SECOND EXEMPLAR (slice 7)",
             "when": "one signal: the summary, the basis paragraph, the evidence rendered as rows and a chart of the window, the related events, the outcome prices; Acknowledge, Dismiss with a reason and the explaining event, Escalate; the Analyst's proposal with Take it",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "signal-history": {
@@ -704,7 +704,7 @@
                 "rule",
                 "status"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "rule-list": {
@@ -715,7 +715,7 @@
             "params": [
                 "class"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "rule-edit": {
@@ -726,7 +726,7 @@
             "params": [
                 "issuer"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "event-list": {
@@ -2619,7 +2619,7 @@
             "who": "signals.work",
             "agent": false,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "signal_dismiss": {
             "action": "signal_dismiss",
@@ -2658,7 +2658,7 @@
             "who": "signals.work",
             "agent": false,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "signal_escalate": {
             "action": "signal_escalate",
@@ -2685,7 +2685,7 @@
             "who": "signals.work",
             "agent": false,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "signal_propose": {
             "action": "signal_propose",
@@ -2724,7 +2724,7 @@
             "who": "signals.work",
             "agent": true,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "signal_note": {
             "action": "signal_note",
@@ -2751,7 +2751,7 @@
             "who": "notes.write",
             "agent": true,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "signal_delete": {
             "action": "signal_delete",
@@ -2763,6 +2763,12 @@
                     "required": true,
                     "repeated": false,
                     "hint": "a signal raised on data since corrected"
+                },
+                {
+                    "name": "reason",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "which data was corrected"
                 }
             ],
             "undo": null,
@@ -2772,7 +2778,7 @@
             "who": "rules.manage",
             "agent": true,
             "record_id": "the signal",
-            "built": false
+            "built": true
         },
         "rules_run": {
             "action": "rules_run",
@@ -2799,7 +2805,7 @@
             "who": "signals.work",
             "agent": true,
             "record_id": "the security",
-            "built": false
+            "built": true
         },
         "rule_save": {
             "action": "rule_save",
@@ -2844,7 +2850,7 @@
             "who": "rules.manage",
             "agent": true,
             "record_id": "the rule",
-            "built": false
+            "built": true
         },
         "rule_override_save": {
             "action": "rule_override_save",
@@ -2883,7 +2889,7 @@
             "who": "rules.manage",
             "agent": true,
             "record_id": "the rule",
-            "built": false
+            "built": true
         },
         "event_create": {
             "action": "event_create",

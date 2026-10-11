@@ -99,4 +99,10 @@ proofs' clock is 2024-04-04 23:30 New York with Good Friday a holiday): the conn
 (the securities a source serves: `si_tracked_securities()`; a connector's bookkeeping — files read, securities back-filled — in its source's settings); FINRA's
 dataset is `consolidatedShortInterest`; **the threshold calendar is `threshold_list_days`** (db/023 — never count list days on `threshold_listings`' dates);
 `sec_ftd` sends the SEC's declared user-agent; **stooq refuses machines and is paused** — prices are a keyed provider or an upload; a source's key is opened
-only in `app/si/fetch/credentials.php`. **Next: slice 7 (the signals, the second exemplar)**, then the Sonnet handoff.
+only in `app/si/fetch/credentials.php`. **SLICE 7 BUILT 2026-10-11, THE SECOND EXEMPLAR** (`docs/build-specs/signals-rules.md` "Built";
+`tests/phase3/slice7/run.sh` — `seed.sql` crafts the Phase 0 fixtures so all nineteen rules fire as of 2024-04-05): **`rules_run()`
+(`app/features/signals/write.php`) is the one runner** — the worker's `rules` pass (`si_rules_due()` and the 06:45 market-day run, db/024 `rule_runs`) and the
+action both call it; it logs `signal.raise|refresh|expire` a signal and tells the members who asked. A disposition is a person's (`require_human()`); an
+agent's door is `signal_propose`. The evidence partial is `app/views/signals/evidence/<key>.php` (reads only `signals.evidence`); the chart of a rule's window
+is `signal_chart()` in `app/features/signals/present.php`. **A new rule** = a migration (function + seed row + schema-proof case) + an evidence partial + a
+`signal_chart()` case. **Next: the Sonnet 5.5 handoff** — slices 8–11, one worker a slice, each verified here.

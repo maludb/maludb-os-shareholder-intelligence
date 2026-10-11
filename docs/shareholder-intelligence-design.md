@@ -929,6 +929,15 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-11, later — SLICE 7 BUILT: the signals, THE SECOND EXEMPLAR (`docs/build-specs/signals-rules.md` "Built").** The nineteen rules run by the
+worker after every change to a security's inputs and at 06:45 on market days (db/024: `rule_runs`, `si_rules_due()`), and on demand (`rules_run`); signals
+as cards by severity with the evidence-class chip and the basis; each signal's page with its evidence partial (nineteen, reading only what the rule wrote)
+and a chart of its window (fifteen rules have one), the events around it, the price after; dispositions by a person (acknowledge, dismiss with a reason and
+the explaining event chosen through the picker, escalate to the IR Managers), proposals by an agent taken in one click; notes; the history with the
+proposals taken and not taken; the rules' catalogue with each issuer's own thresholds and the outcomes by rule ("too few to say" under thirty); a
+manager's deletion with its reason. The manifest's `signal_delete` gained its `reason`. All nineteen rules fire on the proofs' fixtures. **Next:** the
+Sonnet 5.5 handoff — slices 8 (events, reports, the pack), 9 (agents, K7, the API), 10 (admin), 11.
+
 **2026-10-11 — SLICE 6 BUILT: the short side (`docs/build-specs/short-side.md` "Built").** FINRA's short interest from the Query API's
 `consolidatedShortInterest` (keyless; a revision a new row), FINRA's daily off-exchange short volume a file a market day (fractional volumes kept to the
 share; the caveat on every screen and answer), the SEC's fails from its half-month zips each checked against its own trailer, the three Reg SHO threshold

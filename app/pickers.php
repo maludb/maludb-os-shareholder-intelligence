@@ -10,8 +10,8 @@ declare(strict_types=1);
  * `search` reads the same view the feature's screens read (the walls in SQL), never a second rule; `label` names the chosen record.
  *
  * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
- * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument; slice 5 reporting_owner. Later: signal,
- * rule, event (7); report (8).
+ * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument; slice 5 reporting_owner; slice 7
+ * signal, rule and event (the explaining event, scoped to a signal's window). Later: report (8).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
 
@@ -118,5 +118,45 @@ return [
                FROM mcp_insider_transactions WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (reporting_owner_name ILIKE :q OR reporting_owner_cik ILIKE :q)
               GROUP BY reporting_owner_cik ORDER BY max(transaction_date) DESC NULLS LAST", $q, $page, ['iss' => $p['issuer'] ?? null]),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT max(reporting_owner_name) FROM mcp_insider_transactions WHERE reporting_owner_cik = lpad(CAST(:id AS text), 10, '0')", $id),
+    ],
+    // slice 7: a signal (of an issuer — `issuer` narrows it), a rule (the nineteen by key or name), an event (the explaining event: with `signal`, the
+    // issuer's events around that signal's window — the dismissal's and the proposal's candidates; else `issuer`'s events, the newest first)
+    'signal' => [
+        'title' => 'Signals', 'noun' => 'signal', 'roles' => ['signals.read'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT s.signal_id AS id, s.rule_name || ' — ' || to_char(s.raised_on, 'Mon FMDD, YYYY') AS label, left(s.summary, 120) AS detail, s.status AS badge
+               FROM mcp_signals s WHERE (CAST(:iss AS bigint) IS NULL OR s.issuer_id = CAST(:iss AS bigint)) AND (s.rule_name ILIKE :q OR s.rule_key ILIKE :q OR s.summary ILIKE :q)
+              ORDER BY CASE WHEN s.status IN ('open', 'escalated') THEN 0 ELSE 1 END, s.raised_on DESC, s.signal_id DESC", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT rule_name || ' — ' || to_char(raised_on, 'Mon FMDD, YYYY') FROM mcp_signals WHERE signal_id = :id", $id),
+    ],
+    'rule' => [
+        'title' => 'Signal rules', 'noun' => 'rule', 'roles' => ['signals.read'], 'params' => [],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT rule_id AS id, name AS label, key || ' · ' || replace(evidence_class, '_', ' ') AS detail, CASE WHEN NOT enabled THEN 'off' END AS badge
+               FROM mcp_signal_rules WHERE name ILIKE :q OR key ILIKE :q OR description ILIKE :q ORDER BY sort_order", $q, $page),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT name FROM mcp_signal_rules WHERE rule_id = :id', $id),
+    ],
+    'event' => [
+        'title' => 'Events', 'noun' => 'event', 'roles' => ['events.read'], 'params' => ['signal', 'issuer'],
+        'search' => static function (PDO $pdo, string $q, array $p, int $page): array {
+            $from = null; $to = null; $iss = $p['issuer'] ?? null; $sec = null;
+            if (($p['signal'] ?? null) !== null) {
+                $st = $pdo->prepare('SELECT issuer_id, security_id, window_from, window_to, raised_on FROM mcp_signals WHERE signal_id = :id');
+                $st->execute(['id' => (int) $p['signal']]);
+                $s = $st->fetch();
+                if ($s === false) {
+                    return ['rows' => [], 'total' => 0, 'page' => 1, 'page_size' => 20, 'pages' => 1];
+                }
+                $iss = (int) $s['issuer_id']; $sec = (int) $s['security_id'];
+                $to = (new DateTimeImmutable(max((string) $s['window_to'], (string) $s['raised_on'])))->modify('+7 days')->format('Y-m-d');
+                $from = (new DateTimeImmutable((string) $s['window_from']))->modify('-14 days')->format('Y-m-d');
+            }
+            return picker_page($pdo,
+                "SELECT event_id AS id, title AS label, to_char(on_date, 'Mon FMDD, YYYY') || ' · ' || replace(kind, '_', ' ') AS detail, CASE WHEN severity = 'high' THEN 'high' END AS badge
+                   FROM mcp_events WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (CAST(:sec AS bigint) IS NULL OR security_id IS NULL OR security_id = CAST(:sec2 AS bigint))
+                    AND (CAST(:f AS date) IS NULL OR on_date >= CAST(:f2 AS date)) AND (CAST(:t AS date) IS NULL OR on_date <= CAST(:t2 AS date)) AND (title ILIKE :q OR kind ILIKE :q)
+                  ORDER BY on_date DESC, event_id DESC", $q, $page, ['iss' => $iss, 'sec' => $sec, 'sec2' => $sec, 'f' => $from, 'f2' => $from, 't' => $to, 't2' => $to]);
+        },
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT title || ' (' || to_char(on_date, 'Mon FMDD, YYYY') || ')' FROM mcp_events WHERE event_id = :id", $id),
     ],
 ];

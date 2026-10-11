@@ -150,8 +150,60 @@ function worker_pass_reconciliation(PDO $pdo, int $limit, DateTimeImmutable $now
     }
     return $out;
 }
-/** SLICE 7 — si_rules_run() after every pull and upload: the enabled rules over their windows; one open signal per rule per security; expiries. */
-function worker_pass_rules(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['raised' => 0, 'expired' => 0, 'stub' => true]; }
+/**
+ * SLICE 7 — the rules (signals.md §3): rules_run() for every security whose inputs changed since its last run (si_rules_due: an upload tied or
+ * tombstoned, a pull that wrote short interest, volume, fails, a threshold list, prices, filings or ownership rows, a borrow observation, an event,
+ * a share count, a dilution instrument) as of today in market time; and once each MARKET day from 06:45 market time, every security (so the morning
+ * note at 07:00 reads today's signals and a signal past its window and grace expires), then the outcomes (si_signal_outcomes_update). A holiday has
+ * no 06:45 run. The members who asked are told of each new signal; a high one also notifies the escalation member and dispatches the Analyst (db/014).
+ */
+function worker_pass_rules(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/issuers/queries.php';
+    require_once dirname(__DIR__) . '/app/features/signals/queries.php';
+    require_once dirname(__DIR__) . '/app/features/signals/write.php';
+    $local = $now->setTimezone(si_market_tz($pdo));
+    $today = $local->format('Y-m-d');
+    $out = ['securities' => 0, 'raised' => 0, 'refreshed' => 0, 'expired' => 0, 'daily' => false, 'outcomes' => 0];
+    $run = static function (int $sid, bool $daily) use ($pdo, $today, &$out): void {
+        $pdo->beginTransaction();
+        try {
+            $r = rules_run($pdo, $sid, $today);
+            if ($daily) {
+                $pdo->prepare('UPDATE rule_runs SET daily_on = CAST(:d AS date) WHERE security_id = :s')->execute(['d' => $today, 's' => $sid]);
+            }
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+        $out['securities']++;
+        foreach (['raised', 'refreshed', 'expired'] as $k) { $out[$k] += $r[$k]; }
+    };
+    $morning = (int) $local->format('Hi') >= 645 && si_is_market_day_on($pdo, $now);
+    $st = $pdo->prepare('SELECT security_id FROM si_rules_due(:n)');
+    $st->execute(['n' => max(1, min(500, $limit))]);
+    $ranToday = 0;
+    foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $sid) {
+        $run((int) $sid, $morning);                                          // after 06:45 a changed security's run is also its run of the day
+        $ranToday += $morning ? 1 : 0;
+    }
+    if ($morning) {
+        $st = $pdo->prepare('SELECT s.id FROM securities s JOIN issuers i ON i.id = s.issuer_id LEFT JOIN rule_runs r ON r.security_id = s.id
+                              WHERE i.deleted_at IS NULL AND (r.daily_on IS NULL OR r.daily_on < CAST(:d AS date)) ORDER BY s.id LIMIT ' . max(1, min(500, $limit)));
+        $st->execute(['d' => $today]);
+        $due = $st->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($due as $sid) {
+            $run((int) $sid, true);
+        }
+        if ($due !== [] || $ranToday > 0) {
+            $out['daily'] = true;
+            $out['outcomes'] = (int) $pdo->query('SELECT si_signal_outcomes_update(' . max(1, min(2000, $limit * 5)) . ')')->fetchColumn();
+            log_activity($pdo, 'outcomes.update', null, null, ['source' => 'cron', 'actor_member_id' => null, 'after' => ['signals' => $out['outcomes'], 'on' => $today]]);
+        }
+    }
+    return $out;
+}
 /** SLICE 1 — si_search_catch_up(): every record whose index row is older than its change (a participant the directory renamed, a holder, an event). */
 function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array
 {

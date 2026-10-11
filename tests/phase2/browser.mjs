@@ -102,10 +102,10 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   ok(!(await page.isChecked('#prefs-field-morning')) && await page.isChecked('#prefs-field-sev-high') && (await page.inputValue('#prefs-field-hour')) === '6', 'and the morning note stayed off, high only, at 06:00');
   await page.click('#tab-signals');
   await page.waitForURL(BASE + '/signals');
-  await page.waitForSelector('#signals-coming');
-  ok((await page.title()).startsWith('Signals') && (await page.locator('#signals-coming').innerText()).includes('slice 7'), 'the Signals tab opens its placeholder (slice 7), title "' + (await page.title()) + '"');
+  await page.waitForSelector('#signal-list-content');
+  ok((await page.title()).startsWith('Signals'), 'the Signals tab opens the signals (slice 7), title "' + (await page.title()) + '"');
   ok(await page.evaluate(() => document.querySelector('#tab-signals').classList.contains('active') && document.getElementById('page-content').dataset.screen === 'signal-list'), 'the tab is highlighted and the screen stamped signal-list');
-  ok((await overflow(page)).sw === 375, 'no sideways scroll on the placeholder');
+  ok((await overflow(page)).sw === 375, 'no sideways scroll on the signals');
   await page.screenshot({ path: `${SHOTS}/phone-placeholder-signals.png` });
   for (const u of ['/activity', '/notifications', '/search', '/settings/tokens/']) {
     await page.goto(BASE + u, { waitUntil: 'networkidle' });

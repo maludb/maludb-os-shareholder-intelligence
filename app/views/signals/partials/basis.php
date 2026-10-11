@@ -1,0 +1,2 @@
+<?php /** The basis — the sentence of design §0.1 the rule rests on — under a signal's summary. Data: basis, class */ ?>
+<p class="fs-12 text-muted mb-0 mt-2 text-break" id="signal-basis"><i class="feather-book-open me-1"></i><span class="fw-semibold">The basis:</span> <?= e((string) $basis) ?><?php if (($class ?? '') === 'lore'): ?> <span class="fst-italic">No published study validates this rule.</span><?php endif; ?></p>
