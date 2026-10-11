@@ -927,7 +927,25 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 | (c) | **The first issuer is the company behind the reference files (CUSIP 07831X206)**; its ticker and CIK are looked up at setup | Phase 5 |
 | (d) | **Holder PII exports: Analyst and above, every export logged with its row count**; a setting may tighten it to admin-only later | §3.3; `si_settings.pii_in_exports` |
 
+
+**2026-10-11 — the owner's answers on slices 8 and 9** ("Agree with your recommendations"):
+- **`/proposals` stays open to a Viewer by URL** (the screens' right is `see`; the menu hides it from Viewers; a Viewer takes nothing — every Take it
+  needs `signals.work`, a holder proposal `holders.read`).
+- **An API key is never minted or rotated through the kernel's relay** — not by voice, not by an agent: a key shown to a model would sit in its context.
+- **The pack's "Send to…" keeps three single-record pickers**; the shared kit's record picker is not widened to a multi-select for it.
+- **A PDF for an approved pack when a renderer arrives later** (the planning model's call, the owner having no recommendation before him): the worker
+  makes the PDF from the pack's stored HTML — the approved content unchanged.
+- Alpha Vantage the default price source (D13, above); the key is the owner's to add.
 ## 16. State
+
+**2026-10-11, night — SLICE 9 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/agents-k7-api.md` "Built").** The proposals screen
+(signal dispositions, holder matches, holder kinds — each taken in one click), the agents admin screen (dispatches, cancel, the settings; db/026 adds
+the Analyst's issuers), the worker's dispatches (one chat turn as the agent, three attempts, never a refusal retried), outbox (MaluMail, K6 texts) and
+proposals passes, the Friday pack's dispatch on `pack_day`, the five K7 shares (a restricted issuer is not found; no natural person in any answer),
+the records API over the screens' own JSON and the forms' own handlers, API keys (only the hash kept, shown once, never minted through the relay).
+**The planning model's change at merge:** the worker let an admin mint a key for ANY person and receive it — an admin holding a key that writes in
+another's name; now only for a Viewer (who cannot mint and whose key only reads). **Open for the owner:** `/proposals` reachable by a Viewer by URL
+(the menu hides it); key minting impossible by voice. **Next:** slice 10, the admin — the last of Phase 3.
 
 **2026-10-11, evening — SLICE 8 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/events-reports.md` "Built").** Events (made by filings, threshold
 days and people; a tombstone and its restore), the month calendar with FINRA's publication days and the 13F deadlines computed, the packs (drafted, edited,

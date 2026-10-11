@@ -114,4 +114,8 @@ is `signal_chart()` in `app/features/signals/present.php`. **A new rule** = a mi
 "Built"; `tests/phase3/slice8/run.sh`): events, the calendar (FINRA's publication days and the 13F deadlines computed, not stored), packs rendered from the
 sections' own queries (HTML always, a PDF only when `SI_WKHTMLTOPDF` names a renderer — none is installed here), **`report_send` mails members a link, not
 an attachment** (MaluMail's send API takes none), exports built as the person who asked (the holders export behind `pii_in_exports`, a formula cell
-quoted).
+quoted). **SLICE 9 BUILT and merged 2026-10-11** (`docs/build-specs/agents-k7-api.md` "Built"; `tests/phase3/slice9/run.sh`; db/026 the Analyst's
+issuers): the proposals screen, the agents admin screen, the worker's `dispatches` (one chat turn as the agent, three attempts), `outbox` (MaluMail and K6
+texts) and `proposals` passes, the Friday pack's dispatch on `pack_day`, the five K7 shares through `share_call()`, **the records API** (`html/api/v1/`,
+`app/api/`) — each GET answers its screen's own JSON as the key's person, each POST runs the form's own handler; **API keys** (`sik_…`, only the
+sha256 kept, shown once, never minted through the kernel's relay so no model holds one; an admin mints for a Viewer only).
