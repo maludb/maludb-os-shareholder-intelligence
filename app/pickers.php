@@ -11,7 +11,7 @@ declare(strict_types=1);
  *
  * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
  * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument; slice 5 reporting_owner; slice 7
- * signal, rule and event (the explaining event, scoped to a signal's window). Later: report (8).
+ * signal, rule and event (the explaining event, scoped to a signal's window); slice 8 report.
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
 
@@ -158,5 +158,13 @@ return [
                   ORDER BY on_date DESC, event_id DESC", $q, $page, ['iss' => $iss, 'sec' => $sec, 'sec2' => $sec, 'f' => $from, 'f2' => $from, 't' => $to, 't2' => $to]);
         },
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT title || ' (' || to_char(on_date, 'Mon FMDD, YYYY') || ')' FROM mcp_events WHERE event_id = :id", $id),
+    ],
+    // slice 8: a pack (of an issuer — `issuer` narrows it; a draft only to the roles that run reports, as mcp_reports decides)
+    'report' => [
+        'title' => 'Packs', 'noun' => 'pack', 'roles' => ['reports.read', 'reports.run'], 'params' => ['issuer'],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT report_id AS id, title AS label, to_char(period_from, 'Mon FMDD, YYYY') || ' to ' || to_char(period_to, 'Mon FMDD, YYYY') AS detail, status AS badge
+               FROM mcp_reports WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (title ILIKE :q OR kind ILIKE :q) ORDER BY period_to DESC, report_id DESC", $q, $page, ['iss' => $p['issuer'] ?? null]),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT title FROM mcp_reports WHERE report_id = :id', $id),
     ],
 ];
