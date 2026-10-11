@@ -2,7 +2,8 @@
 declare(strict_types=1);
 /**
  * Action `template_save` (log `template.save`; settings.manage): **name**, **kind** (spr, nobo, register, prices_csv, holders_csv or share_range), connector, **mapping** (an object), template (to change an existing one).
- * The transfer agent's extract keeps naming the columns the application never stores. record_id = the template.
+ * The transfer agent's extract keeps naming the columns the application never stores; a `generic_mapped` template is checked as the parser will read it
+ * (kind spr, nobo or register: the kind's fields; any kind: no column whose name says it is a tax id, a birth date, a phone or an email). record_id = the template.
  */
 require_once dirname(__DIR__, 3) . '/app/bootstrap.php';
 require_once dirname(__DIR__, 3) . '/app/features/admin/queries.php';
@@ -26,7 +27,7 @@ if ($jsonError !== null) {
 } elseif ($mapping === null) {
     if ($cur === null) { $errors['mapping'] = 'Give the mapping as a JSON object.'; } else { $mapping = json_decode((string) $cur['mapping'], true) ?: []; }
 }
-if ($errors === [] && ($p = template_mapping_problem($mapping, $connector)) !== null) { $errors['mapping'] = $p; }
+if ($errors === [] && ($p = template_mapping_problem($mapping, $connector, $kind)) !== null) { $errors['mapping'] = $p; }
 if ($errors !== []) {
     si_refuse_fields($errors);
 }

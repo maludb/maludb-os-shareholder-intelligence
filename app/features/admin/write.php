@@ -218,8 +218,21 @@ function participant_class_set(PDO $pdo, int $participant, string $class): array
 }
 
 /** Why $mapping is not an import template's mapping, or null: an object of up to 20 KB; the transfer agent's extract keeps naming the columns never stored. */
-function template_mapping_problem(mixed $mapping, string $connector): ?string
+function template_mapping_problem(mixed $mapping, string $connector, ?string $kind = null): ?string
 {
+    if ($connector === 'generic_mapped' && $kind !== null) {          // a generic template is read as written: its fields, its columns, never a never-stored column
+        require_once dirname(__DIR__, 2) . '/si/parse/generic_mapped.php';
+        if (isset(SI_GENERIC_FIELDS[$kind]) && ($p = si_generic_mapping_problem($kind, $mapping)) !== null) {
+            return $p;
+        }
+        foreach (is_array($mapping['columns'] ?? null) ? $mapping['columns'] : [] as $ref) {   // a kind no reader reads yet is kept as written, but never names a never-stored column
+            foreach ((array) $ref as $r) {
+                if (is_string($r) && preg_match(SI_GENERIC_NEVER_MAPPED, $r)) {
+                    return 'The column "' . $r . '" holds what the application never stores (a tax id, a birth date, a phone, an email): it cannot be mapped.';
+                }
+            }
+        }
+    }
     if (!is_array($mapping) || $mapping === [] || array_is_list($mapping)) {
         return 'The mapping is a JSON object.';
     }
@@ -238,7 +251,8 @@ function template_mapping_problem(mixed $mapping, string $connector): ?string
 
 /**
  * Create ($id null) or change an import template: $f name, kind, connector, mapping (an array). Answers the template's id; logs `template.save` {template_id, name, kind, connector}.
- * Note what the parsers read of a mapping: today only the extract's drop_columns (at storing time); the layouts are the connectors' code (see admin-settings.md "Built").
+ * What the parsers read of a mapping: a `generic_mapped` template's whole mapping (app/si/parse/generic_mapped.php — checked here as it will be read); of a vendor
+ * connector's, only the extract's drop_columns (at storing time) — those layouts are the connectors' code (see admin-settings.md "Built").
  */
 function template_save(PDO $pdo, ?int $id, array $f, int $by): int
 {
@@ -246,7 +260,7 @@ function template_save(PDO $pdo, ?int $id, array $f, int $by): int
     if (!isset(TEMPLATE_KINDS[$f['kind']])) {
         throw new DomainException('The kind is one of ' . implode(', ', array_keys(TEMPLATE_KINDS)) . '.');
     }
-    if (($p = template_mapping_problem($f['mapping'], (string) $f['connector'])) !== null) {
+    if (($p = template_mapping_problem($f['mapping'], (string) $f['connector'], (string) $f['kind'])) !== null) {
         throw new DomainException($p);
     }
     $json = json_encode($f['mapping']);

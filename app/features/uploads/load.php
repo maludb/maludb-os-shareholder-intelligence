@@ -30,9 +30,13 @@ function upload_record_date(?string $fromFile, ?string $given, string $filename)
     return null;
 }
 
-/** The bytes the store keeps: a transfer agent's extract without its never-stored columns; a names export without its contact columns. */
-function upload_bytes_to_store(PDO $pdo, string $connector, string $bytes): string
+/** The bytes the store keeps: a transfer agent's extract without its never-stored columns; a names export without its contact columns; a generic file as its mapped columns only. */
+function upload_bytes_to_store(PDO $pdo, string $connector, string $bytes, ?array $mapping = null): string
 {
+    if ($connector === 'generic_mapped') {                             // only the mapped columns are kept (generic_mapped.php): what the template does not name never reaches the store
+        require_once dirname(__DIR__, 2) . '/si/parse/generic_mapped.php';
+        return si_generic_kept($bytes, $mapping ?? [], $mapping['record_date_given'] ?? null);
+    }
     if ($connector === 'ta_extract_csv') {
         $drop = json_decode((string) one_value($pdo, "SELECT mapping -> 'drop_columns' FROM import_templates WHERE connector = 'ta_extract_csv' ORDER BY id LIMIT 1"), true) ?: [];
         return si_strip_csv_columns($bytes, array_values(array_unique(array_merge(SI_NEVER_STORED_COLUMNS, array_map('strval', $drop)))));   // the template can add to the never-stored columns, never remove one

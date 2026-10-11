@@ -2,7 +2,7 @@
 # Slice 3's proofs (docs/build-specs/holders.md and holder-identity.md §6), EACH ON A FRESH SCRATCH DATABASE: tests/phase3/slice3/run.sh [proof…]
 #   SI_APP=apache tests/phase3/slice3/run.sh  serves the app from a real Apache with the rendered vhost.
 #   Servers: the app :8901, the fake kernel :8902, the fake MaluDB + MaluMail :8903, the public-record stub :8905 (tests/fetch/stub_server.php).
-#   Proofs: nobo register share_range real_layouts queue merge pii json browser (all by default), then the registry check.
+#   Proofs: nobo register share_range real_layouts generic queue merge pii json browser (all by default), then the registry check.
 #   The owner's real files carry natural persons: real_layouts prints counts only, and at the end the scratch database is DROPPED and the
 #   store emptied — nothing of a real person outlives the run.
 set -uo pipefail
@@ -36,7 +36,7 @@ fresh() {
   sudo -n -u postgres psql -q -v ON_ERROR_STOP=1 -d "$SI_DEV_DB" -c "UPDATE sources SET base_url = 'http://127.0.0.1:8905/submissions/', settings = settings || '{\"tickers_url\": \"http://127.0.0.1:8905/files/company_tickers_exchange.json\"}', rate_per_second = 10 WHERE connector = 'edgar_submissions'; UPDATE sources SET base_url = 'http://127.0.0.1:8905/support/dtc-directories', rate_per_second = 10 WHERE connector = 'dtcc_participants'; UPDATE si_settings SET business_name = 'Kinetic Seas', edgar_contact_email = NULL" || exit 1
 }
 status=0
-PROOFS=${*:-nobo register share_range real_layouts queue merge pii json browser}
+PROOFS=${*:-nobo register share_range real_layouts generic queue merge pii json browser}
 for p in $PROOFS; do
   fresh
   echo "== $p"

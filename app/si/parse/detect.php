@@ -19,6 +19,7 @@ const SI_CONNECTORS = [
     'ta_extract_csv'              => ['register', 3, 'ta_extract.php', 'si_parse_ta_extract_csv'],
     'stc_position_detail'         => ['register', 3, 'stc_position_detail.php', 'si_parse_stc_position_detail'],
     'prices_csv'                  => ['prices_csv', 6, 'prices_csv.php', 'si_parse_prices_csv'],
+    'generic_mapped'              => ['*', 3, 'generic_mapped.php', 'si_parse_generic_mapped'],   // the kind is the template's (spr, nobo, register)
 ];
 
 function si_detect_connector(string $bytes, string $filename): array
@@ -84,11 +85,11 @@ function si_detect_connector(string $bytes, string $filename): array
     if (str_contains($u, 'SPR ANALYSIS') || (str_contains($u, 'FIRM') && !preg_match('~(^|\n)\d{4},~', $text))) {
         return [null, 'This looks like a workbook made from SPRs (a firm per row, no DTC participant numbers). Upload DTC\'s own report — the CSV DTC sends.'];
     }
-    return [null, 'This is none of the files read here: DTC\'s Security Position Report (weekly or one-time), Broadridge\'s NOBO list or Share Range Analysis, or the transfer agent\'s register.'];
+    return [null, 'This is none of the files read here: DTC\'s Security Position Report (weekly or one-time), Broadridge\'s NOBO list or Share Range Analysis, or the transfer agent\'s register. Choose an import template for its layout (an administrator makes one under Admin → Import templates).'];
 }
 
-/** Run the connector's parser on the bytes (the slice that reads it must be built). */
-function si_parse_file(string $connector, string $bytes): array
+/** Run the connector's parser on the bytes (the slice that reads it must be built); a generic file is read by its upload's mapping (`imports.mapping`). */
+function si_parse_file(string $connector, string $bytes, ?array $mapping = null): array
 {
     $c = SI_CONNECTORS[$connector] ?? null;
     if ($c === null) {
@@ -98,5 +99,8 @@ function si_parse_file(string $connector, string $bytes): array
         throw new SiParseError('This kind of file is read from slice ' . $c[1] . ', which is not built yet.');
     }
     require_once __DIR__ . '/' . $c[2];
+    if ($connector === 'generic_mapped') {
+        return si_parse_generic_mapped($bytes, $mapping ?? [], $mapping['record_date_given'] ?? null) + ['connector' => $connector];
+    }
     return ($c[3])($bytes) + ['connector' => $connector, 'kind' => $c[0]];
 }

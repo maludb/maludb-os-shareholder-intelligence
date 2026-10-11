@@ -124,4 +124,6 @@ sha256 kept, shown once, never minted through the kernel's relay so no model hol
 (`SI_NEVER_STORED_COLUMNS` in `app/si/storage.php`). **A pack approved before a renderer existed gets its PDF late** from its stored HTML
 (`report_pdf_late()`, the worker's packs pass). **PHASE 3 COMPLETE 2026-10-11 — 84/84 screens, 83/83 actions, no placeholder left;** every
 suite green under php -S and Apache; pushed (main = a61ca40). **Next:** Phase 4 (the records and activity MCP servers) by a Sonnet 5.5 worker,
-and the `generic_mapped` connector (the person maps an unknown layout to a template — `docs/build-specs/position-reports.md`) by the planning model.
+**`generic_mapped` BUILT 2026-10-11** (`docs/build-specs/position-reports.md` §7): an import template the person picks reads a position report, a NOBO
+list or a register in any layout (`app/si/parse/generic_mapped.php`); **the store keeps only the mapped columns** as a canonical `#si-generic/1` CSV,
+and `SI_GENERIC_NEVER_MAPPED` refuses a tax id / birth date / phone / email column at save and at read.

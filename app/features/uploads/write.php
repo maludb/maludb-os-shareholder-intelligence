@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 
 require_once dirname(__DIR__, 2) . '/si/parse/detect.php';
+require_once dirname(__DIR__, 2) . '/si/parse/generic_mapped.php';
 require_once dirname(__DIR__, 2) . '/si/storage.php';
 require_once __DIR__ . '/load.php';
 
@@ -24,14 +25,34 @@ const UPLOAD_INLINE_BYTES = 5 * 1024 * 1024;
 function upload_create(PDO $pdo, array $f): array
 {
     $kind = (string) $f['kind'];
-    [$detected, $what] = si_detect_connector((string) $f['bytes'], (string) $f['filename']);
-    $connector = $f['connector'] ?: $detected;
+    $mapping = null;
+    $template = ($f['template'] ?? null) ? upload_template($pdo, (int) $f['template']) : null;
+    if ($template !== null) {                                          // the person's choice: a vendor template names its connector; a generic one maps the columns
+        [$detected, $what] = [$template['connector'], 'a file read by the template ' . $template['name']];
+        $connector = $template['connector'];
+        if ($connector === 'generic_mapped') {
+            $mapping = json_decode((string) $template['mapping'], true) + ['kind' => $template['kind'], 'template_id' => (int) $template['template_id'], 'template_name' => $template['name'],
+                'record_date_given' => upload_record_date(null, $f['record_date'] ?? null, (string) $f['filename'])];
+            if (($p = si_generic_mapping_problem((string) $template['kind'], $mapping)) !== null) {
+                throw new DomainException('The template ' . $template['name'] . ' cannot read a file: ' . $p);
+            }
+        }
+    } else {
+        [$detected, $what] = si_detect_connector((string) $f['bytes'], (string) $f['filename']);
+        $connector = $f['connector'] ?: $detected;
+        if ($connector === 'generic_mapped') {
+            throw new DomainException('A generic file is read by a template: choose the template for its layout.');
+        }
+    }
     if ($connector === null) {
         throw new DomainException($what);
     }
     $c = SI_CONNECTORS[$connector] ?? null;
     if ($c === null) {
         throw new DomainException('Unknown connector ' . $connector . '.');
+    }
+    if ($mapping !== null) {
+        $c[0] = $mapping['kind'];
     }
     if ($kind === '') {
         $kind = $c[0];                                                     // "detect from the file"
@@ -54,7 +75,7 @@ function upload_create(PDO $pdo, array $f): array
     $rd = $f['record_date'] ?? null;
     if (!$big) {
         try {
-            $parsed = si_parse_file($connector, (string) $f['bytes']);
+            $parsed = si_parse_file($connector, (string) $f['bytes'], $mapping);
         } catch (SiParseError $e) {
             throw new DomainException($e->getMessage());
         }
@@ -69,25 +90,44 @@ function upload_create(PDO $pdo, array $f): array
             }
         }
     }
-    $stored = si_store_bytes(upload_bytes_to_store($pdo, $connector, (string) $f['bytes']));
+    try {
+        $stored = si_store_bytes(upload_bytes_to_store($pdo, $connector, (string) $f['bytes'], $mapping));
+    } catch (SiParseError $e) {                                        // a generic file is kept as its mapped columns: a file the template cannot read is refused here
+        throw new DomainException($e->getMessage());
+    }
     $pdo->beginTransaction();
     try {
-        $st = $pdo->prepare('INSERT INTO imports (kind, file_name, status, created_by, issuer_id, security_id, connector, record_date, control_totals)
-                             VALUES (:k, :fn, \'queued\', :by, :i, :s, :c, :rd, CAST(:ct AS jsonb)) RETURNING id');
+        $st = $pdo->prepare('INSERT INTO imports (kind, file_name, status, created_by, issuer_id, security_id, connector, mapping, record_date, control_totals)
+                             VALUES (:k, :fn, \'queued\', :by, :i, :s, :c, CAST(:m AS jsonb), :rd, CAST(:ct AS jsonb)) RETURNING id');
         $st->execute(['k' => $kind, 'fn' => mb_substr((string) $f['filename'], 0, 200), 'by' => $f['by'], 'i' => (int) $f['security']['issuer_id'], 's' => (int) $f['security']['security_id'],
-                      'c' => $connector, 'rd' => $rd, 'ct' => json_encode(['original_sha256' => $sha])]);
+                      'c' => $connector, 'm' => $mapping === null ? null : json_encode($mapping), 'rd' => $rd, 'ct' => json_encode(['original_sha256' => $sha])]);
         $id = (int) $st->fetchColumn();
         $st = $pdo->prepare('INSERT INTO attachments (record_type, record_id, filename, mime_type, byte_size, sha256, storage_path, uploaded_by) VALUES (\'import\', :r, :fn, :m, :b, :h, :p, :by) RETURNING id');
         $st->execute(['r' => $id, 'fn' => mb_substr((string) $f['filename'], 0, 200), 'm' => (string) ($f['mime'] ?? 'application/octet-stream'), 'b' => $stored['bytes'], 'h' => $stored['sha256'], 'p' => $stored['path'], 'by' => $f['by']]);
         $pdo->prepare('UPDATE imports SET attachment_id = :a WHERE id = :i')->execute(['a' => (int) $st->fetchColumn(), 'i' => $id]);
         log_activity($pdo, 'upload.create', 'import', $id, ['issuer_id' => (int) $f['security']['issuer_id'], 'security_id' => (int) $f['security']['security_id'], 'import_id' => $id,
-            'after' => ['kind' => $kind, 'connector' => $connector, 'bytes' => $stored['bytes'], 'queued' => $big]]);
+            'after' => ['kind' => $kind, 'connector' => $connector, 'bytes' => $stored['bytes'], 'queued' => $big] + ($template === null ? [] : ['template_id' => (int) $template['template_id']])]);
         $pdo->commit();
     } catch (Throwable $e) {
         $pdo->rollBack();
         throw $e;
     }
     return ['import_id' => $id, 'queued' => $big, 'result' => $big ? null : upload_ingest($pdo, $id, (string) $f['bytes'], $parsed)];
+}
+
+/** An import template a person chose for a file (any member may read the templates: mcp_import_templates); refused in words when there is none. */
+function upload_template(PDO $pdo, int $id): array
+{
+    $st = $pdo->prepare('SELECT template_id, name, kind, connector, mapping FROM mcp_import_templates WHERE template_id = :id');
+    $st->execute(['id' => $id]);
+    $t = $st->fetch();
+    if ($t === false) {
+        throw new DomainException('There is no such import template.');
+    }
+    if (!isset(SI_CONNECTORS[$t['connector']])) {
+        throw new DomainException('The template ' . $t['name'] . ' names a connector this build does not read (' . $t['connector'] . ').');
+    }
+    return $t;
 }
 
 /** The file's CUSIP must be the security's (an SPR for the preferred uploaded against the common is refused, both named); a Share Range Analysis names six characters. */
@@ -134,7 +174,7 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
     $ids = ['issuer_id' => (int) $im['issuer_id'], 'security_id' => (int) $im['security_id'], 'import_id' => $id];
     try {
         $bytes ??= si_stored_bytes((string) $im['storage_path']);
-        $parsed ??= si_parse_file((string) $im['connector'], $bytes);
+        $parsed ??= si_parse_file((string) $im['connector'], $bytes, $im['mapping'] === null ? null : json_decode((string) $im['mapping'], true));
         upload_check_cusip($parsed['cusip'] ?? null, ['cusip' => $im['cusip'], 'name' => $im['security_name']], $parsed['cusip6'] ?? null);
         if ($im['kind'] !== 'spr') {
             $rd = upload_record_date($parsed['record_date'] ?? null, $im['record_date'], (string) $im['file_name']);

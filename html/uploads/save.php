@@ -3,7 +3,8 @@ declare(strict_types=1);
 /**
  * Action `upload_create` (log `upload.create`; uploads.write; PEOPLE — a file does not travel over the Actions MCP; the API's POST /api/v1/uploads
  * is a person's key): `kind` (spr, nobo, register or share_range; detected from the file when omitted), `security`, `file`, `connector` (detected
- * when omitted), `record_date` (a NOBO list's or a register's, when the file does not say it — the agent's extract, Broadridge's names export). The file's layout is detected, its CUSIP checked against the security's, the same file refused twice; it is kept
+ * when omitted), `record_date` (a NOBO list's or a register's, when the file does not say it — the agent's extract, Broadridge's names export), `template` (an import
+ * template for a file in a layout no connector names — `generic_mapped`: the template's kind, its columns; only the mapped columns are kept). The file's layout is detected, its CUSIP checked against the security's, the same file refused twice; it is kept
  * whole in the store and, at 5 MB or less, parsed and loaded in this request — larger files are queued for the worker. Lands on the upload.
  */
 require_once dirname(__DIR__, 2) . '/app/features/uploads/handler.php';
@@ -27,6 +28,10 @@ if ($sec === null) {
 $connector = (string) (req_val('connector') ?? '');
 if ($connector !== '' && !isset(SI_CONNECTORS[$connector])) {
     $errors['connector'] = 'Unknown connector: leave it blank to detect it from the file.';
+}
+$template = request_integer('template');
+if (req_val('template') !== null && req_val('template') !== '' && $template === null) {
+    $errors['template'] = 'Choose a template from the list.';
 }
 $recordDate = request_date('record_date');
 if ($recordDate === false) {
@@ -53,9 +58,9 @@ if ($errors !== []) {
 }
 $bytes = (string) file_get_contents((string) $file['tmp_name']);
 @unlink((string) $file['tmp_name']);
-$r = si_guard($pdo, static function () use ($pdo, $kind, $sec, $connector, $recordDate, $bytes, $file, $mime): array {
+$r = si_guard($pdo, static function () use ($pdo, $kind, $sec, $connector, $template, $recordDate, $bytes, $file, $mime): array {
     try {
-        return upload_create($pdo, ['kind' => $kind, 'security' => $sec, 'connector' => $connector ?: null, 'record_date' => $recordDate, 'bytes' => $bytes,
+        return upload_create($pdo, ['kind' => $kind, 'security' => $sec, 'connector' => $connector ?: null, 'template' => $template, 'record_date' => $recordDate, 'bytes' => $bytes,
             'filename' => basename((string) $file['name']), 'mime' => $mime, 'by' => (int) current_member_id()]);
     } catch (SiStoreError $e) {
         throw new DomainException($e->getMessage());

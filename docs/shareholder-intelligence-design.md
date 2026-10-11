@@ -938,6 +938,12 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 - Alpha Vantage the default price source (D13, above); the key is the owner's to add.
 ## 16. State
 
+**2026-10-11, late night — `generic_mapped` BUILT by the planning model (`docs/build-specs/position-reports.md` §7).** A file in a layout no
+connector names is read by an import template the person picks: a DTC position report, a NOBO list or a register, from CSV, XLSX or XLS,
+columns by header or letter, the total row as the control (else the rows' sum, said so), the date and the CUSIP from cells. **Only the mapped
+columns are kept** — the store holds a canonical copy of them, re-parsed as it is — and a column whose name says tax id, birth date, phone or
+email cannot be mapped (refused at save and at read). No migration. 29 checks; slices 2, 3, 10 and Phase 2 green under php -S and Apache.
+
 **2026-10-11, late night — SLICE 10 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/admin-settings.md` "Built") — PHASE 3 COMPLETE.**
 Sources (the list, a source's page, pause and resume, the credential door built ahead), participant classes, the pack's templates, settings, every
 token on the installation with revoke (db/027 `mcp_all_tokens`, `si_token_revoke_any`), the purge of tombstones past their days

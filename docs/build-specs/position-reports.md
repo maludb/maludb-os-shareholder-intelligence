@@ -98,3 +98,33 @@ transfer agent's Cede line of 2024-06-30 and `reconciliation_run` ties; the same
 the positions table, the matrix, the flow (with its caveat) and the concentration render from the loaded weeks at 375 and 1280; a Viewer sees
 the same positions; a TA extract upload leaves no tax id, date of birth, phone or email in the stored file, the rows or the log (grep of the
 storage directory and the database dump); JSON mode on every page and handler; the registry `--check`.
+
+## 7. Built late (2026-10-11) — `generic_mapped`, the template-read file
+Found after Phase 3 closed: §1.2's last branch ("else the person picks a template") was never built, so a file in a layout no connector
+names was refused. Built by the planning model:
+- **`app/si/parse/generic_mapped.php`** reads a DTC position report, a NOBO list or a register (`import_templates.kind` spr, nobo or
+  register) from a CSV, an XLSX or an old XLS by the template's mapping: `columns` {field → header text, a column letter, or a list joined —
+  a registration's lines by newlines, a holder's names by spaces, an address by commas}, `header_row` (found by the named columns when
+  omitted), `sheet`, `total_row` (the words a total row starts with: the control; else the rows' sum, said so in the tie note), `record_date_cell`,
+  `cusip_cell` (or a `cusip` column). The fields per kind are `SI_GENERIC_FIELDS`; the result is the shape each kind's loader already reads
+  (an SPR as the one-time report's, a NOBO list as the names export's — no Bank/Broker listing, so no OBO remainder —, a register as the
+  extract's), so the loaders, the tie, the matcher and the reconciliation are unchanged.
+- **Only the mapped columns are kept** (design §0.2b): the store holds a canonical CSV — `#si-generic/1` with what the file said of itself
+  (kind, CUSIP, record date, its total, the template's name), the field names, each row's mapped cells with the file's row number. A
+  re-parse (`upload_reparse`) and the worker's queued parse read that copy as it is; a column the template did not map is gone, so mapping
+  more of a file means uploading it again. **A column whose header says tax id, SSN, birth date, phone, email, passport or bank account
+  cannot be mapped** (`SI_GENERIC_NEVER_MAPPED`): refused when the template is saved (`template_save`) and again when a file is read. A generic
+  template of a kind no reader reads yet (prices, holders, share range) is kept as written — slice 10's contract — under the same floor, is
+  not offered by the picker and is refused at upload in words.
+- **The upload**: `upload_create` takes `template` (the manifest's parameter); a generic template sets the kind, the connector
+  `generic_mapped` and `imports.mapping` (the template's mapping, its id and name, the record date given or the file name's); a vendor
+  template sets its connector. A file nothing detects is refused with words saying to choose a template. The form has the record picker
+  `template` (generic templates only, for `uploads.write` or `settings.manage`); the upload page says "the import template …"; the template
+  form says what a generic mapping reads, the required fields marked.
+- **Proof**: `tests/phase3/slice3/generic.php`, 29 checks (in slice 3's run, crafted SMOKE files only; slices 2, 3 and 10 and Phase 2 re-run green under php -S and Apache): the save checks; a register in another layout
+  refused without a template and read with one — the record date from the file name, tied to its total row, Cede flagged, matched — with its
+  SSN, birth date and email columns in neither the kept copy, the rows' raw cells nor the log; a disagreeing total untied with both numbers
+  named; a re-parse to the same rows; a template slipped into the table around the save check refused when it reads; an SPR workbook by
+  column letters on a named sheet with the date and CUSIP in cells, and another CUSIP refused; a NOBO list with names in two columns; the
+  form, the picker and the template form. No migration (`imports.mapping`, `import_templates` and the connector were in the schema from
+  Phase 0). The owner's real files of other layouts become seeded templates when the owner provides one.

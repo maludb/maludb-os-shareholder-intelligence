@@ -11,7 +11,8 @@ declare(strict_types=1);
  *
  * The Phase 2 shell has `member` and `issuer` (sso-shell.md); slice 1 adds security, participant and tag; slice 3 holder — the PII roles only
  * (a Viewer is told "Holders are an Analyst's": `refusal`) — and institution; slice 4 filing and instrument; slice 5 reporting_owner; slice 7
- * signal, rule and event (the explaining event, scoped to a signal's window); slice 8 report.
+ * signal, rule and event (the explaining event, scoped to a signal's window); slice 8 report; the generic connector template (an import template a
+ * `generic_mapped` file is read by — position-reports.md §1.2).
  * A short enumeration (a kind, a status, a severity, a class) stays a <select>.
  */
 
@@ -166,5 +167,13 @@ return [
             "SELECT report_id AS id, title AS label, to_char(period_from, 'Mon FMDD, YYYY') || ' to ' || to_char(period_to, 'Mon FMDD, YYYY') AS detail, status AS badge
                FROM mcp_reports WHERE (CAST(:iss AS bigint) IS NULL OR issuer_id = CAST(:iss AS bigint)) AND (title ILIKE :q OR kind ILIKE :q) ORDER BY period_to DESC, report_id DESC", $q, $page, ['iss' => $p['issuer'] ?? null]),
         'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, 'SELECT title FROM mcp_reports WHERE report_id = :id', $id),
+    ],
+    // the upload form: the template a file in a layout no connector names is read by (generic_mapped only — a vendor layout is detected)
+    'template' => [
+        'title' => 'Import templates', 'noun' => 'template', 'roles' => ['uploads.write', 'settings.manage'], 'params' => [],
+        'search' => static fn (PDO $pdo, string $q, array $p, int $page): array => picker_page($pdo,
+            "SELECT template_id AS id, name AS label, CASE kind WHEN 'spr' THEN 'DTC position report' WHEN 'nobo' THEN 'NOBO list' WHEN 'register' THEN 'Register' ELSE kind END AS detail, NULL AS badge
+               FROM mcp_import_templates WHERE connector = 'generic_mapped' AND kind IN ('spr', 'nobo', 'register') AND name ILIKE :q ORDER BY name", $q, $page),
+        'label' => static fn (PDO $pdo, int $id): ?string => picker_one_label($pdo, "SELECT name FROM mcp_import_templates WHERE template_id = :id AND connector = 'generic_mapped'", $id),
     ],
 ];

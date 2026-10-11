@@ -1,4 +1,4 @@
-<?php /** Upload a file (screen `upload-add`): the kind, the security (the current issuer's), the file; the connector is detected. Data: issuer, securities, security, kind, max */ ?>
+<?php /** Upload a file (screen `upload-add`): the kind, the security (the current issuer's), the file; the connector is detected, or a template (generic_mapped) chosen. Data: issuer, securities, security, kind, max */ ?>
 <?= view('shared/header.php', ['id' => 'upload-form', 'title' => 'Upload a file', 'crumbs' => [['Home', '/'], ['Uploads', '/uploads'], ['Upload', null]], 'back' => ['/uploads', 'Uploads']]) ?>
 <div class="main-content" id="upload-form-content">
     <form method="post" action="/uploads/save.php" enctype="multipart/form-data" hx-post="/uploads/save.php" hx-encoding="multipart/form-data" hx-target="#flash" class="card" id="upload-form"
@@ -16,6 +16,9 @@
                 <?php if (count($securities) <= 1): ?><input type="hidden" name="security" value="<?= (int) ($security['security_id'] ?? 0) ?>"><div class="form-control-plaintext fw-semibold" id="upload-form-field-security"><?= e(($security['name'] ?? '—') . ' · ' . ($security['cusip'] ?? 'no CUSIP')) ?></div>
                 <?php else: ?><select class="form-select btn-touch" name="security" id="upload-form-field-security"><?php foreach ($securities as $s): ?><option value="<?= (int) $s['security_id'] ?>" <?= (int) $s['security_id'] === (int) ($security['security_id'] ?? 0) ? 'selected' : '' ?>><?= e($s['name'] . ' · ' . ($s['cusip'] ?? 'no CUSIP')) ?></option><?php endforeach; ?></select><?php endif; ?>
                 <div class="form-text">The file's CUSIP must be this security's.</div></div>
+            <div class="mb-3"><label class="form-label" id="upload-form-template-label" for="upload-form-field-template-open">Import template <span class="text-muted fw-normal">(for a layout not listed above)</span></label>
+                <?= picker_field(['id' => 'upload-form-field-template', 'name' => 'template', 'source' => 'template', 'labelledby' => 'upload-form-template-label', 'title' => 'Import templates', 'placeholder' => 'None — the layout names itself']) ?>
+                <div class="form-text">A template maps another agent's or another vendor's columns; only the columns it maps are kept. An administrator makes one under <?= has_right('settings.manage') ? '<a href="/admin/templates">Import templates</a>' : 'Import templates' ?>.</div></div>
             <div class="mb-3"><label class="form-label" for="upload-form-field-record_date">Record date <span class="text-muted fw-normal">(when the file does not say it)</span></label>
                 <input type="date" class="form-control btn-touch" name="record_date" id="upload-form-field-record_date">
                 <div class="form-text">The agent's extract and Broadridge's names export carry none; the file's name is read when it holds one (06-30-24).</div></div>

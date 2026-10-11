@@ -33,6 +33,12 @@ $locked = $t !== null && $t['connector'] === 'ta_extract_csv';
             <?php else: ?><div class="table-responsive"><table class="table mb-0 fs-12" id="template-sample-table"><thead class="thead-light"><tr><th>Field</th><th>Read from</th></tr></thead><tbody>
                 <?php foreach ($cols as $field => $col): ?><tr><td><?= e((string) $field) ?></td><td><code class="text-break"><?= e($cell($col)) ?></code></td></tr><?php endforeach; ?>
             </tbody></table></div><?php endif; ?>
+            <?php if (($t['connector'] ?? 'generic_mapped') === 'generic_mapped'): require_once dirname(__DIR__, 2) . '/si/parse/generic_mapped.php'; ?>
+            <div class="card-footer fs-12" id="template-generic-help"><div class="fw-semibold mb-1">A generic template</div>
+                <p class="mb-1">Reads a file in a layout no connector names: a DTC position report, a NOBO list or a register. <code>columns</code> maps each field to the column's header or its letter; a list of columns is joined. Only the mapped columns are kept; a column whose name says tax id, birth date, phone or email cannot be mapped.</p>
+                <?php foreach (SI_GENERIC_FIELDS as $gk => $gf): ?><div><span class="text-muted"><?= e(TEMPLATE_KINDS[$gk] ?? $gk) ?>:</span> <?= implode(', ', array_map(static fn ($f, $req) => $req ? '<strong>' . e($f) . '</strong>' : e($f), array_keys($gf), $gf)) ?></div><?php endforeach; ?>
+                <p class="mb-0 mt-1">Optional: <code>header_row</code>, <code>sheet</code>, <code>total_row</code> (the words the total row starts with), <code>record_date_cell</code>, <code>cusip_cell</code> (a cell such as B2).</p></div>
+            <?php endif; ?>
             <?php if (is_array($m) && is_array($m['drop_columns'] ?? null)): ?><div class="card-footer fs-12" id="template-sample-drop"><span class="text-muted">Never stored:</span> <?= e(implode(', ', array_map('strval', $m['drop_columns']))) ?></div><?php endif; ?></div>
             <?php if ($id !== null && !$locked): ?>
             <form method="post" action="/admin/templates/delete.php" hx-post="/admin/templates/delete.php" hx-target="#flash" hx-confirm="Delete the template <?= e($t['name']) ?>?" class="mt-3"><?= csrf_field() ?><input type="hidden" name="template" value="<?= $id ?>">
