@@ -211,8 +211,8 @@ console.log(`seeded: Alpha ${seed.alpha}, Beta ${seed.beta} (restricted to Dana)
   await page.screenshot({ path: `${SHOTS}/desktop-home.png`, fullPage: true });
   await page.click('#nav-admin .nxl-link');
   await page.waitForURL(BASE + '/admin/sources');
-  await page.waitForSelector('#admin-coming');
-  ok((await page.title()).startsWith('Sources and settings') && (await page.locator('#admin-coming').innerText()).includes('slice 10'), 'HTMX navigation: /admin/sources pushed, the placeholder names slice 10, title "' + (await page.title()) + '"');
+  await page.waitForSelector('#sources-table');
+  ok((await page.title()).startsWith('Sources and settings') && (await page.locator('#sources-table').count()) === 1, 'HTMX navigation: /admin/sources pushed, the real screen, title "' + (await page.title()) + '"');
   ok(await page.evaluate(() => document.querySelector('#nav-admin .nxl-link').classList.contains('active') && !document.querySelector('#nav-home .nxl-link').classList.contains('active')), 'the sidebar highlights the screen, not Home');
   await page.screenshot({ path: `${SHOTS}/desktop-placeholder-admin.png` });
   await page.fill('#header-search', 'short report');

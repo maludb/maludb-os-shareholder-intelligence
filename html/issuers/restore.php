@@ -16,4 +16,4 @@ $pdo->beginTransaction();
 issuer_delete($pdo, (int) $i['id'], true, (int) current_member_id());
 log_activity($pdo, 'issuer.restore', 'issuer', (int) $i['id'], ['issuer_id' => (int) $i['id'], 'after' => ['name' => $i['name']]]);
 $pdo->commit();
-si_done('Restored ' . $i['name'], (int) $i['id'], si_land('/issuers/' . (int) $i['id'], 'restored'), 'issuerChanged');
+si_done('Restored ' . $i['name'], (int) $i['id'], si_land(return_path('/issuers/' . (int) $i['id']), 'restored'), 'issuerChanged');

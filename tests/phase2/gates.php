@@ -1,7 +1,6 @@
 <?php
 /**
- * Proof: rights per role on the shell's screens and the seventeen placeholders (200 vs 403), the placeholders' behaviour (a page naming its
- * slice, 501 for JSON and for a POST, `stub` in the registry), the menu and the tab bar per role, no-session answers, THE ISSUER (the switcher
+ * Proof: rights per role on the shell's screens (200 vs 403), no placeholder left (no render_nav_stub, no `stub` in the registry), the menu and the tab bar per role, no-session answers, THE ISSUER (the switcher
  * lists only what the wall admits, ?issuer= switches and is logged, a restricted issuer is never chosen by someone off its list, the screen log
  * carries it), the home's JSON (the choice, the tiles' sources, the signals, the uploads), the search box's two walls, the person's own screens
  * and their five actions, the command bar through the kernel's chat endpoint with the issuer in its context, the action-token / run-token gate,
@@ -9,10 +8,6 @@
  * Run after the browser proof through tests/phase2/run.sh (the seed is idempotent).
  */
 require __DIR__ . '/lib.php';
-/** The manifest's screen id of each placeholder (app/features/shell/nav.php NAV_SCREENS). */
-const NAV_SCREENS_T = ['signals' => 'signal-list', 'positions' => 'positions', 'holders' => 'holder-list', 'ownership' => 'ownership-13f', 'filings' => 'filing-list',
-    'short' => 'short', 'events' => 'event-list', 'reports' => 'report-list', 'uploads' => 'upload-list', 'upload-add' => 'upload-add', 'issuers' => 'issuer-list',
-    'issuer-add' => 'issuer-add', 'participants' => 'participant-list', 'proposals' => 'proposals', 'calendar' => 'calendar', 'admin' => 'admin-sources', 'agents' => 'admin-agents'];
 $json = ['headers' => ['Accept: application/json']];
 $seed = seed_store();
 
@@ -45,50 +40,32 @@ foreach ($matrix as $route => $allowed) {
 }
 ok($wrong === [], "$n role × screen checks (" . count($matrix) . ' screens × 5 roles) answer 200 or 403 as the rights say' . ($wrong ? ': ' . implode('; ', array_slice($wrong, 0, 8)) : ''));
 $r = page($jManager, '/admin/sources');
-ok(str_contains($r['body'], 'You may not change the settings.') && str_contains($r['body'], 'id="message-text"'), 'a refusal says what the person may not do, in words ("You may not change the settings.")');
+ok(str_contains($r['body'], 'You may not manage the sources.') && str_contains($r['body'], 'id="message-text"'), 'a refusal says what the person may not do, in words ("You may not manage the sources.")');
 $r = page($jViewer, '/issuers/new');
 ok($r['code'] === 403 && str_contains($r['body'], 'You may not manage issuers and securities.'), 'a Viewer adding an issuer: 403 in words');
 ok(badge_of($jAdmin) === 'Super-admin' && badge_of($jManager) === 'IR Manager' && badge_of($jAnalyst) === 'Analyst' && badge_of($jBea) === 'Analyst' && badge_of($jViewer) === 'Viewer',
     'the header badge reads the highest role held: Super-admin, IR Manager, Analyst, Analyst (by capability), Viewer');
 
-echo "2. The placeholders — a page naming its slice, 501 for JSON and for a POST\n";
-// The shell's seventeen placeholders, less the ones a built slice has replaced (a slice's first step removes its render_nav_stub call).
-$stubFiles = array_filter(explode("\n", trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null'))));
-$stubNav = [];
-foreach ($stubFiles as $f) { if (preg_match("/render_nav_stub\('([a-z-]+)'/", (string) file_get_contents($f), $m)) { $stubNav[$m[1]] = true; } }
-ok(count($stubFiles) >= 1 && count($stubFiles) <= 17 && count($stubNav) === count($stubFiles), count($stubFiles) . ' controllers still call render_nav_stub (seventeen in the shell, fewer as slices land)');
-$ph = ['signals' => ['/signals', 'slice 7', 'Signals', 'signal-list'], 'positions' => ['/positions', 'slice 2', 'Positions', 'positions'], 'holders' => ['/holders', 'slice 3', 'Holders', 'holder-list'],
-       'ownership' => ['/ownership/13f', 'slice 5', 'Ownership', 'ownership-13f'], 'filings' => ['/filings', 'slice 4', 'Filings', 'filing-list'], 'short' => ['/short', 'slice 6', 'Short side', 'short'],
-       'events' => ['/events', 'slice 8', 'Events', 'event-list'], 'reports' => ['/reports', 'slice 8', 'Reports', 'report-list'], 'uploads' => ['/uploads', 'slice 2', 'Uploads', 'upload-list'],
-       'upload-add' => ['/uploads/new', 'slice 2', 'Upload a file', 'upload-add'], 'issuers' => ['/issuers', 'slice 1', 'Issuers', 'issuer-list'], 'issuer-add' => ['/issuers/new', 'slice 1', 'Add an issuer', 'issuer-add'],
-       'participants' => ['/participants', 'slice 1', 'Participants', 'participant-list'], 'proposals' => ['/proposals', 'slice 9', 'Proposals', 'proposals'], 'calendar' => ['/calendar', 'slice 8', 'Calendar', 'calendar'],
-       'admin' => ['/admin/sources', 'slice 10', 'Sources and settings', 'admin-sources'], 'agents' => ['/admin/agents', 'slice 9', 'Agents', 'admin-agents']];
-$ph = array_intersect_key($ph, $stubNav);
-$bad = [];
-foreach ($ph as $id => [$url, $slice, $title]) {
-    $b = page($jAdmin, $url)['body'];
-    if (!(str_contains($b, 'id="' . $id . '-coming"') && str_contains($b, $title . ' is not built yet') && str_contains($b, $slice . ' builds this screen') && str_contains($b, '<title>' . $title . ' · Shareholder Intelligence</title>'))) { $bad[] = $url; }
-}
-ok($bad === [], 'every placeholder: the shell, the header and one card saying which slice builds it' . ($bad ? ' — wrong: ' . implode(', ', $bad) : ''));
-$r = page($jAdmin, '/admin/sources', $json);
-ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') === 'not_built', 'a JSON caller on a placeholder: 501 not_built');
+echo "2. No placeholder is left (slice 10 built the last)\n";
+$stubFiles = array_filter(explode("\n", trim((string) shell_exec('grep -rlE "render_nav_stub\\(|render_module_stub\\(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' ' . escapeshellarg(dirname(__DIR__, 2) . '/app') . ' 2>/dev/null'))));
+ok($stubFiles === [], 'no controller or helper calls render_nav_stub: the helper is gone');
+$r = page($jAdmin, '/admin/sources');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="sources-table"') && !str_contains($r['body'], 'is not built yet'), '/admin/sources, the last placeholder, is the real screen');
 $r = req('POST', '/admin/sources', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
-ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 10.'), 'a POST to a placeholder: 501, in words');
+ok($r['code'] !== 501, 'a POST to a screen\'s URL is no longer "not built"');
 $since = last_activity_id();
-$r = page($jAdmin, '/admin/sources', ['headers' => ['HX-Request: true']]);                  // slice 9 built /proposals and /admin/agents; the sources' admin is slice 10's
-ok($r['code'] === 200 && str_contains($r['body'], 'id="admin-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Sources(%20| )and(%20| )settings(%20| )/mi', $r['headers']) === 1
+$r = page($jAdmin, '/admin/sources', ['headers' => ['HX-Request: true']]);
+ok($r['code'] === 200 && str_contains($r['body'], 'id="sources-table"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Sources(%20| )and(%20| )settings(%20| )/mi', $r['headers']) === 1
     && preg_match('/^X-Screen: admin-sources\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: admin\r?$/mi', $r['headers']) === 1,
-    'over HTMX a placeholder is the partial with HX-Title, X-Screen (the manifest\'s id) and X-Nav, so the highlight and the command bar follow');
+    'over HTMX a screen is the partial with HX-Title, X-Screen (the manifest\'s id) and X-Nav, so the highlight and the command bar follow');
 $v = activity('screen.view', $since);
-ok($v !== [] && end($v)['screen'] === 'admin-sources', 'opening a placeholder logs screen.view under the manifest\'s screen id');
+ok($v !== [] && end($v)['screen'] === 'admin-sources', 'opening a screen logs screen.view under the manifest\'s screen id');
 $built = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true);
 $stubIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['stub'])));
 $builtIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['built'])));
 $builtActions = array_keys(array_filter($built['actions'], static fn ($a) => !empty($a['built'])));
-$stubScreens = array_values(array_intersect_key(NAV_SCREENS_T, $stubNav));
-ok(array_intersect(['home', 'search', 'notifications', 'activity', 'settings', 'settings-tokens'], $builtIds) === ['home', 'search', 'notifications', 'activity', 'settings', 'settings-tokens']
-    && array_diff($stubScreens, $stubIds) === [] && array_intersect($stubIds, $builtIds) === [],
-    'the registry marks the shell\'s six screens built and every remaining placeholder a stub (never both), so the voice surface never offers an unbuilt screen');
+ok($stubIds === [] && count($builtIds) === count($built['screens']) && count($builtActions) === count($built['actions']),
+    'the registry marks no screen a stub and every screen and action built (' . count($builtIds) . ' screens, ' . count($builtActions) . ' actions), so the voice surface offers them all');
 ok(array_diff(['prefs_save', 'notification_read', 'notifications_read_all', 'token_mint', 'token_revoke'], $builtActions) === [], 'and the shell\'s five actions built');
 
 echo "3. The menu and the tab bar per role, and no session\n";

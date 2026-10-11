@@ -123,3 +123,18 @@ function si_unlink_named(string $rel): void
         @unlink(si_store_root() . '/' . $rel);
     }
 }
+
+/** The columns of a transfer agent's extract the application never stores (design §0.2b): stripped at the door whatever the template says, so editing the template can only add to them. */
+const SI_NEVER_STORED_COLUMNS = ['TAX-ID', 'TAX-ID 2', 'DATE OF BIRTH', 'PHONE NUMBER', 'EMAIL ADDRESS'];
+
+/** A kept file removed for good (the purge): an upload's content-addressed file or a rendered pack's or export's. Anything else is not touched. */
+function si_unlink_stored(string $rel): bool
+{
+    if (preg_match('~^uploads/[0-9a-f]{2}/[0-9a-f]{64}$~', $rel)) {
+        return @unlink(si_store_root() . '/' . $rel);
+    }
+    if (preg_match(SI_NAMED_PATH, $rel)) {
+        return @unlink(si_store_root() . '/' . $rel);
+    }
+    return false;
+}

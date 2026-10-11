@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-11T13:46:16+00:00",
+    "generated_at": "2026-10-11T15:43:53+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -870,8 +870,8 @@
             "params": [
                 "connector"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "admin-source-view": {
             "screen": "admin-source-view",
@@ -879,7 +879,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "one source: its settings, its credential (the label and last4 only), its pulls as a table with status, counts, bytes and the policy followed",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-source-edit": {
@@ -888,7 +888,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "to change a source's name, base URL, settings, schedule, rate, user-agent override, active",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-source-credential": {
@@ -908,7 +908,7 @@
             "params": [
                 "class"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-templates": {
@@ -917,7 +917,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "the import templates (the saved column mappings) by kind and connector",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-template-edit": {
@@ -928,7 +928,7 @@
             "params": [
                 "kind"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-settings": {
@@ -937,7 +937,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "the application settings: the business name and the EDGAR contact (the user-agent), the exchange, the market time zone and holidays, the EDGAR rate, the reconciliation tolerance, the auto-match threshold, PII in exports, the escalation member, the key rates, the upload ceiling, the price source",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-tokens": {
@@ -948,7 +948,7 @@
             "params": [
                 "member"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-purge": {
@@ -957,7 +957,7 @@
             "section": "Admin: sources, credentials, classes, templates, settings, tokens, purge (slice 10)",
             "when": "the tombstones waiting: uploads, holders, events, reports, issuers; restore or purge now",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         }
     },
@@ -3593,7 +3593,7 @@
             "who": "sources.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_schedule_set": {
             "action": "source_schedule_set",
@@ -3620,7 +3620,7 @@
             "who": "sources.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_pause": {
             "action": "source_pause",
@@ -3647,7 +3647,7 @@
             "who": "sources.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "source_resume": {
             "action": "source_resume",
@@ -3668,7 +3668,7 @@
             "who": "sources.manage",
             "agent": true,
             "record_id": "the source",
-            "built": false
+            "built": true
         },
         "credential_set": {
             "action": "credential_set",
@@ -3734,7 +3734,7 @@
             "who": "issuers.manage",
             "agent": true,
             "record_id": "the participant",
-            "built": false
+            "built": true
         },
         "template_save": {
             "action": "template_save",
@@ -3779,7 +3779,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the template",
-            "built": false
+            "built": true
         },
         "template_delete": {
             "action": "template_delete",
@@ -3800,7 +3800,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the template",
-            "built": false
+            "built": true
         },
         "settings_save": {
             "action": "settings_save",
@@ -3923,7 +3923,7 @@
             "who": "settings.manage",
             "agent": false,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "token_revoke_any": {
             "action": "token_revoke_any",
@@ -3944,7 +3944,7 @@
             "who": "tokens.manage",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "records_purge": {
             "action": "records_purge",
@@ -3971,7 +3971,7 @@
             "who": "records.purge",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         }
     }
 }

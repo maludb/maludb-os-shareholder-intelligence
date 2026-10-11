@@ -20,7 +20,9 @@ function si_market_tz(PDO $pdo): DateTimeZone
 
 function si_is_market_day_on(PDO $pdo, DateTimeImmutable $at): bool
 {
-    return (bool) one_value($pdo, 'SELECT si_is_market_day(CAST(:d AS date))', ['d' => $at->setTimezone(si_market_tz($pdo))->format('Y-m-d')]);
+    static $memo = [];                                              // per process: the admin's next-slot walk asks about the same days hundreds of times
+    $d = $at->setTimezone(si_market_tz($pdo))->format('Y-m-d');
+    return $memo[$d] ??= (bool) one_value($pdo, 'SELECT si_is_market_day(CAST(:d AS date))', ['d' => $d]);
 }
 
 /** Does the connector's calendar admit a scheduled run now? */

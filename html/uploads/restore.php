@@ -16,4 +16,4 @@ $pdo->commit();
 if ($u['period_to'] !== null) {
     reconciliation_after($pdo, (int) $u['security_id'], (string) $u['period_to'], 'after the restore of upload ' . (int) $u['import_id']);
 }
-si_done('Restored the upload', (int) $u['import_id'], si_land('/uploads/' . (int) $u['import_id'], 'restored'), 'uploadChanged');
+si_done('Restored the upload', (int) $u['import_id'], si_land(return_path('/uploads/' . (int) $u['import_id']), 'restored'), 'uploadChanged');

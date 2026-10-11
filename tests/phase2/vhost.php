@@ -23,7 +23,7 @@ ok(page($j, '/issuers/new')['code'] === 200 && page($j, '/uploads/new')['code'] 
 $refused = static fn (array $r): bool => $r['code'] === 404 && str_contains($r['body'], 'Refused · Shareholder Intelligence');      // the controller's own 404, not the router's
 ok($refused(page($j, '/issuers/99999/edit')) && $refused(page($j, '/issuers/99999')) && $refused(page($j, '/issuers/99999/securities')) && $refused(page($j, '/participants/99999')),
     '/issuers/{id}/edit, /issuers/{id}, /issuers/{id}/securities and /participants/{id} reach their controllers (slice 1): a missing record is the application\'s own 404');
-ok(page($j, '/admin/agents')['code'] === 200 && page($j, '/admin/sources')['code'] === 403, '/admin/agents and /admin/sources resolve (an IR Manager: Agents yes, Sources no — by the right)');
+ok(page($j, '/admin/agents')['code'] === 200 && page($j, '/admin/sources')['code'] === 403 && page($j, '/admin/sources/1')['code'] === 403 && page($j, '/admin/settings')['code'] === 403, '/admin/agents, /admin/sources, /admin/sources/{id} and /admin/settings resolve (an IR Manager: Agents yes, the rest 403 by the right)');
 ok(page($j, '/signals/1')['code'] === 404 && page($j, '/holders/1')['code'] === 404 && page($j, '/filings/1')['code'] === 404,
     '/signals/{id}, /holders/{id} and /filings/{id} are rewritten to view.php, which their slices build: 404 until then');
 ok(page($j, '/reports/99999')['code'] === 404 && page($j, '/events/99999')['code'] === 404, 'a missing record\'s page is 404 (their controllers, slice 8)');
