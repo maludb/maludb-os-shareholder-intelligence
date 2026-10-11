@@ -35,7 +35,7 @@ function upload_bytes_to_store(PDO $pdo, string $connector, string $bytes): stri
 {
     if ($connector === 'ta_extract_csv') {
         $drop = json_decode((string) one_value($pdo, "SELECT mapping -> 'drop_columns' FROM import_templates WHERE connector = 'ta_extract_csv' ORDER BY id LIMIT 1"), true) ?: [];
-        return si_strip_csv_columns($bytes, $drop);
+        return si_strip_csv_columns($bytes, array_values(array_unique(array_merge(SI_NEVER_STORED_COLUMNS, array_map('strval', $drop)))));   // the template can add to the never-stored columns, never remove one
     }
     if ($connector === 'broadridge_nobo_names_xlsx') {
         require_once dirname(__DIR__, 2) . '/si/parse/broadridge_nobo_names.php';

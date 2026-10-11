@@ -15,4 +15,4 @@ si_guard($pdo, static function () use ($pdo, $id): void {
     holder_delete($pdo, (int) $id, true);
     $pdo->commit();
 });
-si_done('Restored the holder', (int) $id, si_land('/holders/' . (int) $id, 'restored'), 'holderChanged');
+si_done('Restored the holder', (int) $id, si_land(return_path('/holders/' . (int) $id), 'restored'), 'holderChanged');

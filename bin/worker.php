@@ -15,8 +15,7 @@ declare(strict_types=1);
  * a pass selects by; honoured only when APP_ENV is not prod. Exits 1 when a pass failed.
  *
  * Each pass belongs to the slice whose data it touches (design §10): `uploads`, `reconciliation` slice 2's (and 3's); `matcher` slice 3's; `fetch` slices 1 (the directory), 4, 5 and 6's; `rules` slice 7's;
- * `search_catch_up` slice 1's; `packs`, `exports` slice 8's; `outbox`, `dispatches`, `proposals`, and the Friday dispatch in `packs`, slice 9's; the two left as stubs, `tombstones_purge` and
- * `key_usage_prune`, are slice 10's.
+ * `search_catch_up` slice 1's; `packs`, `exports` slice 8's; `outbox`, `dispatches`, `proposals`, and the Friday dispatch in `packs`, slice 9's; `tombstones_purge` and `key_usage_prune` slice 10's.
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
@@ -76,7 +75,7 @@ echo json_encode($report, JSON_UNESCAPED_SLASHES) . "\n";
 $pdo->query("SELECT pg_advisory_unlock(hashtext('shareholder_intelligence_worker'))");
 exit($report['errors'] === [] ? 0 : 1);
 
-// ---- the passes (stubs until their slice) ------------------------------------------------------------------------------------------
+// ---- the passes ------------------------------------------------------------------------------------------
 
 /**
  * SLICES 1, 4, 5, 6 — every active source whose schedule is due and whose connector this build has (si_fetchers()), on its calendar: one
@@ -293,7 +292,25 @@ function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): ar
     require_once dirname(__DIR__) . '/app/features/agents/write.php';
     return standing_proposals_run($pdo, $limit);
 }
-/** SLICE 10 — tombstoned uploads and records older than tombstone_days purged with their rows. */
-function worker_pass_tombstones_purge(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['purged' => 0, 'stub' => true]; }
+/**
+ * SLICE 10 — the tombstone window: an upload, holder, event, report or issuer deleted more than tombstone_days ago (Settings) is removed for good with its rows, and the kept file nothing else keeps is unlinked after the commit.
+ * Logs `records.purge` {kind, count} per kind (cron, no actor); a holder's name is never in it.
+ */
+function worker_pass_tombstones_purge(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/admin/write.php';
+    $pdo->beginTransaction();
+    try {
+        $r = records_purge($pdo, null, null, max(1, min(1000, $limit)));
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+    return ['purged' => $r['total'], 'files' => purge_remove_files($r['paths'])] + $r['by_kind'];
+}
 /** SLICE 10 — si_prune_key_usage(): minute buckets older than a day, day buckets older than 35 days. */
-function worker_pass_key_usage_prune(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pruned' => 0, 'stub' => true]; }
+function worker_pass_key_usage_prune(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    return ['pruned' => (int) $pdo->query('SELECT si_prune_key_usage()')->fetchColumn()];
+}

@@ -12,4 +12,4 @@ si_guard($pdo, static function () use ($pdo, $id): void {
     event_delete($pdo, $id, true);
     $pdo->commit();
 });
-si_done('Restored the event', $id, si_land('/events/' . $id, 'restored'), 'eventChanged');
+si_done('Restored the event', $id, si_land(return_path('/events/' . $id), 'restored'), 'eventChanged');
