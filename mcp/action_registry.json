@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-11T12:16:01+00:00",
+    "generated_at": "2026-10-11T12:32:35+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -850,8 +850,8 @@
                 "kind",
                 "issuer"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "admin-agents": {
             "screen": "admin-agents",
@@ -859,8 +859,8 @@
             "section": "Agents, proposals, notifications, K7 and the API (slice 9)",
             "when": "the agents with their last dispatch, the dispatches table with status and Cancel, the Analyst's settings (issuers, the hour, the pack's day, proposals on or off)",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "admin-sources": {
             "screen": "admin-sources",
@@ -3401,7 +3401,7 @@
             "who": "signals.work",
             "agent": true,
             "record_id": "the notification",
-            "built": false
+            "built": true
         },
         "dispatch_cancel": {
             "action": "dispatch_cancel",
@@ -3422,7 +3422,7 @@
             "who": "agents.settings",
             "agent": false,
             "record_id": "the dispatch",
-            "built": false
+            "built": true
         },
         "agents_settings_save": {
             "action": "agents_settings_save",
@@ -3473,7 +3473,7 @@
             "who": "agents.settings",
             "agent": false,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "key_mint": {
             "action": "key_mint",
@@ -3494,7 +3494,7 @@
             "who": "tokens.own",
             "agent": false,
             "record_id": "the key",
-            "built": false
+            "built": true
         },
         "key_rotate": {
             "action": "key_rotate",
@@ -3515,7 +3515,7 @@
             "who": "tokens.own",
             "agent": false,
             "record_id": "the key",
-            "built": false
+            "built": true
         },
         "key_revoke": {
             "action": "key_revoke",
@@ -3536,7 +3536,7 @@
             "who": "tokens.own or tokens.manage",
             "agent": false,
             "record_id": "the key",
-            "built": false
+            "built": true
         },
         "source_save": {
             "action": "source_save",

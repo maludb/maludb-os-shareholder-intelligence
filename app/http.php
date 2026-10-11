@@ -48,6 +48,7 @@ function json_error(string $code, string $message, int $status, array $extra = [
 
 function respond_screen(array $payload): never
 {
+    $GLOBALS['__screen_payload'] = $payload;                 // the records API counts the rows it answered (api.call) from what the screen reported
     json_response(['data' => $payload]);
 }
 
@@ -323,8 +324,8 @@ function verify_csrf(): void
     if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
         return;
     }
-    if (is_action_authed()) {
-        return;                     // the signed action token is the CSRF protection
+    if (is_action_authed() || !empty($GLOBALS['__api_token_authed'])) {
+        return;                     // the signed action token is the CSRF protection; so is a Bearer key (no cookie speaks for it)
     }
     $sent = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
     if (!hash_equals(csrf_token(), (string) $sent)) {

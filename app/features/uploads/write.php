@@ -177,6 +177,9 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
                 error_log('upload_ingest ' . $id . ' after the load: ' . $e->getMessage());
                 [$match, $rec] = [null, null];
             }
+            if ($tied && $im['kind'] !== 'prices_csv' && $im['kind'] !== 'share_range') {
+                upload_dispatch_done($pdo, $id);                           // the Surveillance Analyst is handed the follow-up (slice 9)
+            }
             return ['status' => 'done', 'tied' => $tied, 'tie_note' => $parsed['tie'][1], 'positions' => 0, 'rows' => $made, 'failed' => $failedRows, 'participants_new' => 0,
                     'period' => [$rd, $rd], 'record_date' => $rd, 'matcher' => $match, 'matching' => $tied && $match === null && !in_array($im['kind'], ['share_range', 'prices_csv'], true), 'reconciliation_id' => $rec];
         }
@@ -210,8 +213,22 @@ function upload_ingest(PDO $pdo, int $id, ?string $bytes = null, ?array $parsed 
         return ['status' => 'failed', 'tied' => null, 'tie_note' => $msg, 'positions' => 0, 'failed' => 0, 'participants_new' => 0, 'period' => [null, null], 'reconciliation_id' => null];
     }
     $rec = $tied ? reconciliation_after($pdo, (int) $im['security_id'], (string) $period['period_to'], 'after upload ' . $id) : null;
+    if ($tied) {
+        upload_dispatch_done($pdo, $id);                                   // the Surveillance Analyst is handed the follow-up (slice 9)
+    }
     return ['status' => 'done', 'tied' => $tied, 'tie_note' => $note, 'positions' => (int) $load['positions'], 'failed' => (int) $load['rows_failed'],
             'participants_new' => (int) $load['participants_new'], 'period' => [$period['period_from'], $period['period_to']], 'reconciliation_id' => $rec];
+}
+
+/** A tied upload hands the Surveillance Analyst one dispatch (agents/write.php dispatch_upload_done); a failure to is logged and never undoes the upload. */
+function upload_dispatch_done(PDO $pdo, int $import): void
+{
+    try {
+        require_once dirname(__DIR__) . '/agents/write.php';
+        dispatch_upload_done($pdo, $import);
+    } catch (Throwable $e) {
+        error_log('upload_ingest ' . $import . ' dispatch: ' . $e->getMessage());
+    }
 }
 
 /** A reconciliation run as of a date, logged (the worker, an upload, an override, a person's button). Answers its id. */

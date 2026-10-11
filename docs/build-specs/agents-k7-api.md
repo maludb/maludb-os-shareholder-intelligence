@@ -76,3 +76,54 @@ Viewer's key "Individual holder", a revoked key 401, the 61st call in a minute 4
 
 ## Open questions
 None.
+
+## Built (2026-10-11) — what the build found and decided within this spec
+1. **db/026 (additive) — the one thing the schema lacked.** The agents screen's "the Analyst's issuers (empty = all)" had no column: `si_settings.analyst_issuer_ids` (appended last to `mcp_settings`), `si_analyst_covers(issuer)`
+   (the one rule: empty covers every issuer) and `si_agents_settings_save()` — the screen's one write, the database checking the right (`agents.settings`, a person) and the shape (hour 0–23, day 1–7, issuers that exist,
+   an escalation member who is an admitted person). The dispatches pass cancels, with its reason, a dispatch for an issuer the Analyst does not cover; the Friday draft is made for the covered issuers alone.
+2. **The records API is the screens' own JSON, and a write is the form's own handler.** `GET /api/v1/<route>[/{id}]` includes the screen it mirrors (`issuers/index.php`, `holders/view.php`, `short/interest.php` …) after the key
+   has been resolved, so the answer is exactly `{data: …}` of that screen under that person's rights and both walls — there is no second query layer to drift; `POST /api/v1/{events|uploads|borrow-observations}` `require`s
+   `events/save.php`, `uploads/save.php`, `short/borrow/save.php` (a JSON body is read as the form fields; multipart works as it is). Three small kit changes make that possible and nothing else: `respond_screen()` remembers its
+   payload (the `api.call` row counts rows from it), `verify_csrf()` lets a Bearer key stand in (a key's call has no cookie to forge; a session POSTing to the API still needs its CSRF token), and `app/api/bootstrap.php`
+   forces `Accept: application/json` (a refusal is never an HTML page). `?issuer=` (id, ticker or CIK) names the issuer **without switching anything** (no `issuer.switch`, nothing in a session); a key that reaches several
+   issuers and names none is a 422 in words, a restricted issuer named by a key not on its list is a 404 — the same nothing as a missing one.
+3. **A Bearer key is what the call is.** The kit's `api_authenticate()` read a session first; a browser that held a session and sent a stale key would have been answered as the person. Now a presented Bearer wins (401 if it
+   is bad) and a call without one uses the session; a key's call leaves no session behind, and a browser session the call happened to carry is put back as it was (never destroyed). One `api.call` row a call, written at
+   shutdown: `{route (ids as {id}), method, status, rows, holders_rows?}` under the key's `token_id` and person, source `api` — **never the query string** (a name searched is a person's) and never the key. The 429 is logged too.
+4. **Keys** (`sik_` + 48 hex): minted on the Tokens screen, shown once (the session carries it across the redirect; a JSON caller on a session gets `key` in the answer), only the sha256 stored, the label in the log.
+   **Through the kernel's relay (an action token) `key_mint` and `key_rotate` are refused** ("shown once, to you, on the Tokens screen") — the registry makes them `people` actions, but a person's command-bar turn runs through the
+   actions server and the answer would have put a key in a model's context. `member` (tokens.manage) mints for another person — a Viewer's key is minted by an administrator, since `tokens.own` is the Analyst's and above.
+   At most ten live keys a person. Rotation is the owner's alone (an administrator would hold the new key: 403; another person 404), refused for a key already stopped, the old key working for
+   `key_rotation_overlap_hours` (24). **Revoking is the key's own person's whatever their role** (the spec's "own or `tokens.manage`" read as *their own key*, not the right `tokens.own`: a leaked Viewer key must be killable by the
+   Viewer), and `tokens.manage` revokes anyone's. A person no longer active here makes their key 401 (the database's `si_resolve_key`).
+5. **Dispatches**: the database makes the `signal` and `filing` dispatches (db/014); `upload_ingest` now makes `upload_done` after a tied SPR, NOBO list or register (`upload_dispatch_done`, a failure logged and never undoing the
+   upload) and the worker's `packs` pass makes `pack` on `pack_day` in market time, once an issuer a day, for the issuers the Analyst covers **and can see** (a restricted issuer's list must name it) with no weekly pack for the
+   week. One chat turn each on `agents/chat.php?agent=<id>`, `X-Acting-Member` = the dispatch's person, else **the agent itself** (the GL's pattern; the fake kernel and the real one both take it), `wait` 20, the conversation
+   `si-dispatch-<id>`. The words are built from the record as it is NOW (a signal disposed meanwhile cancels its dispatch, "The signal is dismissed already."). `answered` keeps 200 characters of the reply; a kernel `running`
+   keeps `sent` with the run id and is asked again (`GET ?run=`) on the next pass, failing after 15 minutes; `awaiting_approval` is left to the kernel; **409 (a busy agent) is a failed turn, not a refusal**; any other 4xx is `refused`
+   and never retried; three turns in all, the waits 5 and 15 minutes (`next_attempt_at`); at most 12 turns a pass. A cancel made while a turn ran stands. `agent.dispatch` (every turn), `agent.reply` (the reply's LENGTH),
+   `agent.fail`; neither the reply nor the prompt is in any log row.
+6. **The outbox**: the waits 1, 5 and 30 minutes after the first, second and third failure and the fourth failure final ("failed after three" read as three retries). MaluMail: a refused or suppressed address (400/422, or 200 with
+   the address not accepted) and a missing key are `skipped` with the reason — retrying them is pointless — a transport failure or 5xx is retried; the kernel (K6): its 422/503/404/403 (`opted_out`, `no_verified_phone`,
+   `no_sender`) are `skipped` with its code, a 5xx or no answer is retried. A member no longer active is skipped. The morning note has its own template (`emails/morning-note.php`), every other kind `emails/notification.php`;
+   the link is the record's screen. `outbox.sent|failed` carry the id, channel, kind and attempts — no address, phone or word.
+7. **Holder kinds**: the manifest has no action to accept or reject a kind proposal, so the proposals screen posts to `holder_kind_set` (`/holders/kind.php`): setting the kind an agent proposed now **accepts** that proposal
+   (before, every open proposal was closed `rejected`, even the one taken), any other open proposal is rejected, and `decision=reject` with the `proposal` refuses it (`holder_kind_reject`, log `holder.kind_reject`, the holder
+   unchanged, remembered: the worker never proposes that holder again). `proposal` must be open and the holder's. The worker's standing proposals (`standing_proposals_run`): an unknown-kind holder whose name ends in
+   LLC, Inc or Trust, entity type as db/008's own reading of a name (`trust`, else `corporation`), `proposed_by` NULL, only while the settings have the Analyst proposing and for the issuers it covers; a signal explained by an
+   event is **not** proposed by the worker (the agent proposes, the worker never disposes). Finding 9 of the holders slice (a trust is a person for the wall) is why the evidence says "a person decides".
+8. **The proposals screen is open to every role that can see an issuer** (the spec's "`see`"; holder proposals `pii` — the view gives a Viewer the signals alone, and no button). The menu still shows Proposals only to
+   `signals.work|matches.decide` (Phase 2's choice, kept: a Viewer reaches it by a link or the URL). Take it posts the matching disposition (`acknowledge`, `dismiss` or `escalate`) with the proposal's reason, event and note;
+   Not this opens the signal's own form. The ids: `proposal-{signal|match|kind}-{id}`, `proposal-take-{id}`, `proposal-accept-{match|kind}-{id}`, `proposal-reject-{match|kind}-{id}`.
+9. **K7**: `share_call()` is the proof's (and Phase 4's) door to db/018's five functions; it logs `share.read` {application = the consumer, tool, issuer_id, rows, error, ms} on the application's own connection (source
+   `application`, no actor) — the records role cannot write the trail — never the answer. Beta (restricted) is `not_found` by id, ticker and CIK from every share, and its filings' text too; an empty consumer is
+   `consumer_unknown`; every answer was searched for the fixture's people: none. The records role has no table (`permission denied` on `holders`), so the shares are its only door.
+10. **Smaller**: the Tokens screen lists API keys beside the MCP tokens (calls today, limits, last used, when it stops; the rotate and revoke buttons; phones show the calls under the label); `/admin/agents` shows the dispatches
+    as a table whose About cell wraps (a phone's Cancel button stays inside the card); `present_api_key()` is the key's whitelist (`app/api/present.php`); the registry marks 75 screens and 73 actions built, the installer's
+    plan clean; the placeholder `render_nav_stub` of `/proposals` and `/admin/agents` is gone (`NAV_SLICES` keeps the words for the registry).
+11. **Defects and gaps found, for the planning model**: (a) the manifest's `proposals` row also names "watch hits" among the proposals; `si_analyst_proposals()` (db/018) does not return them and the spec lists three kinds,
+    so the screen has three; (b) `si_analyst_proposals()` lists a signal's proposal only while the signal is `open` (an escalated signal's disappears from the screen, though the signal card still shows it); (c) the fake
+    MaluDB+MaluMail on :8903 (`tests/fake_maludb.php`) answers `/v1/send` without a `message_id`, so the proof cannot show MaluMail's reference kept; (d) an administrator cannot mint a key from the screen for another person
+    (only the handler's `member` field) — a "Keys" admin list is slice 10's `tokens.manage` surface if wanted.
+12. **Tests** (`tests/phase3/slice9/run.sh`, a fresh scratch database each): proposals 37, dispatch 38, outbox 29, shares 22, keys 35, api 63, json 21, browser 84 — under php -S and under Apache (the same counts).
+    Phase 2's placeholder checks move to `/admin/sources` (slice 10's), `/proposals` is open to every role in its role × screen matrix, and the unauthenticated records API is 401 (it was 404 until this slice).

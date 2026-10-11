@@ -24,7 +24,7 @@ $matrix = [
     '/' => $all, '/search' => $all, '/activity' => $all, '/notifications' => $all, '/settings/' => $all, '/settings/tokens/' => $all,
     '/signals' => $all, '/positions' => $all, '/holders' => $all, '/ownership/13f' => $all, '/filings' => $all, '/short' => $all, '/events' => $all,
     '/reports' => $all, '/uploads' => $all, '/issuers' => $all, '/participants' => $all, '/calendar' => $all,
-    '/proposals' => $workers, '/uploads/new' => $workers,
+    '/proposals' => $all, '/uploads/new' => $workers,          // /proposals: every role reads the proposals it may see (slice 9: a Viewer the signals alone)
     '/issuers/new' => 'admin manager', '/admin/agents' => 'admin manager', '/admin/sources' => 'admin',
 ];
 [$jAdmin, ] = sign_on(1);
@@ -70,17 +70,17 @@ foreach ($ph as $id => [$url, $slice, $title]) {
     if (!(str_contains($b, 'id="' . $id . '-coming"') && str_contains($b, $title . ' is not built yet') && str_contains($b, $slice . ' builds this screen') && str_contains($b, '<title>' . $title . ' · Shareholder Intelligence</title>'))) { $bad[] = $url; }
 }
 ok($bad === [], 'every placeholder: the shell, the header and one card saying which slice builds it' . ($bad ? ' — wrong: ' . implode(', ', $bad) : ''));
-$r = page($jAdmin, '/proposals', $json);
+$r = page($jAdmin, '/admin/sources', $json);
 ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') === 'not_built', 'a JSON caller on a placeholder: 501 not_built');
-$r = req('POST', '/proposals', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
-ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 9.'), 'a POST to a placeholder: 501, in words');
+$r = req('POST', '/admin/sources', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
+ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 10.'), 'a POST to a placeholder: 501, in words');
 $since = last_activity_id();
-$r = page($jAdmin, '/proposals', ['headers' => ['HX-Request: true']]);                  // slice 8 built /events; the proposals are slice 9's
-ok($r['code'] === 200 && str_contains($r['body'], 'id="proposals-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Proposals(%20| )/mi', $r['headers']) === 1
-    && preg_match('/^X-Screen: proposals\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: proposals\r?$/mi', $r['headers']) === 1,
+$r = page($jAdmin, '/admin/sources', ['headers' => ['HX-Request: true']]);                  // slice 9 built /proposals and /admin/agents; the sources' admin is slice 10's
+ok($r['code'] === 200 && str_contains($r['body'], 'id="admin-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Sources(%20| )and(%20| )settings(%20| )/mi', $r['headers']) === 1
+    && preg_match('/^X-Screen: admin-sources\r?$/mi', $r['headers']) === 1 && preg_match('/^X-Nav: admin\r?$/mi', $r['headers']) === 1,
     'over HTMX a placeholder is the partial with HX-Title, X-Screen (the manifest\'s id) and X-Nav, so the highlight and the command bar follow');
 $v = activity('screen.view', $since);
-ok($v !== [] && end($v)['screen'] === 'proposals', 'opening a placeholder logs screen.view under the manifest\'s screen id');
+ok($v !== [] && end($v)['screen'] === 'admin-sources', 'opening a placeholder logs screen.view under the manifest\'s screen id');
 $built = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/mcp/action_registry.json'), true);
 $stubIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['stub'])));
 $builtIds = array_keys(array_filter($built['screens'], static fn ($s) => !empty($s['built'])));
