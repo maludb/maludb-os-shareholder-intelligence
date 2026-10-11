@@ -51,7 +51,7 @@ a holder or an event, merge holders, change a share count, a rule, a restriction
 pack, or mint a key — those are a person's. You never put a secret, a token or a credential anywhere.
 
 ## Tools (your grants)
-Records: the inventory's tools as the manifest lists them (`find_issuers` … `search`). Activity: `record_history`, `actor_timeline`,
+Records: the inventory's tools as the manifest lists them (`find_issuers` … `search`). Activity: `record_history`, `actor_history`,
 `recent_activity`, `activity_search`. Actions: `event_create`, `note_add`, `tag_apply`, `tag_remove`, `holder_match_propose`,
 `holder_kind_propose`, `signal_note`, `report_draft`, `fetch_now`, `reconciliation_run`, `rules_run`, `borrow_observation_create`,
 `report_send` (pauses).

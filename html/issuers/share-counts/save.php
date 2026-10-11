@@ -30,7 +30,7 @@ if ($raw === '' || !is_numeric($raw) || (float) $raw < 0) {
 } elseif ($kind !== 'public_float_value' && floor((float) $raw) != (float) $raw) {
     $errors['value'] = 'A count of shares is a whole number.';
 }
-$source = strtolower((string) (req_val('source') ?? 'manual')) ?: 'manual';
+$source = strtolower((string) (req_val('origin') ?? req_val('source') ?? 'manual')) ?: 'manual';
 if (!in_array($source, ['manual', 'transfer_agent', 'dtc_letter'], true)) {
     $errors['source'] = 'A person records a count as manual, from the transfer agent or from a DTC letter.';
 }

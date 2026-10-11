@@ -123,7 +123,11 @@ sha256 kept, shown once, never minted through the kernel's relay so no model hol
 (`mcp_all_tokens`, `si_token_revoke_any`), the purge of tombstones due (`si_tombstones_purge_due`) and the never-stored columns' floor
 (`SI_NEVER_STORED_COLUMNS` in `app/si/storage.php`). **A pack approved before a renderer existed gets its PDF late** from its stored HTML
 (`report_pdf_late()`, the worker's packs pass). **PHASE 3 COMPLETE 2026-10-11 — 84/84 screens, 83/83 actions, no placeholder left;** every
-suite green under php -S and Apache; pushed (main = a61ca40). **Next:** Phase 4 (the records and activity MCP servers) by a Sonnet 5.5 worker,
+suite green under php -S and Apache; pushed (main = a61ca40). **PHASE 4 BUILT 2026-10-11 by a Sonnet 5.5 worker** (`docs/shareholder-intelligence-mcp-tool-surface.md` "Built"; `tests/phase4/run.sh` — run it under the shared lock; 444 checks under php -S, 447 under Apache, `SI_APP=apache`): `mcp/records_server.py` (95
+tools in `mcp/si_*.py`, each module a `register(mcp, q)`; the five shares KERNEL_ONLY, the consumer from `X-OS-Consumer`) and `mcp/activity_server.py` (7); the kit `mcp/db.py`, `mcp/server_common.py` is Inventory's. **A tool hands a SECURITY DEFINER function a
+security only after `security_row()` (→ `mcp_securities`) has shown it; a holder only through `holder_row()`.** db/028: `mcp_key_usage`, `mcp_spr_rows`, `mcp_signal_rule_overrides`, `si_log_mcp_read()` (the read servers' one write), and the records role's
+direct SELECT on `signals`, `signal_outcomes`, `signal_rule_overrides`, `search_index` revoked. The proofs' world is slice 9's store + slice 7's seed (run FIRST: it takes "the" 8-K) + `tests/phase4/world.sql`. **At merge** (the planning model): the kernel resolves every parameter named in a resolve entity, registry-wide — `share_count_save`'s and `borrow_observation_create`'s
+enum `source` became `origin` (the handlers read `origin`, then the forms' `source`) and `class` left the security entity's aliases; a `share.read` is the kernel's alone.
 **`generic_mapped` BUILT 2026-10-11** (`docs/build-specs/position-reports.md` §7): an import template the person picks reads a position report, a NOBO
 list or a register in any layout (`app/si/parse/generic_mapped.php`); **the store keeps only the mapped columns** as a canonical `#si-generic/1` CSV,
-and `SI_GENERIC_NEVER_MAPPED` refuses a tax id / birth date / phone / email column at save and at read.
+and `SI_GENERIC_NEVER_MAPPED` refuses a tax id / birth date / phone / email column at save and at read. **Next:** Phase 5, the owner's apply.

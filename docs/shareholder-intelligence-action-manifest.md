@@ -122,7 +122,7 @@ Actions (base `/issuers/`):
 | `issuer_edgar_sync` | `edgar-sync.php` | **issuer** (the submissions JSON now: the entity and the index) | — | | | `issuer.edgar_sync` | issuers.manage | yes | the issuer |
 | `security_save` | `securities/save.php` | **issuer**, **name**, class (common or preferred or warrant or unit or note or other), cusip (nine characters), isin, ticker, figi, par_value, is_primary (yes or no), listed_on, delisted_on, security (to change an existing one) | restore prior | | other | `security.save` | issuers.manage | yes | the security |
 | `security_delete` | `securities/delete.php` | **security** (with its positions and series) | — | ✔ | deletion | `security.delete` | issuers.manage | yes | the security |
-| `share_count_save` | `share-counts/save.php` | **security**, **as_of** (a date), **kind** (outstanding or float or authorized or restricted or unrestricted or treasury or cede or drs or certificated or plan or public_float_value), **value**, source (manual or transfer_agent or dtc_letter), note | share_count_delete | | other | `share_count.save` | issuers.manage | yes | the share count |
+| `share_count_save` | `share-counts/save.php` | **security**, **as_of** (a date), **kind** (outstanding or float or authorized or restricted or unrestricted or treasury or cede or drs or certificated or plan or public_float_value), **value**, origin (manual or transfer_agent or dtc_letter), note | share_count_delete | | other | `share_count.save` | issuers.manage | yes | the share count |
 | `share_count_delete` | `share-counts/delete.php` | **share_count** | — | ✔ | deletion | `share_count.delete` | issuers.manage | yes | the share count |
 | `restriction_save` | `access/save.php` | **issuer**, members[] (the whole list — empty lifts the restriction) | restore prior | ✔ | other | `restriction.save` | restrictions.manage | yes | the issuer |
 | `participant_update` | `/participants/save.php` | **participant**, class (retail or clearing_retail or prime or market_maker or lending or transfer_agent or bank_custodian or other), notes, tags[] | restore prior | | | `participant.update` | issuers.manage | yes | the participant |
@@ -256,7 +256,7 @@ Actions (base `/short/`):
 
 | Action | File | Params | Undo | Confirm | Agent approval | Log | Who | Agent | record_id |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `borrow_observation_create` | `borrow/save.php` | **security**, **observed_on** (a date), source (broker_quote or manual), fee_rate_percent, utilization_percent, shares_on_loan, shares_available, note | borrow_observation_delete | | | `borrow.record` | borrow.write | yes | the observation |
+| `borrow_observation_create` | `borrow/save.php` | **security**, **observed_on** (a date), origin (broker_quote or manual), fee_rate_percent, utilization_percent, shares_on_loan, shares_available, note | borrow_observation_delete | | | `borrow.record` | borrow.write | yes | the observation |
 | `borrow_observation_delete` | `borrow/delete.php` | **observation** | — | ✔ | deletion | `borrow.delete` | borrow.write | yes | the observation |
 
 ## SIGNALS — THE SECOND EXEMPLAR (slice 7)

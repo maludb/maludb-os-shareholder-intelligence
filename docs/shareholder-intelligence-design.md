@@ -938,6 +938,17 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 - Alpha Vantage the default price source (D13, above); the key is the owner's to add.
 ## 16. State
 
+**2026-10-11, night — PHASE 4 BUILT by a Sonnet 5.5 worker (`phase4-mcp`; `docs/shareholder-intelligence-mcp-tool-surface.md` "Built").** The records MCP server (95 tools: 88 for the questions, `app_roles`, `records_search`, the five
+K7 shares — the kernel's alone) and the activity MCP server (7 tools), on Inventory's kit with K26's headers. Every SECURITY DEFINER read function is handed a security only after `mcp_securities` has shown it; the PII wall is the views'
+(a Viewer's person is "Individual holder", the raw rows and the queue answer `pii_withheld`). **db/028** (the one migration): `mcp_key_usage`, `mcp_spr_rows`, `mcp_signal_rule_overrides`, `si_log_mcp_read()` (the share log and the
+`records_search` log — the read role writes nothing else), and **a hole closed**: the records role held SELECT on the base tables `signals`, `signal_outcomes`, `signal_rule_overrides` and `search_index` (db/013, db/015), which have no wall;
+revoked. Proofs `tests/phase4/run.sh` — world 8, gate 69, wall 44, reads 140, shares 35, activity 31, registry 91 (the registry loaded and driven through the kernel's own `application_actions`), coverage 26 = 444 under php -S, 447
+under Apache; a sweep of every tool as a Viewer against 1,013 natural-person names and street lines finds none. **Found, and fixed at merge by the planning model:** the kernel resolves every parameter named in a resolve entity across the whole registry, so
+`share_count_save`'s and `borrow_observation_create`'s `source` (manual, broker_quote …) was looked up as a fetcher and `class` (retail, common) as a
+security — the manifest now names the two enums `origin` (the handlers read `origin`, then the forms' `source`) and `class` left the security entity's
+aliases, proven through the kernel's tool (registry 91); `si_log_mcp_read()` writes a `share.read` only with no member (the kernel's token). Also
+`os/expert.md` named a tool `actor_timeline` that is `actor_history` (fixed). The installer's plan reads clean (49 steps). **Next:** Phase 5, the owner's apply.
+
 **2026-10-11, late night — `generic_mapped` BUILT by the planning model (`docs/build-specs/position-reports.md` §7).** A file in a layout no
 connector names is read by an import template the person picks: a DTC position report, a NOBO list or a register, from CSV, XLSX or XLS,
 columns by header or letter, the total row as the control (else the rows' sum, said so), the date and the CUSIP from cells. **Only the mapped

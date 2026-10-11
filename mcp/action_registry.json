@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/shareholder-intelligence-action-manifest.md",
-    "generated_at": "2026-10-11T15:43:53+00:00",
+    "generated_at": "2026-10-11T18:16:04+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -1396,7 +1396,7 @@
                     "hint": ""
                 },
                 {
-                    "name": "source",
+                    "name": "origin",
                     "required": false,
                     "repeated": false,
                     "hint": "manual or transfer_agent or dtc_letter"
@@ -2522,7 +2522,7 @@
                     "hint": "a date"
                 },
                 {
-                    "name": "source",
+                    "name": "origin",
                     "required": false,
                     "repeated": false,
                     "hint": "broker_quote or manual"

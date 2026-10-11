@@ -6,6 +6,17 @@ if ($path === '/v1/episodes' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     file_put_contents((string) getenv('FAKE_MALUDB_LOG'), file_get_contents('php://input') . "\n", FILE_APPEND);
     http_response_code(201); header('Content-Type: application/json'); echo '{"id":1}'; exit;
 }
+if ($path === '/v1/episodes' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+    // The episodes the ingest shipped (Phase 4's record_episodes reads them): one per logged body, oldest first, as MaluDB's list answers {"episodes": [...]} (kind=activity; limit/offset honoured, the time filters ignored).
+    if (($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer ' . getenv('MALUDB_API_TOKEN')) { http_response_code(401); exit; }
+    $eps = [];
+    foreach (array_filter(explode("\n", (string) @file_get_contents((string) getenv('FAKE_MALUDB_LOG')))) as $i => $line) {
+        $b = json_decode($line, true);
+        if (is_array($b) && ($b['kind'] ?? '') === 'activity') { $eps[] = ['id' => $i + 1, 'kind' => 'activity', 'title' => $b['title'] ?? '', 'occurred_at' => $b['occurred_at'] ?? null, 'payload' => $b['payload'] ?? null]; }
+    }
+    $eps = array_slice($eps, (int) ($_GET['offset'] ?? 0), min(200, (int) ($_GET['limit'] ?? 50)));
+    header('Content-Type: application/json'); echo json_encode(['episodes' => $eps]); exit;
+}
 if ($path === '/v1/send' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     // A stub of MaluMail's send API (never a real address; slice 7): logs each body to $FAKE_MALUMAIL_LOG and answers as the address asks —
     // "suppressed" → 400 all rejected, "rejected" → 200 with a rejection, "flaky" → 502, else 200 accepted.

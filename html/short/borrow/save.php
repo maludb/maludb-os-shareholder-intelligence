@@ -17,7 +17,7 @@ if ($on === null || $on === false) {
 } elseif ($on > $today) {
     $errors['observed_on'] = 'An observation is of today or earlier.';
 }
-$source = strtolower((string) (req_val('source') ?? 'broker_quote')) ?: 'broker_quote';
+$source = strtolower((string) (req_val('origin') ?? req_val('source') ?? 'broker_quote')) ?: 'broker_quote';
 if (!in_array($source, ['broker_quote', 'manual'], true)) {
     $errors['source'] = 'A person records a broker\'s quote (broker_quote) or a figure from elsewhere (manual); a vendor\'s rows come from its feed.';
 }

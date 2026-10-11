@@ -1,5 +1,7 @@
 # Shareholder Intelligence — MCP tool surface
 
+2026-10-11 · **PHASE 4 BUILT** (`mcp/records_server.py` with eleven `si_*` modules — 95 tools — and `mcp/activity_server.py` — 7 tools; proofs `tests/phase4/run.sh`; one migration, db/028: `mcp_key_usage`, `mcp_spr_rows`, `si_log_mcp_read`). Where this document and the schema or the built screens differ, the schema and the screens won: see "Built" at the foot.
+
 2026-10-09 · **Phase 1, for the checkpoint.** The read tools that answer every question in `docs/shareholder-intelligence-design.md` §7
 (Q1–Q53), the five K7 shares, and the resolvers the kernel's actions server names. Writes are never here: they are the action tools the
 kernel's Actions MCP builds from `docs/shareholder-intelligence-action-manifest.md`. **No tool reaches anyone outside the business, no tool
@@ -319,5 +321,23 @@ calling a model. Activity: **7 tools**. The resolve block names 17 entities. Fiv
 builds them as `mcp/records_server.py` with `si_shell`, `si_issuers`, `si_positions`, `si_holders`, `si_filings`, `si_ownership`, `si_short`,
 `si_signals`, `si_events`, `si_admin`, `si_shares` (each `register(mcp, q)`) plus `mcp/activity_server.py`.
 
+## Built (Phase 4, 2026-10-11)
+`mcp/records_server.py` (+ `si_shell`, `si_issuers`, `si_positions`, `si_holders`, `si_ownership`, `si_filings`, `si_short`, `si_signals`, `si_events`, `si_admin`, `si_shares`, `si_common`) — **95 tools**; `mcp/activity_server.py` — **7 tools**; the kit
+(`db.py`, `server_common.py`) is Inventory's, with K26's headers and the five shares KERNEL_ONLY. Proofs: `tests/phase4/run.sh` (444 checks under php -S, 447 under Apache — the vhost's own `/mcp/records` and `/mcp/activity`
+lines included). **One migration, db/028**: `mcp_key_usage`, `mcp_spr_rows`, `mcp_signal_rule_overrides` (views the tools needed), `si_log_mcp_read()` (the one write: `share.read` and `records.search`), `si_analyst_proposals` granted
+to the activity role, and the records role's direct SELECT on `signals`, `signal_outcomes`, `signal_rule_overrides` and `search_index` REVOKED (base tables with no wall of their own; db/013 and db/015 had granted them).
+Where this document and the schema or the screens differ, the schema and the screens won:
+- `activity_search` reads `mcp_activity_log` (each word ILIKE over the action, record type, actor and payload), not MaluDB `POST /v1/memory/search` — that route is a vector search over documents and wants a subject or verb; the episodes are the same rows the ingest ships.
+  `record_episodes` does read MaluDB (`GET /v1/episodes`, kind activity, the visible rows' time window), keeping only episodes whose `activity_log_id` the caller's view shows; without a memory it answers the log's rows and says so.
+- `import_rows` reads an SPR's rows from the new `mcp_spr_rows` (the doc named `spr_rows` "through `mcp_participant_positions`", which has no row number or error); `key_usage_summary` from `mcp_key_usage`.
+- `reconciliation_latest` reads `mcp_share_reconciliations` (the walled view; the same row `si_reconciliation_latest()` gives), `rules_catalogue` the overrides through `mcp_signal_rule_overrides`.
+- **List and find tools take `issuer` as an optional FILTER** (none: every issuer the caller may see) so a resolver called with `q` alone never answers `ambiguous`; the series and aggregate tools default to the one visible issuer's primary security and answer `ambiguous` when several are visible.
+- `find_signals` defaults to what still needs a person (open **and escalated**, as the screen does), not open alone; `get_issuer` names the latest upload of a kind by its period, then creation.
+- `holders_changes` for a Viewer answers the counts by state and, beside them, `entities` (non-person holders by name), as the screen does. A Viewer's `find_holders` with `q` finds entities only. `get_import.matcher` carries `{rows, matched, auto, proposed, unmatched, failed}` (no `new`: it is not recoverable from the rows) and is null for a Viewer.
+- Money is a string with two decimals for `value_dollars`, `aggregate_market_value`, prices, facility and remaining amounts; shares are integers (a jsonb document's `17100000.0` is normalised); percentages and ratios are numbers.
+- The five shares answer the SQL functions' documents as they are (`{error: not_found|consumer_unknown|no_text}`), not `{ok:false}`; they are logged by `si_log_mcp_read`, the consumer from `X-OS-Consumer`.
+- `records_search` takes a view and up to five equality filters (the surface's prose), never SQL; `mcp_activity_log`, `mcp_all_tokens`, `mcp_source_credentials` and `mcp_filing_text` are refused; it logs `records.search` with the filters' NAMES.
+
 ## Open questions
-None.
+1. ~~**The registry wrapper's resolve params collide with enumerated values**~~ — **fixed at merge (2026-10-11, the planning model):** the kernel resolves every parameter named in a resolve entity across the whole registry, so the manifest's two enum `source` params (`share_count_save`, `borrow_observation_create`) are named `origin` (the handlers read `origin`, then the forms' `source`) and `class` left the security entity's aliases; `tests/phase4/registry.php` drives all three through the kernel's tool.
+2. **K55:** 20 of our 83 action names are also other registries' (listed by `tests/phase4/registry.php`); the kernel's installer now gives a colliding action a `tool_name`, so nothing was renamed here.
