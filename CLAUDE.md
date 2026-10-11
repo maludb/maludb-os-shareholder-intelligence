@@ -118,4 +118,10 @@ quoted). **SLICE 9 BUILT and merged 2026-10-11** (`docs/build-specs/agents-k7-ap
 issuers): the proposals screen, the agents admin screen, the worker's `dispatches` (one chat turn as the agent, three attempts), `outbox` (MaluMail and K6
 texts) and `proposals` passes, the Friday pack's dispatch on `pack_day`, the five K7 shares through `share_call()`, **the records API** (`html/api/v1/`,
 `app/api/`) — each GET answers its screen's own JSON as the key's person, each POST runs the form's own handler; **API keys** (`sik_…`, only the
-sha256 kept, shown once, never minted through the kernel's relay so no model holds one; an admin mints for a Viewer only).
+sha256 kept, shown once, never minted through the kernel's relay so no model holds one; an admin mints for a Viewer only). **SLICE 10 BUILT and merged 2026-10-11** (`docs/build-specs/admin-settings.md`
+"Built"; `tests/phase3/slice10/run.sh`; db/027): sources and their credentials, participant classes, the pack's templates, settings, every token
+(`mcp_all_tokens`, `si_token_revoke_any`), the purge of tombstones due (`si_tombstones_purge_due`) and the never-stored columns' floor
+(`SI_NEVER_STORED_COLUMNS` in `app/si/storage.php`). **A pack approved before a renderer existed gets its PDF late** from its stored HTML
+(`report_pdf_late()`, the worker's packs pass). **PHASE 3 COMPLETE 2026-10-11 — 84/84 screens, 83/83 actions, no placeholder left;** every
+suite green under php -S and Apache; pushed (main = a61ca40). **Next:** Phase 4 (the records and activity MCP servers) by a Sonnet 5.5 worker,
+and the `generic_mapped` connector (the person maps an unknown layout to a template — `docs/build-specs/position-reports.md`) by the planning model.

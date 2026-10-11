@@ -938,6 +938,17 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 - Alpha Vantage the default price source (D13, above); the key is the owner's to add.
 ## 16. State
 
+**2026-10-11, late night — SLICE 10 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/admin-settings.md` "Built") — PHASE 3 COMPLETE.**
+Sources (the list, a source's page, pause and resume, the credential door built ahead), participant classes, the pack's templates, settings, every
+token on the installation with revoke (db/027 `mcp_all_tokens`, `si_token_revoke_any`), the purge of tombstones past their days
+(`si_tombstones_purge_due`), the never-stored columns kept as a floor in code (`SI_NEVER_STORED_COLUMNS`) and `render_nav_stub` gone; db/027 also
+sets `price_source_default` to Alpha Vantage. **The owner's late renderer (§15) built by the planning model:** the worker's packs pass makes an approved
+pack's PDF from its stored HTML (`report_pdf_late()`, `report.render {late: true}`), never re-rendered from the queries. **84/84 screens, 83/83 actions,
+no placeholder left.** The regression after the merge: Phases 0–2, slices 1–5, slices 6–10 under php -S and Apache, all green; the installer's plan
+clean (49 steps). Pushed (main = a61ca40). **Found:** the `generic_mapped` connector (§ the uploads, `docs/build-specs/position-reports.md`) was never
+built — a file in an unknown layout is refused today. **Next:** Phase 4 (records MCP and activity MCP) by a Sonnet 5.5 worker; `generic_mapped` by
+the planning model; Phase 5 the owner's.
+
 **2026-10-11, night — SLICE 9 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/agents-k7-api.md` "Built").** The proposals screen
 (signal dispositions, holder matches, holder kinds — each taken in one click), the agents admin screen (dispatches, cancel, the settings; db/026 adds
 the Analyst's issuers), the worker's dispatches (one chat turn as the agent, three attempts, never a refusal retried), outbox (MaluMail, K6 texts) and
