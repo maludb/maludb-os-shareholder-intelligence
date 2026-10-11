@@ -7,6 +7,16 @@ declare(strict_types=1);
  * (si_rate_ok, db/005), logged under the key's label (never the key). One 401 body for every failure. CORS from an allow-list, never with
  * credentials.
  */
+if (PHP_SAPI !== 'cli') {
+    // Every answer under /api/v1 is JSON, whatever the caller's Accept said (so a refusal is never an HTML page); a JSON body is read as the form fields the handlers read.
+    $_SERVER['HTTP_ACCEPT'] = 'application/json';
+    if (stripos((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json') === 0) {
+        $body = json_decode((string) file_get_contents('php://input'), true);
+        if (is_array($body)) {
+            $_POST = array_map(static fn ($v) => is_array($v) ? array_map(static fn ($x) => is_scalar($x) ? (string) $x : '', $v) : (is_bool($v) ? ($v ? '1' : '0') : (is_scalar($v) ? (string) $v : '')), $body);
+        }
+    }
+}
 require_once dirname(__DIR__) . '/bootstrap.php';
 
 set_exception_handler(static function (Throwable $e): void {
@@ -82,7 +92,8 @@ function api_bearer_token(): string
 function api_authenticate(): array
 {
     $pdo = db();
-    if (is_logged_in() && empty($GLOBALS['__action_authed'])) {
+    // A Bearer key, when one is presented, is what the call is: a stale or revoked one is 401 even from a browser that happens to hold a session. Without one, a signed-in person's session.
+    if (api_bearer_token() === '' && is_logged_in() && empty($GLOBALS['__action_authed'])) {
         $member = current_member();
         if ($member !== null && $member['status'] === 'active' && $member['capability'] !== null) {
             return $member;
@@ -99,6 +110,7 @@ function api_authenticate(): array
     if ($key === false || $member === null) {
         api_error('unauthorized', 'A valid API key is required.', 401);
     }
+    $browserSession = empty($_SESSION['member_id']) ? null : $_SESSION;   // a browser's own session, should the call carry its cookie as well, is put back as it was
     $_SESSION['member_id'] = (int) $member['id'];
     $GLOBALS['__api_token_authed'] = true;
     $GLOBALS['__api_token_id'] = (int) $key['token_id'];
@@ -106,6 +118,17 @@ function api_authenticate(): array
         'rate_per_minute' => (int) $key['rate_per_minute'], 'rate_per_day' => (int) $key['rate_per_day']];
     $GLOBALS['__public_door'] = 'api';
     header_remove('Set-Cookie');
+    register_shutdown_function(static function () use ($browserSession): void {      // a key's call leaves no session behind (and no cookie), and one `api.call` row in the trail
+        api_log_call();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            if ($browserSession !== null) {
+                $_SESSION = $browserSession;
+            } else {
+                $_SESSION = [];
+                session_destroy();
+            }
+        }
+    });
     db_apply_context($pdo);
     api_rate_limit();
     return $member;
@@ -131,4 +154,32 @@ function api_rate_limit(): void
         header('Retry-After: ' . max(1, (int) ($r['retry_after'] ?? 60)));
         api_error('rate_limited', 'Too many calls (' . ($r['limit_hit'] ?? 'limit') . ').', 429);
     }
+}
+
+/**
+ * One `api.call` row for the call (source api, the key's token_id and person): the route, the method, the answer's status and the rows it carried — and, for a read of
+ * holders, how many holders (the PII wall's trail). Never the query string (a name searched is a person's), never a key.
+ */
+function api_log_call(): void
+{
+    if (api_key() === null) {
+        return;
+    }
+    $route = (string) (parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?: '');
+    $route = preg_replace('~/\d+~', '/{id}', $route);
+    $p = $GLOBALS['__screen_payload'] ?? null;
+    $rows = null;
+    if (is_array($p)) {
+        $rows = 0;
+        foreach ($p as $v) {
+            if (is_array($v) && array_is_list($v)) {
+                $rows += count($v);
+            }
+        }
+    }
+    $after = ['route' => $route, 'method' => (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'), 'status' => (int) http_response_code(), 'rows' => $rows];
+    if (str_starts_with($route, '/api/v1/holders') && is_array($p)) {
+        $after['holders_rows'] = isset($p['holders']) && is_array($p['holders']) ? count($p['holders']) : (isset($p['holder']) ? 1 + count((array) ($p['accounts'] ?? [])) : 0);
+    }
+    log_activity(db(), 'api.call', null, null, ['after' => $after]);
 }

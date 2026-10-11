@@ -115,14 +115,32 @@ function holder_kind_propose(PDO $pdo, int $holder, string $kind, ?string $type,
     return $id;
 }
 
-/** Set a holder's kind (and entity type). */
-function holder_kind_set(PDO $pdo, int $holder, string $kind, ?string $type): void
+/**
+ * Set a holder's kind (and entity type). A kind an agent proposed (or the worker) and a person now sets is that proposal ACCEPTED; any other open proposal of the holder is closed as rejected.
+ * $proposal (the proposals screen passes it) must be open and the holder's, else 'That proposal is not open.'.
+ */
+function holder_kind_set(PDO $pdo, int $holder, string $kind, ?string $type, ?int $proposal = null): void
 {
+    if ($proposal !== null && one_value($pdo, "SELECT 1 FROM holder_kind_proposals WHERE id = :p AND holder_id = :h AND status = 'proposed'", ['p' => $proposal, 'h' => $holder]) === null) {
+        throw new DomainException('That proposal is not open.');
+    }
     $before = $pdo->query('SELECT kind, entity_type FROM holders WHERE id = ' . $holder)->fetch();
     $pdo->prepare('UPDATE holders SET kind = :k, entity_type = :t WHERE id = :h')->execute(['k' => $kind, 't' => $kind === 'entity' ? $type : null, 'h' => $holder]);
+    $pdo->prepare("UPDATE holder_kind_proposals SET status = 'accepted', decided_by = :by, decided_at = now() WHERE holder_id = :h AND status = 'proposed' AND kind = :k")->execute(['by' => current_member_id(), 'h' => $holder, 'k' => $kind]);
     $pdo->prepare("UPDATE holder_kind_proposals SET status = 'rejected', decided_by = :by, decided_at = now() WHERE holder_id = :h AND status = 'proposed'")->execute(['by' => current_member_id(), 'h' => $holder]);
     log_activity($pdo, 'holder.kind_set', 'holder', $holder, holder_log_ids($pdo, $holder) + ['before' => ['kind' => $before['kind'], 'entity_type' => $before['entity_type']],
-        'after' => ['holder_id' => $holder, 'kind' => $kind, 'entity_type' => $kind === 'entity' ? $type : null]]);
+        'after' => ['holder_id' => $holder, 'kind' => $kind, 'entity_type' => $kind === 'entity' ? $type : null, 'proposal_id' => $proposal]]);
+}
+
+/** Reject a proposed kind (remembered: the holder is not proposed that again by the worker). The holder is not changed. Logs `holder.kind_reject`. Answers the holder. */
+function holder_kind_reject(PDO $pdo, int $proposal): int
+{
+    $p = $pdo->prepare("SELECT holder_id, kind, entity_type FROM holder_kind_proposals WHERE id = :p AND status = 'proposed'");
+    $p->execute(['p' => $proposal]);
+    $row = $p->fetch() ?: throw new DomainException('That proposal is not open.');
+    $pdo->prepare('SELECT si_holder_kind_decide(:p, false)')->execute(['p' => $proposal]);
+    log_activity($pdo, 'holder.kind_reject', 'holder', (int) $row['holder_id'], holder_log_ids($pdo, (int) $row['holder_id']) + ['after' => ['holder_id' => (int) $row['holder_id'], 'proposal_id' => $proposal, 'kind' => $row['kind'], 'entity_type' => $row['entity_type']]]);
+    return (int) $row['holder_id'];
 }
 
 /** A holder's fields, partly: what is given changes; the log carries the field names only. */

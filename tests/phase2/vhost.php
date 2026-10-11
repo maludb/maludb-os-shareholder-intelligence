@@ -34,8 +34,9 @@ $hb = json_decode($h['body'], true) ?: [];
 ok($h['code'] === 200 && ($hb['application'] ?? '') === 'shareholder_intelligence' && ($hb['database'] ?? '') === 'ok', '/api/v1/health answers');
 ok(($hb['edgar_user_agent'] ?? '') === 'missing' && ($hb['storage'] ?? '') === 'unset', 'health says the EDGAR user-agent is missing and the store unset (a scratch install)');
 ok(req('GET', '/api/v1/health.php')['code'] === 200, '/api/v1/health.php answers too');
-ok(req('GET', '/api/v1/issuers')['code'] === 404 && req('GET', '/api/v1/short-interest')['code'] === 404 && req('POST', '/api/v1/uploads')['code'] === 404 && req('GET', '/api/v1/holders/1')['code'] === 404,
-    'the records API (/api/v1/issuers, /short-interest, /uploads, /holders/{id}) is rewritten to files slice 9 builds: 404 until then');
+ok(req('GET', '/api/v1/issuers')['code'] === 401 && req('GET', '/api/v1/short-interest')['code'] === 401 && req('POST', '/api/v1/uploads')['code'] === 401 && req('GET', '/api/v1/holders/1')['code'] === 401
+    && (json_decode(req('GET', '/api/v1/issuers')['body'], true)['error']['code'] ?? '') === 'unauthorized',
+    'the records API (/api/v1/issuers, /short-interest, /uploads, /holders/{id}) is rewritten to the files slice 9 built: 401 without a key');
 ok(req('GET', '/api/v1/other')['code'] === 404 && req('GET', '/api/')['code'] === 404, 'anything else under /api is 404');
 $p = req('GET', '/pick/?source=issuer');
 ok($p['code'] === 302 && $p['location'] === LAUNCHER, '/pick/ without a session goes to the launcher');

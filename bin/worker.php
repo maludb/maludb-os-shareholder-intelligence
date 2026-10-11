@@ -14,10 +14,9 @@ declare(strict_types=1);
  * With --passes the named passes run whether or not they are due; without it every pass runs. SI_WORKER_NOW (ISO 8601) replaces the clock
  * a pass selects by; honoured only when APP_ENV is not prod. Exits 1 when a pass failed.
  *
- * PHASE 0: every pass is a STUB that changes nothing and answers 0 — the slice whose data it touches fills it in (design §10):
- * `uploads`, `reconciliation` slice 2's (and 3's); `matcher` slice 3's; `fetch` slices 1 (the directory), 4, 5 and 6's; `rules` slice 7's;
- * `search_catch_up` slice 1's; `packs`, `exports` slice 8's; `outbox`, `dispatches`, `proposals` slice 9's; `tombstones_purge`,
- * `key_usage_prune` slice 10's.
+ * Each pass belongs to the slice whose data it touches (design §10): `uploads`, `reconciliation` slice 2's (and 3's); `matcher` slice 3's; `fetch` slices 1 (the directory), 4, 5 and 6's; `rules` slice 7's;
+ * `search_catch_up` slice 1's; `packs`, `exports` slice 8's; `outbox`, `dispatches`, `proposals`, and the Friday dispatch in `packs`, slice 9's; the two left as stubs, `tombstones_purge` and
+ * `key_usage_prune`, are slice 10's.
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
@@ -211,12 +210,14 @@ function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $no
 }
 /**
  * SLICE 8 — the packs: an APPROVED pack that has no rendering (the renderer was missing, the file was lost, the approval pre-dated it) is rendered as its approver, and the PDF
- * made when SI_WKHTMLTOPDF names a binary. A draft is rendered by a person, never here. The Friday draft on pack_day (a dispatch to the Analyst) is slice 9's.
+ * made when SI_WKHTMLTOPDF names a binary. A draft is rendered by a person, never here. SLICE 9 — on the pack's day (si_settings.pack_day, in market time) the Surveillance Analyst is dispatched
+ * once for each issuer it covers that has no weekly pack for the week: it answers with report_draft, and a manager approves (pack_day_dispatches).
  */
 function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array
 {
     require_once dirname(__DIR__) . '/app/features/reports/screen.php';
-    $out = ['rendered' => 0, 'failed' => 0];
+    require_once dirname(__DIR__) . '/app/features/agents/write.php';
+    $out = ['rendered' => 0, 'failed' => 0, 'dispatched' => pack_day_dispatches($pdo, $now)];
     $st = $pdo->query("SELECT id, approved_by FROM reports WHERE status IN ('approved', 'published') AND rendered_path IS NULL AND deleted_at IS NULL AND approved_by IS NOT NULL ORDER BY id LIMIT " . max(1, min(20, $limit)));
     foreach ($st->fetchAll() as $r) {
         try {
@@ -265,12 +266,33 @@ function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): arra
     }
     return $out;
 }
-/** SLICE 9 — the outbox: email through MaluMail (malumail_send), texts to members through the kernel (kernel_send_text), retries with backoff. */
-function worker_pass_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sent' => 0, 'skipped' => 0, 'retried' => 0, 'failed' => 0, 'stub' => true]; }
-/** SLICE 9 — agent dispatches: a new 13D, a high signal, an upload finished, a filing of a watched form → one chat turn, at most three attempts. */
-function worker_pass_dispatches(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['dispatched' => 0, 'retried' => 0, 'stub' => true]; }
-/** SLICE 9 — the Analyst's standing proposals the worker can make without a model (a holder whose kind is unknown, a signal explained by an event on the same day). */
-function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['proposed' => 0, 'stub' => true]; }
+/**
+ * SLICE 9 — the outbox: each queued notification whose time has come — an email through MaluMail to the member (malumail_send), a text to the member through the kernel (K6, kernel_send_text) — retried
+ * at 1, 5 and 30 minutes, then failed; a refused address or an opted-out phone is skipped, never retried (agents/write.php outbox_run).
+ */
+function worker_pass_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/agents/write.php';
+    return outbox_run($pdo, $limit);
+}
+/**
+ * SLICE 9 — agent dispatches: a high signal, a Schedule 13D, an upload that tied and the Friday pack each hand the Surveillance Analyst ONE chat turn on the kernel's chat endpoint (as the agent, with the
+ * dispatch's words); a turn still running is asked again, a failed one retried after 5 and 15 minutes, three attempts in all; a cancelled dispatch, or one whose record no longer needs the agent, is not made.
+ */
+function worker_pass_dispatches(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/agents/write.php';
+    return dispatches_run($pdo, $limit);
+}
+/**
+ * SLICE 9 — the Analyst's standing proposals the worker can make without a model: a holder whose kind is unknown and whose name ends in LLC, Inc or Trust gets a kind proposal a person decides.
+ * A signal explained by an event is the agent's to propose, never the worker's; the worker disposes of nothing.
+ */
+function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): array
+{
+    require_once dirname(__DIR__) . '/app/features/agents/write.php';
+    return standing_proposals_run($pdo, $limit);
+}
 /** SLICE 10 — tombstoned uploads and records older than tombstone_days purged with their rows. */
 function worker_pass_tombstones_purge(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['purged' => 0, 'stub' => true]; }
 /** SLICE 10 — si_prune_key_usage(): minute buckets older than a day, day buckets older than 35 days. */
