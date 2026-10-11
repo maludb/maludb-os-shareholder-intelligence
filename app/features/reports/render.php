@@ -152,24 +152,7 @@ function render_pack(PDO $pdo, int $report): array
     $r = find_report($pdo, $report) ?? throw new DomainException('Not found.');
     $body = pack_body_html($pdo, $r);
     $html = pack_document((string) $r['title'], $body);
-    $pdf = null;
-    $bin = (string) env('SI_WKHTMLTOPDF', '');
-    if ($bin !== '' && is_executable($bin)) {
-        $tmpIn = tempnam(sys_get_temp_dir(), 'sipack') ?: throw new RuntimeException('No temporary file.');
-        $tmpOut = $tmpIn . '.pdf';
-        try {
-            file_put_contents($tmpIn, $html);
-            $p = proc_open([$bin, '--quiet', '--disable-javascript', '--disable-local-file-access', $tmpIn, $tmpOut], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-            if (is_resource($p)) {
-                stream_get_contents($pipes[1]); stream_get_contents($pipes[2]);
-                proc_close($p);
-            }
-            $bytes = is_file($tmpOut) ? (string) file_get_contents($tmpOut) : '';
-            if (str_starts_with($bytes, '%PDF')) { $pdf = si_store_named('reports', $report, 'pdf', $bytes); }
-        } finally {
-            @unlink($tmpIn); @unlink($tmpOut);
-        }
-    }
+    $pdf = pack_pdf_from_html($report, $html);
     return ['html' => $html, 'body' => $body, 'pdf_path' => $pdf];
 }
 
@@ -184,3 +167,30 @@ function as_member(PDO $pdo, int $member, callable $fn): mixed
         $pdo->prepare("SELECT set_config('app.member_id', :m, false)")->execute(['m' => $was]);
     }
 }
+
+/**
+ * A pack's PDF from its HTML document, when SI_WKHTMLTOPDF names an executable (stored; the path relative to the store), else null. The renderer reads
+ * the HTML with JavaScript and local files off. Used at render time and, for a pack approved before a renderer existed, from its stored HTML (report_pdf_late).
+ */
+function pack_pdf_from_html(int $report, string $html): ?string
+{
+    $bin = (string) env('SI_WKHTMLTOPDF', '');
+    if ($bin === '' || !is_executable($bin)) {
+        return null;
+    }
+    $tmpIn = tempnam(sys_get_temp_dir(), 'sipack') ?: throw new RuntimeException('No temporary file.');
+    $tmpOut = $tmpIn . '.pdf';
+    try {
+        file_put_contents($tmpIn, $html);
+        $p = proc_open([$bin, '--quiet', '--disable-javascript', '--disable-local-file-access', $tmpIn, $tmpOut], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        if (is_resource($p)) {
+            stream_get_contents($pipes[1]); stream_get_contents($pipes[2]);
+            proc_close($p);
+        }
+        $bytes = is_file($tmpOut) ? (string) file_get_contents($tmpOut) : '';
+        return str_starts_with($bytes, '%PDF') ? si_store_named('reports', $report, 'pdf', $bytes) : null;
+    } finally {
+        @unlink($tmpIn); @unlink($tmpOut);
+    }
+}
+

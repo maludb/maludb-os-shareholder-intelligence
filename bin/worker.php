@@ -216,7 +216,7 @@ function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array
 {
     require_once dirname(__DIR__) . '/app/features/reports/screen.php';
     require_once dirname(__DIR__) . '/app/features/agents/write.php';
-    $out = ['rendered' => 0, 'failed' => 0, 'dispatched' => pack_day_dispatches($pdo, $now)];
+    $out = ['rendered' => 0, 'failed' => 0, 'pdf_late' => 0, 'dispatched' => pack_day_dispatches($pdo, $now)];
     $st = $pdo->query("SELECT id, approved_by FROM reports WHERE status IN ('approved', 'published') AND rendered_path IS NULL AND deleted_at IS NULL AND approved_by IS NOT NULL ORDER BY id LIMIT " . max(1, min(20, $limit)));
     foreach ($st->fetchAll() as $r) {
         try {
@@ -230,6 +230,19 @@ function worker_pass_packs(PDO $pdo, int $limit, DateTimeImmutable $now): array
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             error_log('worker packs ' . $r['id'] . ': ' . $e->getMessage());
             $out['failed']++;
+        }
+    }
+    // a renderer installed after packs were approved: their PDF from the stored HTML (the owner, 2026-10-11) — the approved content unchanged
+    if ((string) env('SI_WKHTMLTOPDF', '') !== '' && is_executable((string) env('SI_WKHTMLTOPDF', ''))) {
+        $st = $pdo->query("SELECT id, approved_by FROM reports WHERE status IN ('approved', 'published') AND rendered_path IS NOT NULL AND pdf_path IS NULL AND deleted_at IS NULL AND approved_by IS NOT NULL ORDER BY id LIMIT " . max(1, min(20, $limit)));
+        foreach ($st->fetchAll() as $r) {
+            try {
+                $made = as_member($pdo, (int) $r['approved_by'], static fn (): bool => report_pdf_late($pdo, (int) $r['id']));
+                $out['pdf_late'] += $made ? 1 : 0;
+            } catch (Throwable $e) {
+                error_log('worker packs pdf ' . $r['id'] . ': ' . $e->getMessage());
+                $out['failed']++;
+            }
         }
     }
     return $out;

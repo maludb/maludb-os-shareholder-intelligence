@@ -124,6 +124,25 @@ function report_render(PDO $pdo, int $id, bool $atApproval = false): array
     return ['pdf' => $r['pdf_path'] !== null, 'bytes' => strlen($r['html'])];
 }
 
+/**
+ * The PDF of a pack approved before a renderer was installed (the owner, 2026-10-11): made from the pack's STORED HTML — the approved content unchanged —
+ * when the pack has a rendering and no PDF. Answers whether a PDF was made; logs `report.render` {pdf: true, late: true}.
+ */
+function report_pdf_late(PDO $pdo, int $id): bool
+{
+    $row = report_row($pdo, $id) ?? throw new DomainException('Not found.');
+    if ($row['rendered_path'] === null || $row['pdf_path'] !== null) {
+        return false;
+    }
+    $pdf = pack_pdf_from_html($id, si_stored_named((string) $row['rendered_path']));
+    if ($pdf === null) {
+        return false;
+    }
+    $pdo->prepare('UPDATE reports SET pdf_path = :p WHERE id = :id AND pdf_path IS NULL')->execute(['p' => $pdf, 'id' => $id]);
+    log_activity($pdo, 'report.render', 'report', $id, ['issuer_id' => (int) $row['issuer_id'], 'after' => ['report_id' => $id, 'html' => false, 'pdf' => true, 'late' => true]]);
+    return true;
+}
+
 /** A manager approves a draft (the database checks the right and that it is a draft); the narrative is frozen, the pack is rendered as approved, its drafter told. */
 function report_approve(PDO $pdo, int $id): void
 {

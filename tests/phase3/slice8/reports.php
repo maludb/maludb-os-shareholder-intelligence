@@ -118,6 +118,21 @@ $r = post_json($jP, '/reports/save.php', ['report' => $rep, 'narrative' => 'chan
 ok($r['code'] === 422 && str_contains($r['body'], 'frozen') && str_contains((string) one('SELECT narrative FROM reports WHERE id = :i', ['i' => $rep]), 'elevated'), 'the narrative of an approved pack: 422, frozen');
 $r = post_json($jP, '/reports/save.php', ['report' => $rep, 'sections' => 'events']);
 ok($r['code'] === 422 && count(json_decode((string) one('SELECT sections FROM reports WHERE id = :i', ['i' => $rep]), true)) === 13, 'its sections do not change either');
+// the owner, 2026-10-11: a renderer installed after the approval — the worker makes the approved pack's PDF from its STORED HTML, the content unchanged
+$html0 = (string) one('SELECT rendered_path FROM reports WHERE id = :i', ['i' => $rep]);
+$since = last_activity_id();
+$late = static function () use ($fake): array {
+    exec('SI_WKHTMLTOPDF=' . escapeshellarg($fake) . ' SI_WORKER_NOW=' . escapeshellarg('2026-10-12T09:00:00-04:00') . ' php bin/worker.php --passes=packs 2>&1', $o);
+    return json_decode((string) end($o), true)['ran']['packs'] ?? [];
+};
+$w = $late();
+$row = q('SELECT * FROM reports WHERE id = :i', ['i' => $rep])[0];
+ok(($w['pdf_late'] ?? 0) === 1 && $row['pdf_path'] !== null && is_file(need('SI_DEV_STATE') . '/storage/' . $row['pdf_path']) && $row['rendered_path'] === $html0 && str_contains((string) $row['narrative'], 'elevated'),
+    'a renderer installed later: the worker makes the approved pack\'s PDF from its stored HTML — the HTML and the narrative unchanged');
+$a = activity('report.render', $since)[0] ?? [];
+ok(($a['after'] ?? '') !== '' && json_decode($a['after'], true)['late'] === true && json_decode($a['after'], true)['pdf'] === true, 'report.render logged as a late PDF');
+ok(($late()['pdf_late'] ?? -1) === 0, 'the next pass makes none: the pack has its PDF');
+q('UPDATE reports SET pdf_path = NULL WHERE id = :i', ['i' => $rep]);                   // back to no PDF for the send's checks below
 $frozen = false;
 try { pdo()->exec("UPDATE reports SET narrative = 'sneaked in' WHERE id = $rep"); } catch (PDOException $e) { $frozen = str_contains($e->getMessage(), 'frozen'); }
 ok($frozen, 'and the database refuses the change by itself (the trigger): "An approved pack\'s narrative is frozen"');
