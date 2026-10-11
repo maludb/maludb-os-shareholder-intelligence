@@ -70,8 +70,11 @@ label.btn-touch { display: flex; }
 .coming-card { border-style: dashed; }
 .empty-state.text-center { flex-direction: column; }        /* a centred empty state (the first-run home) stacks: at 375 px a row pushed its button past the edge */
 
-/* The main pane. */
-.app-panes { display: flex; align-items: stretch; min-height: 60vh; }
+/* The main pane. The container is a column at least a screen tall (the theme's min-height, the fixed bars' room inside its
+   padding), and the panes take what is left, so the footer sits at the bottom of a short page, just above the command bar. */
+main.nxl-container { display: flex; flex-direction: column; }
+main.nxl-container > #page-footer { margin-top: auto; flex: 0 0 auto; }
+.app-panes { display: flex; align-items: stretch; min-height: 60vh; flex: 1 0 auto; }
 .app-panes > #page-content { flex: 1 1 auto; min-width: 0; }
 
 /* RECORD PICKER (app/picker.php, shared/picker-rows.php, assets/js/record-picker.js): the one modal that chooses a
