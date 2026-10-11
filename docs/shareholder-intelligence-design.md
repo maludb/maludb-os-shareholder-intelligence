@@ -929,6 +929,14 @@ proof is real; (d) **the holder PII default for exports** — logged and allowed
 
 ## 16. State
 
+**2026-10-11, evening — SLICE 8 BUILT by a Sonnet 5.5 worker and merged (`docs/build-specs/events-reports.md` "Built").** Events (made by filings, threshold
+days and people; a tombstone and its restore), the month calendar with FINRA's publication days and the 13F deadlines computed, the packs (drafted, edited,
+approved — approval renders and freezes them — rendered from the sections' own queries, HTML always and a PDF when a renderer is named), sent to members
+**as a link** (MaluMail's send API takes no attachment), exports built as the person who asked, the holders export behind `pii_in_exports`. No migration.
+The planning model's verification: the walls of the two download doors, the PII gate, the merge (the registry rebuilt: 73 screens, 67 actions built), every
+suite re-run. **Open:** a multi-select record picker in the shared kit (the pack's "Send to…" uses three pickers); a PDF for an approved pack when a renderer
+arrives later. **Next:** slice 9 (worker running), then slice 10.
+
 **2026-10-11, later still — ALPHA VANTAGE THE DEFAULT PRICE SOURCE (the owner: "Build capabilities for Vantage and we will add a key later"; D13
 re-decided).** db/025 names it the default, paused for want of a key (`settings.paused_for_key`), 25 requests a day, one each five seconds. **The credential
 door is built ahead of slice 10** (`/admin/sources/{id}/credential`, `credential_set`, `app/features/admin/`): the key sealed under SI_SECRETS_KEY, shown

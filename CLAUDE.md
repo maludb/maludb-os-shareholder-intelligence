@@ -109,4 +109,9 @@ only in `app/si/fetch/credentials.php`. **SLICE 7 BUILT 2026-10-11, THE SECOND E
 action both call it; it logs `signal.raise|refresh|expire` a signal and tells the members who asked. A disposition is a person's (`require_human()`); an
 agent's door is `signal_propose`. The evidence partial is `app/views/signals/evidence/<key>.php` (reads only `signals.evidence`); the chart of a rule's window
 is `signal_chart()` in `app/features/signals/present.php`. **A new rule** = a migration (function + seed row + schema-proof case) + an evidence partial + a
-`signal_chart()` case. **Next: the Sonnet 5.5 handoff** — slices 8–11, one worker a slice, each verified here.
+`signal_chart()` case. **The Sonnet 5.5 handoff began 2026-10-11** — slices 8, 9, 10 (there is no 11), one worker at a time in its own worktree
+(`/srv/apps/shareholder_intelligence-sN`, branch `sliceN-…`), each verified and merged here. **SLICE 8 BUILT and merged 2026-10-11** (`docs/build-specs/events-reports.md`
+"Built"; `tests/phase3/slice8/run.sh`): events, the calendar (FINRA's publication days and the 13F deadlines computed, not stored), packs rendered from the
+sections' own queries (HTML always, a PDF only when `SI_WKHTMLTOPDF` names a renderer — none is installed here), **`report_send` mails members a link, not
+an attachment** (MaluMail's send API takes none), exports built as the person who asked (the holders export behind `pii_in_exports`, a formula cell
+quoted).
